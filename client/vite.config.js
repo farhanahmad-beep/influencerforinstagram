@@ -7,7 +7,7 @@ export default defineConfig({
     host: "0.0.0.0", // Accept connections from network
     port: 4323,
     strictPort: true,
-    allowedHosts: ["6929a3b2a8441ee7d05f75ae.icod.ai"], // restrict allowed hosts
+    allowedHosts: ["localhost", "127.0.0.1", "6929a3b2a8441ee7d05f75ae.icod.ai"], // allow localhost and production host
     watch:{
         usePolling: true,
         interval: 10
