@@ -11,6 +11,8 @@ const Followers = () => {
   const navigate = useNavigate();
   const [followers, setFollowers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [linkedAccounts, setLinkedAccounts] = useState([]);
+  const [loadingAccounts, setLoadingAccounts] = useState(true);
   const [pagination, setPagination] = useState({
     cursor: null,
     hasMore: false,
@@ -24,10 +26,27 @@ const Followers = () => {
   });
 
   useEffect(() => {
+    fetchLinkedAccounts();
     if (filters.user_id || filters.account_id) {
       fetchFollowers();
     }
   }, []);
+
+  const fetchLinkedAccounts = async () => {
+    setLoadingAccounts(true);
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/influencers/linked-accounts`, {
+        withCredentials: true,
+      });
+      if (response.data.success) {
+        setLinkedAccounts(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch linked accounts:", error);
+    } finally {
+      setLoadingAccounts(false);
+    }
+  };
 
   const fetchFollowers = async (cursor = null) => {
     setLoading(true);
@@ -164,14 +183,40 @@ const Followers = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Account ID (account_id)
                 </label>
-                <input
-                  type="text"
-                  name="account_id"
-                  value={filters.account_id}
-                  onChange={handleFilterChange}
-                  placeholder="e.g., nTx-Zhh_SCmBzH4opdXhgw"
-                  className="input-field"
-                />
+                {loadingAccounts ? (
+                  <div className="input-field flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
+                    <span className="text-sm text-gray-500">Loading accounts...</span>
+                  </div>
+                ) : linkedAccounts.length > 0 ? (
+                  <select
+                    name="account_id"
+                    value={filters.account_id}
+                    onChange={handleFilterChange}
+                    className="input-field"
+                  >
+                    <option value="">Select an account...</option>
+                    {linkedAccounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                       (@{account.username}) - {account.id}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      name="account_id"
+                      value={filters.account_id}
+                      onChange={handleFilterChange}
+                      placeholder="e.g., nTx-Zhh_SCmBzH4opdXhgw"
+                      className="input-field"
+                    />
+                    <p className="text-xs text-gray-500">
+                      No linked accounts found. You can manually enter an account ID.
+                    </p>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
