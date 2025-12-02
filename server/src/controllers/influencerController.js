@@ -444,6 +444,173 @@ export const getAccountProfile = async (req, res) => {
   }
 };
 
+// Get following accounts from Unipile
+export const getFollowing = async (req, res) => {
+  try {
+    // Read environment variables at runtime
+    const { apiUrl, accessToken } = getUnipileConfig();
+    
+    if (!accessToken || !apiUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unipile API token not configured',
+        statusCode: 400,
+      });
+    }
+
+    // Extract query parameters
+    const { user_id, account_id, cursor, limit = 100 } = req.query;
+
+    // Validate required parameters
+    if (!user_id && !account_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Either user_id or account_id is required',
+        statusCode: 400,
+      });
+    }
+
+    // Build query parameters - prioritize account_id if both are provided
+    const params = {};
+    if (account_id) {
+      params.account_id = account_id;
+    } else if (user_id) {
+      params.user_id = user_id;
+    }
+    
+    if (cursor) params.cursor = cursor;
+    if (limit) {
+      const limitNum = parseInt(limit);
+      if (limitNum >= 1 && limitNum <= 1000) {
+        params.limit = limitNum;
+      } else {
+        params.limit = 100; // Default to 100 if out of range
+      }
+    } else {
+      params.limit = 100; // Default limit
+    }
+
+    console.log('Unipile Following API Request:', {
+      url: `${apiUrl}/api/v1/users/following`,
+      params: params,
+    });
+
+    try {
+      const unipileResponse = await axios.get(`${apiUrl}/api/v1/users/following`, {
+        headers: getUnipileHeaders(accessToken),
+        params: params,
+        timeout: 30000, // Increased timeout for large following lists
+      });
+
+      if (unipileResponse.data) {
+        // Handle Unipile API response structure: { object: "UserFollowingList", items: [...], cursor: "..." }
+        const items = unipileResponse.data.items || [];
+        
+        console.log(`Unipile API returned ${items.length} following accounts`);
+        
+        const following = items.map(account => ({
+          id: account.id || '',
+          messagingId: account.messaging_id || '',
+          username: account.username || '',
+          name: account.name || account.username || '',
+          profilePicture: account.profile_picture_url || '',
+          isPrivate: account.is_private || false,
+          isVerified: account.is_verified || false,
+          isFavorite: account.is_favorite || false,
+        }));
+
+        console.log(`Processed ${following.length} following accounts for response`);
+
+        return res.status(200).json({
+          success: true,
+          data: following,
+          pagination: {
+            cursor: unipileResponse.data.cursor || null,
+            hasMore: !!unipileResponse.data.cursor,
+            count: following.length,
+            limit: params.limit,
+          },
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: [],
+        pagination: {
+          cursor: null,
+          hasMore: false,
+          count: 0,
+          limit: params.limit,
+        },
+      });
+    } catch (unipileError) {
+      // Log detailed error information
+      console.error('Unipile API Error Details:', {
+        status: unipileError.response?.status,
+        statusText: unipileError.response?.statusText,
+        data: unipileError.response?.data,
+        message: unipileError.message,
+        url: unipileError.config?.url,
+        params: unipileError.config?.params,
+      });
+
+      if (unipileError.response?.status === 401) {
+        console.error('Unipile API: Invalid credentials. Please check UNIPILE_ACCESS_TOKEN in environment variables.');
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid Unipile API credentials',
+          statusCode: 401,
+        });
+      }
+      
+      if (unipileError.response?.status === 400) {
+        console.error('Unipile API: Bad request', unipileError.response.data);
+        return res.status(400).json({
+          success: false,
+          error: unipileError.response.data?.error || unipileError.response.data?.message || 'Invalid request parameters',
+          statusCode: 400,
+          details: unipileError.response.data,
+        });
+      }
+
+      if (unipileError.response?.status === 500) {
+        console.error('Unipile API: Server error', unipileError.response.data);
+        return res.status(500).json({
+          success: false,
+          error: unipileError.response.data?.error || unipileError.response.data?.message || 'Unipile API server error',
+          statusCode: 500,
+          details: unipileError.response.data,
+        });
+      }
+      
+      // Handle network errors or other issues
+      if (unipileError.code === 'ECONNREFUSED' || unipileError.code === 'ETIMEDOUT') {
+        return res.status(503).json({
+          success: false,
+          error: 'Unable to connect to Unipile API',
+          statusCode: 503,
+          message: unipileError.message,
+        });
+      }
+      
+      console.error('Unipile API error:', unipileError.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch following accounts',
+        statusCode: 500,
+        message: unipileError.message,
+        details: unipileError.response?.data || null,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+      statusCode: 400,
+    });
+  }
+};
+
 // Get followers from Unipile
 export const getFollowers = async (req, res) => {
   try {
