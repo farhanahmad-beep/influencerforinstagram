@@ -3,7 +3,12 @@ node_modules/
 client/node_modules/
 server/node_modules/
 
+# Environment variables
 .env
-*.env
-client/.env
-server/.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+client/env/
+server/env/
