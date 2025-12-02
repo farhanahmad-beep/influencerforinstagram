@@ -8,6 +8,8 @@ import { motion } from "framer-motion";
 const LinkedAccounts = () => {
   const [linkedAccounts, setLinkedAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [accountProfiles, setAccountProfiles] = useState({});
+  const [loadingProfiles, setLoadingProfiles] = useState({});
 
   useEffect(() => {
     fetchLinkedAccounts();
@@ -20,7 +22,12 @@ const LinkedAccounts = () => {
         withCredentials: true,
       });
       if (response.data.success) {
-        setLinkedAccounts(response.data.data || []);
+        const accounts = response.data.data || [];
+        setLinkedAccounts(accounts);
+        // Fetch profile details for each account
+        accounts.forEach((account) => {
+          fetchAccountProfile(account.id);
+        });
       }
     } catch (error) {
       toast.error("Failed to fetch linked accounts");
@@ -28,6 +35,36 @@ const LinkedAccounts = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchAccountProfile = async (accountId) => {
+    setLoadingProfiles((prev) => ({ ...prev, [accountId]: true }));
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/influencers/account-profile`, {
+        params: { account_id: accountId },
+        withCredentials: true,
+      });
+      if (response.data.success && response.data.data) {
+        console.log(`Profile data for ${accountId}:`, response.data.data);
+        setAccountProfiles((prev) => ({
+          ...prev,
+          [accountId]: response.data.data,
+        }));
+      }
+    } catch (error) {
+      console.error(`Failed to fetch profile for account ${accountId}:`, error);
+    } finally {
+      setLoadingProfiles((prev) => ({ ...prev, [accountId]: false }));
+    }
+  };
+
+  const formatNumber = (num) => {
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1)}M`;
+    } else if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`;
+    }
+    return num.toString();
   };
 
   const formatDate = (dateString) => {
@@ -93,19 +130,88 @@ const LinkedAccounts = () => {
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                      <span className="text-purple-600 font-bold text-lg">
-                        {account.name?.charAt(0)?.toUpperCase() || "A"}
-                      </span>
+                    <div className="relative w-12 h-12 flex-shrink-0">
+                      <img
+                        src={accountProfiles[account.id]?.profilePictureUrlLarge || accountProfiles[account.id]?.profilePictureUrl || ''}
+                        alt={accountProfiles[account.id]?.fullName || account.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                        style={{ 
+                          display: (accountProfiles[account.id]?.profilePictureUrl || accountProfiles[account.id]?.profilePictureUrlLarge) ? 'block' : 'none'
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          const fallback = e.target.nextElementSibling;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                      <div 
+                        className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center"
+                        style={{ 
+                          display: (accountProfiles[account.id]?.profilePictureUrl || accountProfiles[account.id]?.profilePictureUrlLarge) ? 'none' : 'flex'
+                        }}
+                      >
+                        <span className="text-purple-600 font-bold text-lg">
+                          {accountProfiles[account.id]?.fullName?.charAt(0)?.toUpperCase() || account.name?.charAt(0)?.toUpperCase() || "A"}
+                        </span>
+                      </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {account.name}
-                      </h3>
-                      <p className="text-sm text-gray-500">@{account.username}</p>
+                      <div className="flex items-center space-x-1">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {accountProfiles[account.id]?.fullName || account.name}
+                        </h3>
+                        {accountProfiles[account.id]?.isVerified && (
+                          <span className="text-blue-500" title="Verified">
+                            ✓
+                          </span>
+                        )}
+                        {accountProfiles[account.id]?.isPrivate && (
+                          <span className="text-gray-400" title="Private Account">
+                            🔒
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        @{accountProfiles[account.id]?.publicIdentifier || account.username}
+                      </p>
                     </div>
                   </div>
                 </div>
+
+                {loadingProfiles[account.id] ? (
+                  <div className="flex justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                  </div>
+                ) : accountProfiles[account.id] ? (
+                  <>
+                    {accountProfiles[account.id].biography && (
+                      <p className="text-sm text-gray-700 mb-4 line-clamp-2">
+                        {accountProfiles[account.id].biography}
+                      </p>
+                    )}
+
+                    <div className="grid grid-cols-3 gap-2 mb-4">
+                      <div className="text-center">
+                        <p className="text-lg font-semibold text-purple-600">
+                          {formatNumber(accountProfiles[account.id].followersCount)}
+                        </p>
+                        <p className="text-xs text-gray-500">Followers</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-semibold text-purple-600">
+                          {formatNumber(accountProfiles[account.id].followingCount)}
+                        </p>
+                        <p className="text-xs text-gray-500">Following</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-semibold text-purple-600">
+                          {formatNumber(accountProfiles[account.id].postsCount)}
+                        </p>
+                        <p className="text-xs text-gray-500">Posts</p>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -114,6 +220,15 @@ const LinkedAccounts = () => {
                       {account.type}
                     </span>
                   </div>
+
+                  {accountProfiles[account.id]?.category && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Category</span>
+                      <span className="px-3 py-1 bg-purple-100 text-purple-600 text-xs font-medium rounded-full">
+                        {accountProfiles[account.id].category}
+                      </span>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Status</span>
@@ -151,6 +266,11 @@ const LinkedAccounts = () => {
                   <div className="text-xs text-gray-500">
                     Account ID: <span className="font-mono">{account.id}</span>
                   </div>
+                  {accountProfiles[account.id]?.providerId && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      Provider ID: <span className="font-mono">{accountProfiles[account.id].providerId}</span>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}

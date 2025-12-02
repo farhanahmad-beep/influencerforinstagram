@@ -352,6 +352,98 @@ export const getLinkedAccounts = async (req, res) => {
   }
 };
 
+// Get account profile details from Unipile
+export const getAccountProfile = async (req, res) => {
+  try {
+    // Read environment variables at runtime
+    const { apiUrl, accessToken } = getUnipileConfig();
+    
+    if (!accessToken || !apiUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unipile API token not configured',
+        statusCode: 400,
+      });
+    }
+
+    const { account_id } = req.query;
+
+    if (!account_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'account_id is required',
+        statusCode: 400,
+      });
+    }
+
+    try {
+      const unipileResponse = await axios.get(`${apiUrl}/api/v1/users/me`, {
+        headers: getUnipileHeaders(accessToken),
+        params: { account_id },
+        timeout: 15000,
+      });
+
+      if (unipileResponse.data) {
+        const profile = unipileResponse.data;
+        const transformedProfile = {
+          provider: profile.provider || '',
+          providerId: profile.provider_id || '',
+          providerMessagingId: profile.provider_messaging_id || '',
+          publicIdentifier: profile.public_identifier || '',
+          fullName: profile.full_name || '',
+          profilePictureUrl: profile.profile_picture_url || '',
+          profilePictureUrlLarge: profile.profile_picture_url_large || '',
+          biography: profile.biography || '',
+          category: profile.category || '',
+          followersCount: profile.followers_count || 0,
+          mutualFollowersCount: profile.mutual_followers_count || 0,
+          followingCount: profile.following_count || 0,
+          postsCount: profile.posts_count || 0,
+          profileType: profile.profile_type || '',
+          isVerified: profile.is_verified || false,
+          isPrivate: profile.is_private || false,
+          externalLinks: profile.external_links || [],
+          relationshipStatus: profile.relationship_status || {},
+        };
+
+        return res.status(200).json({
+          success: true,
+          data: transformedProfile,
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: null,
+      });
+    } catch (unipileError) {
+      if (unipileError.response?.status === 401) {
+        console.error('Unipile API: Invalid credentials. Please check UNIPILE_ACCESS_TOKEN in environment variables.');
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid Unipile API credentials',
+          statusCode: 401,
+        });
+      }
+      
+      console.error('Unipile API error:', unipileError.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch account profile',
+        statusCode: 500,
+        message: unipileError.message,
+        details: unipileError.response?.data || null,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+      statusCode: 400,
+    });
+  }
+};
+
 // Get followers from Unipile
 export const getFollowers = async (req, res) => {
   try {
