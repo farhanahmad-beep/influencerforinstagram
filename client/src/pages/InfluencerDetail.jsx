@@ -76,9 +76,13 @@ const InfluencerDetail = () => {
           <div id="src_pages_InfluencerDetail_ym9g" className="card mb-6">
             <div id="src_pages_InfluencerDetail_ras8" className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
               <img
-                id="src_pages_InfluencerDetail_h0jk" src={influencer.profileImage}
+                id="src_pages_InfluencerDetail_h0jk" 
+                src={influencer.profileImage || influencer.profilePicture || 'https://via.placeholder.com/150'}
                 alt={influencer.fullName}
                 className="w-32 h-32 rounded-full object-cover"
+                onError={(e) => {
+                  e.target.src = 'https://via.placeholder.com/150';
+                }}
               />
               <div id="src_pages_InfluencerDetail_hhm5" className="flex-1 text-center md:text-left">
                 <div id="src_pages_InfluencerDetail_4son" className="flex items-center justify-center md:justify-start space-x-2 mb-2">
@@ -91,14 +95,18 @@ const InfluencerDetail = () => {
                     </span>
                   )}
                 </div>
-                <p id="src_pages_InfluencerDetail_fs5u" className="text-lg text-gray-600 mb-2">
-                  @{influencer.username}
-                </p>
+                {influencer.username && (
+                  <p id="src_pages_InfluencerDetail_fs5u" className="text-lg text-gray-600 mb-2">
+                    @{influencer.username}
+                  </p>
+                )}
                 <div id="src_pages_InfluencerDetail_zl0i" className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
-                  <span id="src_pages_InfluencerDetail_cty1" className="inline-block px-3 py-1 text-sm font-medium text-purple-600 bg-purple-100 rounded-full">
-                    {influencer.category}
-                  </span>
-                  {influencer.niche.map((n, index) => (
+                  {influencer.category && (
+                    <span id="src_pages_InfluencerDetail_cty1" className="inline-block px-3 py-1 text-sm font-medium text-purple-600 bg-purple-100 rounded-full">
+                      {influencer.category}
+                    </span>
+                  )}
+                  {influencer.niche && Array.isArray(influencer.niche) && influencer.niche.length > 0 && influencer.niche.map((n, index) => (
                     <span
                       id="src_pages_InfluencerDetail_auf5" key={index}
                       className="inline-block px-3 py-1 text-sm font-medium text-gray-600 bg-gray-100 rounded-full"
@@ -146,31 +154,37 @@ const InfluencerDetail = () => {
             </div>
             <div id="src_pages_InfluencerDetail_3xhz" className="card text-center">
               <p id="src_pages_InfluencerDetail_8uvh" className="text-3xl font-bold text-purple-600">
-                {influencer.engagementRate.toFixed(2)}%
+                {influencer.engagementRate ? influencer.engagementRate.toFixed(2) : '0.00'}%
               </p>
               <p id="src_pages_InfluencerDetail_s2do" className="text-gray-600 mt-1">Engagement Rate</p>
             </div>
           </div>
 
-          <div id="src_pages_InfluencerDetail_dqu5" className="card mb-6">
-            <h2 id="src_pages_InfluencerDetail_3iya" className="text-2xl font-bold text-gray-900 mb-4">
-              Engagement Metrics
-            </h2>
-            <div id="src_pages_InfluencerDetail_gq8p" className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div id="src_pages_InfluencerDetail_kc2h">
-                <p id="src_pages_InfluencerDetail_2wbp" className="text-gray-600">Average Likes</p>
-                <p id="src_pages_InfluencerDetail_sjn0" className="text-xl font-semibold text-gray-900">
-                  {formatNumber(influencer.averageLikes)}
-                </p>
-              </div>
-              <div id="src_pages_InfluencerDetail_0jui">
-                <p id="src_pages_InfluencerDetail_0zjj" className="text-gray-600">Average Comments</p>
-                <p id="src_pages_InfluencerDetail_6zxf" className="text-xl font-semibold text-gray-900">
-                  {formatNumber(influencer.averageComments)}
-                </p>
+          {(influencer.averageLikes || influencer.averageComments) && (
+            <div id="src_pages_InfluencerDetail_dqu5" className="card mb-6">
+              <h2 id="src_pages_InfluencerDetail_3iya" className="text-2xl font-bold text-gray-900 mb-4">
+                Engagement Metrics
+              </h2>
+              <div id="src_pages_InfluencerDetail_gq8p" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {influencer.averageLikes !== undefined && (
+                  <div id="src_pages_InfluencerDetail_kc2h">
+                    <p id="src_pages_InfluencerDetail_2wbp" className="text-gray-600">Average Likes</p>
+                    <p id="src_pages_InfluencerDetail_sjn0" className="text-xl font-semibold text-gray-900">
+                      {formatNumber(influencer.averageLikes || 0)}
+                    </p>
+                  </div>
+                )}
+                {influencer.averageComments !== undefined && (
+                  <div id="src_pages_InfluencerDetail_0jui">
+                    <p id="src_pages_InfluencerDetail_0zjj" className="text-gray-600">Average Comments</p>
+                    <p id="src_pages_InfluencerDetail_6zxf" className="text-xl font-semibold text-gray-900">
+                      {formatNumber(influencer.averageComments || 0)}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
 
           {influencer.recentPosts && influencer.recentPosts.length > 0 && (
             <div id="src_pages_InfluencerDetail_htb8" className="card">

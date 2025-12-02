@@ -7,6 +7,8 @@ import Dashboard from "./pages/Dashboard.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import Profile from "./pages/Profile.jsx";
 import InfluencerDetail from "./pages/InfluencerDetail.jsx";
+import LinkedAccounts from "./pages/LinkedAccounts.jsx";
+import Followers from "./pages/Followers.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
@@ -45,6 +47,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/linked-accounts"
+          element={
+            <ProtectedRoute>
+              <LinkedAccounts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/followers"
+          element={
+            <ProtectedRoute>
+              <Followers />
             </ProtectedRoute>
           }
         />

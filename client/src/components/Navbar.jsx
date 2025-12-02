@@ -24,6 +24,12 @@ const Navbar = () => {
             <Link to="/dashboard" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_c3d4">
               Dashboard
             </Link>
+            <Link to="/linked-accounts" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_linked">
+              Linked Accounts
+            </Link>
+            <Link to="/followers" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_followers">
+              Followers
+            </Link>
             <Link to="/profile" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_e5f6">
               Profile
             </Link>

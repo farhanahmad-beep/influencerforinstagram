@@ -88,7 +88,7 @@ const influencerSchema = new mongoose.Schema(
   }
 );
 
-influencerSchema.index({ username: 1 });
+// Note: username index is automatically created by unique: true, so we don't need to add it manually
 influencerSchema.index({ category: 1 });
 influencerSchema.index({ followers: -1 });
 influencerSchema.index({ engagementRate: -1 });
