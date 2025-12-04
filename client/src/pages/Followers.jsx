@@ -257,6 +257,18 @@ const Followers = () => {
     return num.toString();
   };
 
+  const handleViewProfile = (userId) => {
+    if (!filters.account_id) {
+      toast.error("Account ID is required to view profile details");
+      return;
+    }
+
+    // Navigate to user profile page with userId and accountId
+    navigate(`/user-profile/${userId}`, {
+      state: { accountId: filters.account_id },
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -486,11 +498,9 @@ const Followers = () => {
                       )}
                       <button
                         className="w-full mt-2 px-3 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
-                        onClick={() => {
-                          // Functionality to be added later
-                        }}
+                        onClick={() => handleViewProfile(item.id)}
                       >
-                        Send
+                        Details
                       </button>
                     </div>
                   </div>

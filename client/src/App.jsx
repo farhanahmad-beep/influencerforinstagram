@@ -9,6 +9,7 @@ import Profile from "./pages/Profile.jsx";
 import InfluencerDetail from "./pages/InfluencerDetail.jsx";
 import LinkedAccounts from "./pages/LinkedAccounts.jsx";
 import Followers from "./pages/Followers.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
@@ -58,15 +59,23 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/followers"
-          element={
-            <ProtectedRoute>
-              <Followers />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route
+                path="/followers"
+                element={
+                  <ProtectedRoute>
+                    <Followers />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user-profile/:userId"
+                element={
+                  <ProtectedRoute>
+                    <UserProfile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>
   );

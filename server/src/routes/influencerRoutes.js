@@ -5,6 +5,7 @@ import {
   getCategories,
   getLinkedAccounts,
   getAccountProfile,
+  getUserProfile,
   getFollowers,
   getFollowing,
 } from '../controllers/influencerController.js';
@@ -16,6 +17,7 @@ router.get('/search', protect, searchInfluencers);
 router.get('/categories', protect, getCategories);
 router.get('/linked-accounts', protect, getLinkedAccounts);
 router.get('/account-profile', protect, getAccountProfile);
+router.get('/user-profile', protect, getUserProfile);
 router.get('/followers', protect, getFollowers);
 router.get('/following', protect, getFollowing);
 router.get('/:id', protect, getInfluencerById);
