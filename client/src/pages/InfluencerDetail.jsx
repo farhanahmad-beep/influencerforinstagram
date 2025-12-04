@@ -75,15 +75,28 @@ const InfluencerDetail = () => {
         >
           <div id="src_pages_InfluencerDetail_ym9g" className="card mb-6">
             <div id="src_pages_InfluencerDetail_ras8" className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-              <img
-                id="src_pages_InfluencerDetail_h0jk" 
-                src={influencer.profileImage || influencer.profilePicture || 'https://via.placeholder.com/150'}
-                alt={influencer.fullName}
-                className="w-32 h-32 rounded-full object-cover"
-                onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/150';
-                }}
-              />
+              <div className="relative w-32 h-32">
+                {(influencer.profileImage || influencer.profilePicture) ? (
+                  <img
+                    id="src_pages_InfluencerDetail_h0jk" 
+                    src={influencer.profileImage || influencer.profilePicture}
+                    alt={influencer.fullName}
+                    className="w-32 h-32 rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      const fallback = e.target.nextElementSibling;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className={`w-32 h-32 bg-purple-100 rounded-full flex items-center justify-center ${(influencer.profileImage || influencer.profilePicture) ? 'hidden' : 'flex'}`}
+                >
+                  <span className="text-purple-600 font-bold text-4xl">
+                    {influencer.fullName?.charAt(0)?.toUpperCase() || influencer.username?.charAt(0)?.toUpperCase() || "U"}
+                  </span>
+                </div>
+              </div>
               <div id="src_pages_InfluencerDetail_hhm5" className="flex-1 text-center md:text-left">
                 <div id="src_pages_InfluencerDetail_4son" className="flex items-center justify-center md:justify-start space-x-2 mb-2">
                   <h1 id="src_pages_InfluencerDetail_lj5p" className="text-3xl font-bold text-gray-900">

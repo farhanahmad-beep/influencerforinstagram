@@ -12,6 +12,9 @@ const UserProfile = () => {
   const location = useLocation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [messageText, setMessageText] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
   
   // Get account_id from location state or query params
   const accountId = location.state?.accountId || new URLSearchParams(location.search).get("account_id");
@@ -61,6 +64,52 @@ const UserProfile = () => {
     return num.toString();
   };
 
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    
+    if (!accountId) {
+      toast.error("Account ID is required to send message");
+      return;
+    }
+
+    if (!profile?.providerMessagingId) {
+      toast.error("User messaging ID not available");
+      return;
+    }
+
+    if (!messageText.trim()) {
+      toast.error("Please enter a message");
+      return;
+    }
+
+    setSendingMessage(true);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/influencers/start-chat`,
+        {
+          account_id: accountId,
+          text: messageText.trim(),
+          attendees_ids: [profile.providerMessagingId],
+        },
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+        toast.success("Message sent successfully!");
+        setMessageText("");
+        setShowMessageModal(false);
+      } else {
+        toast.error(response.data.error || "Failed to send message");
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || error.message || "Failed to send message";
+      toast.error(errorMessage);
+      console.error("Failed to send message:", error);
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -91,12 +140,22 @@ const UserProfile = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <button
-          onClick={() => navigate(`/followers?account_id=${accountId}`)}
-          className="btn-secondary mb-6"
-        >
-          ← Back to Followers
-        </button>
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => navigate(`/followers?account_id=${accountId}`)}
+            className="btn-secondary"
+          >
+            ← Back to Followers
+          </button>
+          {profile.providerMessagingId && (
+            <button
+              onClick={() => setShowMessageModal(true)}
+              className="btn-primary"
+            >
+              Send Message
+            </button>
+          )}
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -105,22 +164,28 @@ const UserProfile = () => {
         >
           <div className="card mb-6">
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
-              {profile.profilePictureUrlLarge || profile.profilePictureUrl ? (
-                <img
-                  src={profile.profilePictureUrlLarge || profile.profilePictureUrl}
-                  alt={profile.fullName}
-                  className="w-32 h-32 rounded-full object-cover"
-                  onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/150';
-                  }}
-                />
-              ) : (
-                <div className="w-32 h-32 bg-purple-100 rounded-full flex items-center justify-center">
+              <div className="relative w-32 h-32">
+                {(profile.profilePictureUrlLarge || profile.profilePictureUrl) ? (
+                  <img
+                    src={profile.profilePictureUrlLarge || profile.profilePictureUrl}
+                    alt={profile.fullName}
+                    referrerPolicy="no-referrer"
+                    className="w-32 h-32 rounded-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      const fallback = e.target.nextElementSibling;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className={`w-32 h-32 bg-purple-100 rounded-full flex items-center justify-center ${(profile.profilePictureUrlLarge || profile.profilePictureUrl) ? 'hidden' : 'flex'}`}
+                >
                   <span className="text-purple-600 font-bold text-4xl">
                     {profile.fullName?.charAt(0)?.toUpperCase() || profile.publicIdentifier?.charAt(0)?.toUpperCase() || "U"}
                   </span>
                 </div>
-              )}
+              </div>
               <div className="flex-1 text-center md:text-left">
                 <div className="flex items-center justify-center md:justify-start space-x-2 mb-2">
                   <h1 className="text-3xl font-bold text-gray-900">
@@ -292,6 +357,74 @@ const UserProfile = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* Message Modal */}
+        {showMessageModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-lg shadow-xl max-w-md w-full"
+            >
+              <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900">Send Message</h2>
+                <button
+                  onClick={() => {
+                    setShowMessageModal(false);
+                    setMessageText("");
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  disabled={sendingMessage}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleSendMessage} className="p-6">
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Message
+                  </label>
+                  <textarea
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    placeholder="Enter your message here..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    rows="4"
+                    disabled={sendingMessage}
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Sending to: {profile.fullName || profile.publicIdentifier}
+                  </p>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMessageModal(false);
+                      setMessageText("");
+                    }}
+                    className="flex-1 btn-secondary"
+                    disabled={sendingMessage}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 btn-primary"
+                    disabled={sendingMessage || !messageText.trim()}
+                  >
+                    {sendingMessage ? "Sending..." : "Send Message"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
       </div>
     </div>
   );

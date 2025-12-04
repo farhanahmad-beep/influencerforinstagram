@@ -542,6 +542,141 @@ export const getAccountProfile = async (req, res) => {
   }
 };
 
+// Start a new chat/message from Unipile
+export const startChat = async (req, res) => {
+  try {
+    // Read environment variables at runtime
+    const { apiUrl, accessToken } = getUnipileConfig();
+    
+    if (!accessToken || !apiUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unipile API token not configured',
+        statusCode: 400,
+      });
+    }
+
+    const { account_id, text, attendees_ids } = req.body;
+
+    if (!account_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'account_id is required',
+        statusCode: 400,
+      });
+    }
+
+    if (!attendees_ids || !Array.isArray(attendees_ids) || attendees_ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'attendees_ids (array) is required and must contain at least one provider_messaging_id',
+        statusCode: 400,
+      });
+    }
+
+    const requestBody = {
+      account_id: account_id,
+      attendees_ids: attendees_ids,
+    };
+
+    if (text && text.trim() !== '') {
+      requestBody.text = text.trim();
+    }
+
+    console.log('Unipile Start Chat API Request:', {
+      url: `${apiUrl}/api/v1/chats`,
+      body: requestBody,
+    });
+
+    try {
+      const unipileResponse = await axios.post(`${apiUrl}/api/v1/chats`, requestBody, {
+        headers: getUnipileHeaders(accessToken),
+        timeout: 15000,
+      });
+
+      if (unipileResponse.data) {
+        console.log('Unipile API returned chat data:', unipileResponse.data);
+        
+        return res.status(200).json({
+          success: true,
+          data: unipileResponse.data,
+          message: 'Chat started successfully',
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: null,
+        message: 'Chat started successfully',
+      });
+    } catch (unipileError) {
+      // Log detailed error information
+      console.error('Unipile API Error Details:', {
+        status: unipileError.response?.status,
+        statusText: unipileError.response?.statusText,
+        data: unipileError.response?.data,
+        message: unipileError.message,
+        url: unipileError.config?.url,
+        body: unipileError.config?.data,
+      });
+
+      if (unipileError.response?.status === 401) {
+        console.error('Unipile API: Invalid credentials. Please check UNIPILE_ACCESS_TOKEN in environment variables.');
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid Unipile API credentials',
+          statusCode: 401,
+        });
+      }
+      
+      if (unipileError.response?.status === 400) {
+        console.error('Unipile API: Bad request', unipileError.response.data);
+        return res.status(400).json({
+          success: false,
+          error: unipileError.response.data?.error || unipileError.response.data?.message || 'Invalid request parameters',
+          statusCode: 400,
+          details: unipileError.response.data,
+        });
+      }
+
+      if (unipileError.response?.status === 500) {
+        console.error('Unipile API: Server error', unipileError.response.data);
+        return res.status(500).json({
+          success: false,
+          error: unipileError.response.data?.error || unipileError.response.data?.message || 'Unipile API server error',
+          statusCode: 500,
+          details: unipileError.response.data,
+        });
+      }
+      
+      // Handle network errors or other issues
+      if (unipileError.code === 'ECONNREFUSED' || unipileError.code === 'ETIMEDOUT') {
+        return res.status(503).json({
+          success: false,
+          error: 'Unable to connect to Unipile API',
+          statusCode: 503,
+          message: unipileError.message,
+        });
+      }
+      
+      console.error('Unipile API error:', unipileError.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to start chat',
+        statusCode: 500,
+        message: unipileError.message,
+        details: unipileError.response?.data || null,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+      statusCode: 400,
+    });
+  }
+};
+
 // Get following accounts from Unipile
 export const getFollowing = async (req, res) => {
   try {
