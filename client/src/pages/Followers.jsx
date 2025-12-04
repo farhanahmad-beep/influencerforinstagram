@@ -482,8 +482,16 @@ const Followers = () => {
                       </div>
                       <p className="text-xs text-gray-500 mb-2">@{item.username}</p>
                       {item.id && (
-                        <p className="text-xs text-gray-400 mb-1">ID: {item.id}</p>
+                        <p className="text-xs text-gray-400 mb-3">ID: {item.id}</p>
                       )}
+                      <button
+                        className="w-full mt-2 px-3 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                        onClick={() => {
+                          // Functionality to be added later
+                        }}
+                      >
+                        Send
+                      </button>
                     </div>
                   </div>
                 </motion.div>
