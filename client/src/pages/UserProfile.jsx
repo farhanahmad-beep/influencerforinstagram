@@ -16,6 +16,21 @@ const UserProfile = () => {
   const [messageText, setMessageText] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   
+  // Predefined message template
+  const PREDEFINED_MESSAGE = `✨ Hey! Hope you're doing well!
+
+I wanted to share something super useful for creators — Dynamite Influencer Store just launched! 🚀
+
+It's a platform made specifically for influencers to create their own store, add products, and start selling directly to their audience — all in a few clicks.
+
+You can check it out here 
+
+🔗 https://dynamiteinfluencerstore.icod.ai/
+
+If you've ever wanted to launch your own store, earn more, and manage everything in one place, this is the perfect tool for you.
+
+Let me know if you want help getting started! 😊`;
+
   // Get account_id from location state or query params
   const accountId = location.state?.accountId || new URLSearchParams(location.search).get("account_id");
 
@@ -96,7 +111,7 @@ const UserProfile = () => {
 
       if (response.data.success) {
         toast.success("Message sent successfully!");
-        setMessageText("");
+        setMessageText(PREDEFINED_MESSAGE);
         setShowMessageModal(false);
       } else {
         toast.error(response.data.error || "Failed to send message");
@@ -149,7 +164,10 @@ const UserProfile = () => {
           </button>
           {profile.providerMessagingId && (
             <button
-              onClick={() => setShowMessageModal(true)}
+              onClick={() => {
+                setMessageText(PREDEFINED_MESSAGE);
+                setShowMessageModal(true);
+              }}
               className="btn-primary"
             >
               Send Message
@@ -371,7 +389,7 @@ const UserProfile = () => {
                 <button
                   onClick={() => {
                     setShowMessageModal(false);
-                    setMessageText("");
+                    setMessageText(PREDEFINED_MESSAGE);
                   }}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                   disabled={sendingMessage}
@@ -406,7 +424,7 @@ const UserProfile = () => {
                     type="button"
                     onClick={() => {
                       setShowMessageModal(false);
-                      setMessageText("");
+                      setMessageText(PREDEFINED_MESSAGE);
                     }}
                     className="flex-1 btn-secondary"
                     disabled={sendingMessage}
