@@ -3,13 +3,15 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar.jsx";
+import SearchFilters from "../components/SearchFilters.jsx";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 
 const Followers = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [data, setData] = useState([]);
+  const [allData, setAllData] = useState([]); // Store all fetched data
+  const [filteredData, setFilteredData] = useState([]); // Store filtered data for display
   const [loading, setLoading] = useState(false);
   const [linkedAccounts, setLinkedAccounts] = useState([]);
   const [loadingAccounts, setLoadingAccounts] = useState(true);
@@ -25,6 +27,16 @@ const Followers = () => {
     account_id: searchParams.get("account_id") || "",
     limit: searchParams.get("limit") || "100",
   });
+  const [displayFilters, setDisplayFilters] = useState({
+    keyword: "",
+    category: "",
+    minFollowers: "",
+    maxFollowers: "",
+    minEngagement: "",
+    maxEngagement: "",
+    country: "",
+    city: "",
+  });
 
   useEffect(() => {
     fetchLinkedAccounts();
@@ -36,6 +48,11 @@ const Followers = () => {
       }
     }
   }, [viewMode]);
+
+  // Apply filters whenever allData or displayFilters change
+  useEffect(() => {
+    applyFilters();
+  }, [allData, displayFilters]);
 
   const fetchLinkedAccounts = async () => {
     setLoadingAccounts(true);
@@ -93,10 +110,10 @@ const Followers = () => {
         
         if (cursor) {
           // Append to existing data for pagination
-          setData((prev) => [...prev, ...followersData]);
+          setAllData((prev) => [...prev, ...followersData]);
         } else {
           // Replace data for new search
-          setData(followersData);
+          setAllData(followersData);
         }
 
         setPagination({
@@ -167,10 +184,10 @@ const Followers = () => {
         
         if (cursor) {
           // Append to existing data for pagination
-          setData((prev) => [...prev, ...followingData]);
+          setAllData((prev) => [...prev, ...followingData]);
         } else {
           // Replace data for new search
-          setData(followingData);
+          setAllData(followingData);
         }
 
         setPagination({
@@ -212,12 +229,45 @@ const Followers = () => {
       toast.error("Please provide either user_id or account_id");
       return;
     }
-    setData([]);
+    setAllData([]);
+    setFilteredData([]);
     if (viewMode === "following") {
       fetchFollowing();
     } else {
       fetchFollowers();
     }
+  };
+
+  // Client-side filtering function
+  const applyFilters = () => {
+    if (allData.length === 0) {
+      setFilteredData([]);
+      return;
+    }
+
+    let filtered = [...allData];
+
+    // Keyword filter (search in name, username)
+    if (displayFilters.keyword && displayFilters.keyword.trim() !== "") {
+      const keyword = displayFilters.keyword.toLowerCase().trim();
+      filtered = filtered.filter((item) => {
+        const name = (item.name || "").toLowerCase();
+        const username = (item.username || "").toLowerCase();
+        return name.includes(keyword) || username.includes(keyword);
+      });
+    }
+
+    // Note: Category, followers count, engagement rate, country, and city filters
+    // are not available in the followers/following API response data structure
+    // These filters would require additional API calls to get full profile data
+    // For now, we'll only apply keyword filtering which works with available data
+
+    setFilteredData(filtered);
+  };
+
+  const handleFilterSearch = () => {
+    // Trigger filter application
+    applyFilters();
   };
 
   const loadMore = () => {
@@ -232,7 +282,8 @@ const Followers = () => {
 
   const handleModeChange = (mode) => {
     setViewMode(mode);
-    setData([]);
+    setAllData([]);
+    setFilteredData([]);
     setPagination({
       cursor: null,
       hasMore: false,
@@ -396,12 +447,20 @@ const Followers = () => {
           </form>
         </div>
 
+        {/* Display Filters */}
+        <SearchFilters
+          filters={displayFilters}
+          setFilters={setDisplayFilters}
+          onSearch={handleFilterSearch}
+          hideEngagement={true}
+        />
+
         {/* Results */}
-        {loading && data.length === 0 ? (
+        {loading && allData.length === 0 ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
           </div>
-        ) : data.length === 0 ? (
+        ) : filteredData.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -427,7 +486,9 @@ const Followers = () => {
             </h3>
             <p className="text-gray-500">
               {filters.user_id || filters.account_id
-                ? `No ${viewMode === "following" ? "following accounts" : "followers"} found for the specified account.`
+                ? allData.length === 0
+                  ? `No ${viewMode === "following" ? "following accounts" : "followers"} found for the specified account.`
+                  : `No results match your filters. Try adjusting your search criteria.`
                 : `Enter a username or account ID to search for ${viewMode === "following" ? "following accounts" : "followers"}.`}
             </p>
           </motion.div>
@@ -435,13 +496,13 @@ const Followers = () => {
           <>
             <div className="mb-4 flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                Showing <span className="font-semibold">{data.length}</span> {viewMode === "following" ? "following accounts" : "followers"}
+                Showing <span className="font-semibold">{filteredData.length}</span> of <span className="font-semibold">{allData.length}</span> {viewMode === "following" ? "following accounts" : "followers"}
                 {pagination.hasMore && " (more available)"}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-              {data.map((item, index) => (
+              {filteredData.map((item, index) => (
                 <motion.div
                   key={item.id || index}
                   initial={{ opacity: 0, y: 20 }}
@@ -451,11 +512,12 @@ const Followers = () => {
                 >
                   <div className="flex flex-col items-center text-center">
                     <div className="mb-3 relative">
-                      {item.profilePicture ? (
+                      {(item.profilePictureData || item.profilePicture) ? (
                         <img
-                          src={item.profilePicture}
+                          src={item.profilePictureData || item.profilePicture}
                           alt={item.username}
                           className="w-20 h-20 rounded-full object-cover mx-auto"
+                          referrerPolicy="no-referrer"
                           onError={(e) => {
                             e.target.style.display = 'none';
                             const fallback = e.target.nextElementSibling;
@@ -464,7 +526,7 @@ const Followers = () => {
                         />
                       ) : null}
                       <div 
-                        className={`w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto ${item.profilePicture ? 'hidden' : 'flex'}`}
+                        className={`w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto ${(item.profilePictureData || item.profilePicture) ? 'hidden' : 'flex'}`}
                       >
                         <span className="text-purple-600 font-bold text-xl">
                           {item.username?.charAt(0)?.toUpperCase() || item.name?.charAt(0)?.toUpperCase() || "U"}

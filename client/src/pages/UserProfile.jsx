@@ -183,9 +183,9 @@ Let me know if you want help getting started! 😊`;
           <div className="card mb-6">
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
               <div className="relative w-32 h-32">
-                {(profile.profilePictureUrlLarge || profile.profilePictureUrl) ? (
+                {(profile.profilePictureData || profile.profilePictureUrlLarge || profile.profilePictureUrl) ? (
                   <img
-                    src={profile.profilePictureUrlLarge || profile.profilePictureUrl}
+                    src={profile.profilePictureData || profile.profilePictureUrlLarge || profile.profilePictureUrl}
                     alt={profile.fullName}
                     referrerPolicy="no-referrer"
                     className="w-32 h-32 rounded-full object-cover"
@@ -197,7 +197,7 @@ Let me know if you want help getting started! 😊`;
                   />
                 ) : null}
                 <div 
-                  className={`w-32 h-32 bg-purple-100 rounded-full flex items-center justify-center ${(profile.profilePictureUrlLarge || profile.profilePictureUrl) ? 'hidden' : 'flex'}`}
+                  className={`w-32 h-32 bg-purple-100 rounded-full flex items-center justify-center ${(profile.profilePictureData || profile.profilePictureUrlLarge || profile.profilePictureUrl) ? 'hidden' : 'flex'}`}
                 >
                   <span className="text-purple-600 font-bold text-4xl">
                     {profile.fullName?.charAt(0)?.toUpperCase() || profile.publicIdentifier?.charAt(0)?.toUpperCase() || "U"}

@@ -2,7 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const SearchFilters = ({ filters, setFilters, onSearch }) => {
+const SearchFilters = ({ filters, setFilters, onSearch, hideEngagement = false }) => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -144,35 +144,39 @@ const SearchFilters = ({ filters, setFilters, onSearch }) => {
             />
           </div>
 
-          <div id="src_components_SearchFilters_s0px">
-            <label id="src_components_SearchFilters_yyf8" className="block text-sm font-medium text-gray-700 mb-1">
-              Min Engagement Rate (%)
-            </label>
-            <input
-              id="src_components_SearchFilters_sz1p" type="number"
-              step="0.1"
-              name="minEngagement"
-              value={filters.minEngagement}
-              onChange={handleInputChange}
-              placeholder="e.g., 2.0"
-              className="input-field"
-            />
-          </div>
+          {!hideEngagement && (
+            <>
+              <div id="src_components_SearchFilters_s0px">
+                <label id="src_components_SearchFilters_yyf8" className="block text-sm font-medium text-gray-700 mb-1">
+                  Min Engagement Rate (%)
+                </label>
+                <input
+                  id="src_components_SearchFilters_sz1p" type="number"
+                  step="0.1"
+                  name="minEngagement"
+                  value={filters.minEngagement}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 2.0"
+                  className="input-field"
+                />
+              </div>
 
-          <div id="src_components_SearchFilters_ezk3">
-            <label id="src_components_SearchFilters_3eqc" className="block text-sm font-medium text-gray-700 mb-1">
-              Max Engagement Rate (%)
-            </label>
-            <input
-              id="src_components_SearchFilters_pi9a" type="number"
-              step="0.1"
-              name="maxEngagement"
-              value={filters.maxEngagement}
-              onChange={handleInputChange}
-              placeholder="e.g., 10.0"
-              className="input-field"
-            />
-          </div>
+              <div id="src_components_SearchFilters_ezk3">
+                <label id="src_components_SearchFilters_3eqc" className="block text-sm font-medium text-gray-700 mb-1">
+                  Max Engagement Rate (%)
+                </label>
+                <input
+                  id="src_components_SearchFilters_pi9a" type="number"
+                  step="0.1"
+                  name="maxEngagement"
+                  value={filters.maxEngagement}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 10.0"
+                  className="input-field"
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <div id="src_components_SearchFilters_4clp" className="flex space-x-3">

@@ -132,11 +132,21 @@ const LinkedAccounts = () => {
                   <div className="flex items-center space-x-3">
                     <div className="relative w-12 h-12 flex-shrink-0">
                       <img
-                        src={accountProfiles[account.id]?.profilePictureUrlLarge || accountProfiles[account.id]?.profilePictureUrl || ''}
+                        src={
+                          accountProfiles[account.id]?.profilePictureData ||
+                          accountProfiles[account.id]?.profilePictureUrlLarge ||
+                          accountProfiles[account.id]?.profilePictureUrl ||
+                          ''
+                        }
                         alt={accountProfiles[account.id]?.fullName || account.name}
                         className="w-12 h-12 rounded-full object-cover"
+                        referrerPolicy="no-referrer"
                         style={{ 
-                          display: (accountProfiles[account.id]?.profilePictureUrl || accountProfiles[account.id]?.profilePictureUrlLarge) ? 'block' : 'none'
+                          display: (
+                            accountProfiles[account.id]?.profilePictureData ||
+                            accountProfiles[account.id]?.profilePictureUrl ||
+                            accountProfiles[account.id]?.profilePictureUrlLarge
+                          ) ? 'block' : 'none'
                         }}
                         onError={(e) => {
                           e.target.style.display = 'none';
@@ -147,7 +157,11 @@ const LinkedAccounts = () => {
                       <div 
                         className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center"
                         style={{ 
-                          display: (accountProfiles[account.id]?.profilePictureUrl || accountProfiles[account.id]?.profilePictureUrlLarge) ? 'none' : 'flex'
+                          display: (
+                            accountProfiles[account.id]?.profilePictureData ||
+                            accountProfiles[account.id]?.profilePictureUrl ||
+                            accountProfiles[account.id]?.profilePictureUrlLarge
+                          ) ? 'none' : 'flex'
                         }}
                       >
                         <span className="text-purple-600 font-bold text-lg">

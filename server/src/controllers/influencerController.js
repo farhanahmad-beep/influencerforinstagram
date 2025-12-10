@@ -1,5 +1,6 @@
 import Influencer from '../models/Influencer.js';
 import axios from 'axios';
+import { Buffer } from 'buffer';
 
 // Helper function to get Unipile API configuration (read from env at runtime)
 const getUnipileConfig = () => {
@@ -14,6 +15,31 @@ const getUnipileHeaders = (accessToken) => ({
   'X-API-KEY': accessToken,
   'Content-Type': 'application/json',
 });
+
+// Fetch remote image as base64 data URI (used to avoid browser CORS on CDN images)
+const fetchImageAsBase64 = async (url) => {
+  if (!url) return '';
+  try {
+    const imgResponse = await axios.get(url, {
+      responseType: 'arraybuffer',
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Instagram Image Fetcher)',
+      },
+      validateStatus: () => true,
+    });
+    if (imgResponse.status >= 200 && imgResponse.status < 300 && imgResponse.data) {
+      const contentType = imgResponse.headers['content-type'] || 'image/jpeg';
+      const base64 = Buffer.from(imgResponse.data).toString('base64');
+      return `data:${contentType};base64,${base64}`;
+    }
+    console.error('Image fetch non-success status:', imgResponse.status);
+    return '';
+  } catch (err) {
+    console.error('Failed to fetch image as base64:', err.message);
+    return '';
+  }
+};
 export const searchInfluencers = async (req, res) => {
   try {
     const {
@@ -393,6 +419,11 @@ export const getUserProfile = async (req, res) => {
 
       if (unipileResponse.data) {
         const profile = unipileResponse.data;
+
+        // Fetch profile picture as base64 to avoid CDN CORS blocks
+        const pictureSource = profile.profile_picture_url_large || profile.profile_picture_url || '';
+        const profilePictureData = pictureSource ? await fetchImageAsBase64(pictureSource) : '';
+
         const transformedProfile = {
           provider: profile.provider || '',
           providerId: profile.provider_id || '',
@@ -401,6 +432,7 @@ export const getUserProfile = async (req, res) => {
           fullName: profile.full_name || '',
           profilePictureUrl: profile.profile_picture_url || '',
           profilePictureUrlLarge: profile.profile_picture_url_large || '',
+          profilePictureData,
           followersCount: profile.followers_count || 0,
           mutualFollowersCount: profile.mutual_followers_count || 0,
           followingCount: profile.following_count || 0,
@@ -483,6 +515,25 @@ export const getAccountProfile = async (req, res) => {
 
       if (unipileResponse.data) {
         const profile = unipileResponse.data;
+
+        // Attempt to fetch profile picture as base64 to avoid browser CORS blocks
+        let profilePictureData = '';
+        const pictureSource = profile.profile_picture_url_large || profile.profile_picture_url || '';
+        if (pictureSource) {
+          try {
+            const imgResponse = await axios.get(pictureSource, {
+              responseType: 'arraybuffer',
+              timeout: 10000,
+            });
+            const contentType = imgResponse.headers['content-type'] || 'image/jpeg';
+            const base64 = Buffer.from(imgResponse.data, 'binary').toString('base64');
+            profilePictureData = `data:${contentType};base64,${base64}`;
+          } catch (imgErr) {
+            // If image fetch fails, continue without blocking the request
+            console.error('Failed to fetch profile image as base64:', imgErr.message);
+          }
+        }
+
         const transformedProfile = {
           provider: profile.provider || '',
           providerId: profile.provider_id || '',
@@ -491,6 +542,7 @@ export const getAccountProfile = async (req, res) => {
           fullName: profile.full_name || '',
           profilePictureUrl: profile.profile_picture_url || '',
           profilePictureUrlLarge: profile.profile_picture_url_large || '',
+          profilePictureData, // base64 data URI (for CORS-safe rendering)
           biography: profile.biography || '',
           category: profile.category || '',
           followersCount: profile.followers_count || 0,
@@ -741,16 +793,23 @@ export const getFollowing = async (req, res) => {
         
         console.log(`Unipile API returned ${items.length} following accounts`);
         
-        const following = items.map(account => ({
-          id: account.id || '',
-          messagingId: account.messaging_id || '',
-          username: account.username || '',
-          name: account.name || account.username || '',
-          profilePicture: account.profile_picture_url || '',
-          isPrivate: account.is_private || false,
-          isVerified: account.is_verified || false,
-          isFavorite: account.is_favorite || false,
-        }));
+        const following = await Promise.all(
+          items.map(async (account) => {
+            const profilePicture = account.profile_picture_url || '';
+            const profilePictureData = profilePicture ? await fetchImageAsBase64(profilePicture) : '';
+            return {
+              id: account.id || '',
+              messagingId: account.messaging_id || '',
+              username: account.username || '',
+              name: account.name || account.username || '',
+              profilePicture,
+              profilePictureData,
+              isPrivate: account.is_private || false,
+              isVerified: account.is_verified || false,
+              isFavorite: account.is_favorite || false,
+            };
+          })
+        );
 
         console.log(`Processed ${following.length} following accounts for response`);
 
@@ -908,15 +967,22 @@ export const getFollowers = async (req, res) => {
         
         console.log(`Unipile API returned ${items.length} followers`);
         
-        const followers = items.map(follower => ({
-          id: follower.id || '',
-          messagingId: follower.messaging_id || '',
-          username: follower.username || '',
-          name: follower.name || follower.username || '',
-          profilePicture: follower.profile_picture_url || '',
-          isPrivate: follower.is_private || false,
-          isVerified: follower.is_verified || false,
-        }));
+        const followers = await Promise.all(
+          items.map(async (follower) => {
+            const profilePicture = follower.profile_picture_url || '';
+            const profilePictureData = profilePicture ? await fetchImageAsBase64(profilePicture) : '';
+            return {
+              id: follower.id || '',
+              messagingId: follower.messaging_id || '',
+              username: follower.username || '',
+              name: follower.name || follower.username || '',
+              profilePicture,
+              profilePictureData,
+              isPrivate: follower.is_private || false,
+              isVerified: follower.is_verified || false,
+            };
+          })
+        );
 
         console.log(`Processed ${followers.length} followers for response`);
 
