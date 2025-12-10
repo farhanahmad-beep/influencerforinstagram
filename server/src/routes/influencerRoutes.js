@@ -9,6 +9,7 @@ import {
   getFollowers,
   getFollowing,
   startChat,
+  getStats,
 } from '../controllers/influencerController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -22,6 +23,7 @@ router.get('/user-profile', protect, getUserProfile);
 router.get('/followers', protect, getFollowers);
 router.get('/following', protect, getFollowing);
 router.post('/start-chat', protect, startChat);
+router.get('/stats', protect, getStats);
 router.get('/:id', protect, getInfluencerById);
 
 export default router;

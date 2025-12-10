@@ -16,6 +16,9 @@ const getUnipileHeaders = (accessToken) => ({
   'Content-Type': 'application/json',
 });
 
+// In-memory counter for sent messages (resets on server restart)
+let messageCount = 0;
+
 // Fetch remote image as base64 data URI (used to avoid browser CORS on CDN images)
 const fetchImageAsBase64 = async (url) => {
   if (!url) return '';
@@ -482,6 +485,54 @@ export const getUserProfile = async (req, res) => {
   }
 };
 
+// Basic stats endpoint: total linked accounts (from Unipile) and messages sent (in-memory)
+export const getStats = async (req, res) => {
+  try {
+    const { apiUrl, accessToken } = getUnipileConfig();
+
+    if (!accessToken || !apiUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unipile API token not configured',
+        statusCode: 400,
+      });
+    }
+
+    // Fetch linked accounts to count them (same endpoint as getLinkedAccounts)
+    const linkedAccountsResponse = await axios.get(`${apiUrl}/api/v1/accounts`, {
+      headers: getUnipileHeaders(accessToken),
+      timeout: 15000,
+      validateStatus: () => true,
+    });
+
+    let linkedAccountsCount = 0;
+    if (linkedAccountsResponse.status >= 200 && linkedAccountsResponse.status < 300) {
+      if (linkedAccountsResponse.data?.items) {
+        linkedAccountsCount = Array.isArray(linkedAccountsResponse.data.items) ? linkedAccountsResponse.data.items.length : 0;
+      } else if (Array.isArray(linkedAccountsResponse.data)) {
+        linkedAccountsCount = linkedAccountsResponse.data.length;
+      }
+    } else {
+      console.error('Failed to fetch linked accounts for stats:', linkedAccountsResponse.status);
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        linkedAccounts: linkedAccountsCount,
+        messagesSent: messageCount,
+      },
+    });
+  } catch (error) {
+    console.error('Failed to fetch stats:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch stats',
+      statusCode: 500,
+    });
+  }
+};
+
 // Get account profile details from Unipile
 export const getAccountProfile = async (req, res) => {
   try {
@@ -649,10 +700,16 @@ export const startChat = async (req, res) => {
       if (unipileResponse.data) {
         console.log('Unipile API returned chat data:', unipileResponse.data);
         
+        // Increment in-memory counter for messages sent
+        messageCount += 1;
+
         return res.status(200).json({
           success: true,
           data: unipileResponse.data,
           message: 'Chat started successfully',
+          stats: {
+            messagesSent: messageCount,
+          },
         });
       }
 
