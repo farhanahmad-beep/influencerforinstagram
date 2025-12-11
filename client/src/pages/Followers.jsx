@@ -20,12 +20,12 @@ const Followers = () => {
     cursor: null,
     hasMore: false,
     count: 0,
-    limit: 100,
+    limit: 10,
   });
   const [filters, setFilters] = useState({
     user_id: searchParams.get("user_id") || "",
     account_id: searchParams.get("account_id") || "",
-    limit: searchParams.get("limit") || "100",
+    limit: searchParams.get("limit") || "10",
   });
   const [displayFilters, setDisplayFilters] = useState({
     keyword: "",
@@ -74,7 +74,7 @@ const Followers = () => {
     setLoading(true);
     try {
       const params = {
-        limit: parseInt(filters.limit) || 100,
+        limit: parseInt(filters.limit) || 10,
       };
 
       // Prioritize account_id if both are provided (matches backend logic)
@@ -120,7 +120,7 @@ const Followers = () => {
           cursor: response.data.pagination?.cursor || null,
           hasMore: response.data.pagination?.hasMore || false,
           count: response.data.pagination?.count || followersData.length,
-          limit: response.data.pagination?.limit || 100,
+          limit: response.data.pagination?.limit || 10,
         });
 
         if (followersData.length === 0 && !cursor) {
@@ -148,7 +148,7 @@ const Followers = () => {
     setLoading(true);
     try {
       const params = {
-        limit: parseInt(filters.limit) || 100,
+        limit: parseInt(filters.limit) || 10,
       };
 
       // Prioritize account_id if both are provided (matches backend logic)
@@ -194,7 +194,7 @@ const Followers = () => {
           cursor: response.data.pagination?.cursor || null,
           hasMore: response.data.pagination?.hasMore || false,
           count: response.data.pagination?.count || followingData.length,
-          limit: response.data.pagination?.limit || 100,
+          limit: response.data.pagination?.limit || 10,
         });
 
         if (followingData.length === 0 && !cursor) {
@@ -257,10 +257,27 @@ const Followers = () => {
       });
     }
 
-    // Note: Category, followers count, engagement rate, country, and city filters
-    // are not available in the followers/following API response data structure
-    // These filters would require additional API calls to get full profile data
-    // For now, we'll only apply keyword filtering which works with available data
+    if (displayFilters.minFollowers && displayFilters.minFollowers.toString().trim() !== "") {
+      const minFollowersValue = displayFilters.minFollowers.toString().trim();
+      const minFollowers = parseInt(minFollowersValue);
+      if (!isNaN(minFollowers) && minFollowers >= 0) {
+        filtered = filtered.filter((item) => {
+          const followersCount = item.followersCount !== undefined && item.followersCount !== null ? item.followersCount : 0;
+          return followersCount >= minFollowers;
+        });
+      }
+    }
+
+    if (displayFilters.maxFollowers && displayFilters.maxFollowers.toString().trim() !== "") {
+      const maxFollowersValue = displayFilters.maxFollowers.toString().trim();
+      const maxFollowers = parseInt(maxFollowersValue);
+      if (!isNaN(maxFollowers) && maxFollowers >= 0) {
+        filtered = filtered.filter((item) => {
+          const followersCount = item.followersCount !== undefined && item.followersCount !== null ? item.followersCount : 0;
+          return followersCount <= maxFollowers;
+        });
+      }
+    }
 
     setFilteredData(filtered);
   };
@@ -288,7 +305,7 @@ const Followers = () => {
       cursor: null,
       hasMore: false,
       count: 0,
-      limit: 100,
+      limit: 10,
     });
     if (filters.user_id || filters.account_id) {
       if (mode === "following") {
@@ -555,6 +572,22 @@ const Followers = () => {
                         )}
                       </div>
                       <p className="text-xs text-gray-500 mb-2">@{item.username}</p>
+                      {(item.followersCount !== undefined || item.followingCount !== undefined) && (
+                        <div className="flex items-center justify-center space-x-4 mb-2 text-xs text-gray-600">
+                          {item.followersCount !== undefined && (
+                            <div className="flex flex-col items-center">
+                              <span className="font-semibold text-gray-900">{formatNumber(item.followersCount)}</span>
+                              <span className="text-gray-500">Followers</span>
+                            </div>
+                          )}
+                          {item.followingCount !== undefined && (
+                            <div className="flex flex-col items-center">
+                              <span className="font-semibold text-gray-900">{formatNumber(item.followingCount)}</span>
+                              <span className="text-gray-500">Following</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                       {item.id && (
                         <p className="text-xs text-gray-400 mb-3">ID: {item.id}</p>
                       )}

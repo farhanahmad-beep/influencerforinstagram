@@ -43,6 +43,43 @@ const fetchImageAsBase64 = async (url) => {
     return '';
   }
 };
+
+// Helper function to fetch user counts (followers/following) from Unipile API
+const fetchUserCounts = async (userId, accountId, apiUrl, accessToken) => {
+  if (!userId || !accountId) return { followersCount: 0, followingCount: 0 };
+  
+  try {
+    const unipileResponse = await axios.get(`${apiUrl}/api/v1/users/${userId}`, {
+      headers: getUnipileHeaders(accessToken),
+      params: { account_id: accountId },
+      timeout: 10000,
+      validateStatus: () => true,
+    });
+
+    if (unipileResponse.status >= 200 && unipileResponse.status < 300 && unipileResponse.data) {
+      return {
+        followersCount: unipileResponse.data.followers_count || 0,
+        followingCount: unipileResponse.data.following_count || 0,
+      };
+    }
+  } catch (err) {
+    // Silently fail - return default counts
+    console.error(`Failed to fetch counts for user ${userId}:`, err.message);
+  }
+  
+  return { followersCount: 0, followingCount: 0 };
+};
+
+// Helper function to process items with limited concurrency
+const processWithConcurrency = async (items, processor, concurrency = 5) => {
+  const results = [];
+  for (let i = 0; i < items.length; i += concurrency) {
+    const batch = items.slice(i, i + concurrency);
+    const batchResults = await Promise.all(batch.map(processor));
+    results.push(...batchResults);
+  }
+  return results;
+};
 export const searchInfluencers = async (req, res) => {
   try {
     const {
@@ -801,7 +838,7 @@ export const getFollowing = async (req, res) => {
     }
 
     // Extract query parameters
-    const { user_id, account_id, cursor, limit = 100 } = req.query;
+    const { user_id, account_id, cursor, limit = 10 } = req.query;
 
     // Validate required parameters
     if (!user_id && !account_id) {
@@ -826,10 +863,10 @@ export const getFollowing = async (req, res) => {
       if (limitNum >= 1 && limitNum <= 1000) {
         params.limit = limitNum;
       } else {
-        params.limit = 100; // Default to 100 if out of range
+        params.limit = 10; // Default to 10 if out of range
       }
     } else {
-      params.limit = 100; // Default limit
+      params.limit = 10; // Default limit
     }
 
     console.log('Unipile Following API Request:', {
@@ -850,7 +887,8 @@ export const getFollowing = async (req, res) => {
         
         console.log(`Unipile API returned ${items.length} following accounts`);
         
-        const following = await Promise.all(
+        // First, process images and basic data
+        const followingBasic = await Promise.all(
           items.map(async (account) => {
             const profilePicture = account.profile_picture_url || '';
             const profilePictureData = profilePicture ? await fetchImageAsBase64(profilePicture) : '';
@@ -867,6 +905,22 @@ export const getFollowing = async (req, res) => {
             };
           })
         );
+
+        // Then, fetch follower/following counts with limited concurrency
+        // Use account_id from query (required for fetching user profile)
+        const accountIdForCounts = account_id || null;
+        const following = accountIdForCounts ? await processWithConcurrency(
+          followingBasic,
+          async (account) => {
+            const counts = await fetchUserCounts(account.id, accountIdForCounts, apiUrl, accessToken);
+            return {
+              ...account,
+              followersCount: counts.followersCount,
+              followingCount: counts.followingCount,
+            };
+          },
+          5 // Process 5 users at a time to avoid overwhelming the API
+        ) : followingBasic.map(f => ({ ...f, followersCount: 0, followingCount: 0 }));
 
         console.log(`Processed ${following.length} following accounts for response`);
 
@@ -975,7 +1029,7 @@ export const getFollowers = async (req, res) => {
     }
 
     // Extract query parameters
-    const { user_id, account_id, cursor, limit = 100 } = req.query;
+    const { user_id, account_id, cursor, limit = 10 } = req.query;
 
     // Validate required parameters
     if (!user_id && !account_id) {
@@ -1000,10 +1054,10 @@ export const getFollowers = async (req, res) => {
       if (limitNum >= 1 && limitNum <= 1000) {
         params.limit = limitNum;
       } else {
-        params.limit = 100; // Default to 100 if out of range
+        params.limit = 10; // Default to 10 if out of range
       }
     } else {
-      params.limit = 100; // Default limit
+      params.limit = 10; // Default limit
     }
 
     console.log('Unipile Followers API Request:', {
@@ -1024,7 +1078,8 @@ export const getFollowers = async (req, res) => {
         
         console.log(`Unipile API returned ${items.length} followers`);
         
-        const followers = await Promise.all(
+        // First, process images and basic data
+        const followersBasic = await Promise.all(
           items.map(async (follower) => {
             const profilePicture = follower.profile_picture_url || '';
             const profilePictureData = profilePicture ? await fetchImageAsBase64(profilePicture) : '';
@@ -1040,6 +1095,22 @@ export const getFollowers = async (req, res) => {
             };
           })
         );
+
+        // Then, fetch follower/following counts with limited concurrency
+        // Use account_id from query (required for fetching user profile)
+        const accountIdForCounts = account_id || null;
+        const followers = accountIdForCounts ? await processWithConcurrency(
+          followersBasic,
+          async (follower) => {
+            const counts = await fetchUserCounts(follower.id, accountIdForCounts, apiUrl, accessToken);
+            return {
+              ...follower,
+              followersCount: counts.followersCount,
+              followingCount: counts.followingCount,
+            };
+          },
+          5 // Process 5 users at a time to avoid overwhelming the API
+        ) : followersBasic.map(f => ({ ...f, followersCount: 0, followingCount: 0 }));
 
         console.log(`Processed ${followers.length} followers for response`);
 
