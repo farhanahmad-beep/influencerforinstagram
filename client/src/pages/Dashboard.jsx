@@ -8,6 +8,8 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     linkedAccounts: 0,
     messagesSent: 0,
+    onboardedUsers: 0,
+    activeCampaigns: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -62,7 +64,7 @@ const Dashboard = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
             <div className="card">
               <p className="text-sm text-gray-500">Total Linked Accounts</p>
               <p className="text-3xl font-bold text-purple-700 mt-2">{stats.linkedAccounts}</p>
@@ -74,11 +76,21 @@ const Dashboard = () => {
               <p className="text-xs text-gray-400 mt-1">Since last server start</p>
             </div>
             <div className="card">
+              <p className="text-sm text-gray-500">Onboarded Users</p>
+              <p className="text-3xl font-bold text-purple-700 mt-2">{stats.onboardedUsers}</p>
+              <p className="text-xs text-gray-400 mt-1">Total users onboarded</p>
+            </div>
+            <div className="card">
+              <p className="text-sm text-gray-500">Active Campaigns</p>
+              <p className="text-3xl font-bold text-purple-700 mt-2">{stats.activeCampaigns}</p>
+              <p className="text-xs text-gray-400 mt-1">Currently running</p>
+            </div>
+            <div className="card">
               <p className="text-sm text-gray-500">API Status</p>
               <p className="text-lg font-semibold text-green-600 mt-2">Healthy</p>
               <p className="text-xs text-gray-400 mt-1">Based on latest stats fetch</p>
             </div>
-          </div>
+              </div>
         )}
       </div>
     </div>

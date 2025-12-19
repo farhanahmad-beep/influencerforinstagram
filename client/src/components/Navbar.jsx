@@ -27,6 +27,15 @@ const Navbar = () => {
             <Link to="/linked-accounts" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_linked">
               Linked Accounts
             </Link>
+            <Link to="/global-search" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_global">
+              Global Search
+            </Link>
+            <Link to="/chat-list" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_chatlist">
+              Chat List
+            </Link>
+            <Link to="/onboard" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_onboard">
+              Onboard
+            </Link>
             <Link to="/followers" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_followers">
               Followers
             </Link>

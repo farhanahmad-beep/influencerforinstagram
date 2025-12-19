@@ -124,7 +124,7 @@ const Followers = () => {
         });
 
         if (followersData.length === 0 && !cursor) {
-          toast.info("No followers found for this account");
+          toast("No followers found for this account", { duration: 3000 });
         } else if (followersData.length > 0 && !cursor) {
           toast.success(`Found ${followersData.length} follower${followersData.length !== 1 ? 's' : ''}`);
         }
@@ -198,7 +198,7 @@ const Followers = () => {
         });
 
         if (followingData.length === 0 && !cursor) {
-          toast.info("No following accounts found for this account");
+          toast("No following accounts found for this account", { duration: 3000 });
         } else if (followingData.length > 0 && !cursor) {
           toast.success(`Found ${followingData.length} following account${followingData.length !== 1 ? 's' : ''}`);
         }
@@ -333,7 +333,7 @@ const Followers = () => {
 
     // Navigate to user profile page with userId and accountId
     navigate(`/user-profile/${userId}`, {
-      state: { accountId: filters.account_id },
+      state: { accountId: filters.account_id, from: "followers" },
     });
   };
 
@@ -451,7 +451,7 @@ const Followers = () => {
             </div>
             <div className="flex items-center space-x-4">
               <button type="submit" className="btn-primary" disabled={loading}>
-                {loading ? "Loading..." : "Search Followers"}
+                {loading ? "Loading..." : "Search" + (viewMode === "following" ? " Following" : " Followers")}
               </button>
               <p className="text-sm text-gray-500">
                 {filters.user_id && filters.account_id

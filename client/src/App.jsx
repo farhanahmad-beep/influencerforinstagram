@@ -10,6 +10,10 @@ import InfluencerDetail from "./pages/InfluencerDetail.jsx";
 import LinkedAccounts from "./pages/LinkedAccounts.jsx";
 import Followers from "./pages/Followers.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
+import GlobalSearch from "./pages/GlobalSearch.jsx";
+import ChatList from "./pages/ChatList.jsx";
+import ChatMessages from "./pages/ChatMessages.jsx";
+import Onboard from "./pages/Onboard.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
@@ -56,6 +60,38 @@ function App() {
           element={
             <ProtectedRoute>
               <LinkedAccounts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/global-search"
+          element={
+            <ProtectedRoute>
+              <GlobalSearch />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat-list"
+          element={
+            <ProtectedRoute>
+              <ChatList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat-messages/:chatId"
+          element={
+            <ProtectedRoute>
+              <ChatMessages />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/onboard"
+          element={
+            <ProtectedRoute>
+              <Onboard />
             </ProtectedRoute>
           }
         />

@@ -69,7 +69,7 @@ const SearchFilters = ({ filters, setFilters, onSearch, hideEngagement = false }
             />
           </div>
 
-          <div id="src_components_SearchFilters_v4iw">
+          {/* <div id="src_components_SearchFilters_v4iw">
             <label id="src_components_SearchFilters_ui6m" className="block text-sm font-medium text-gray-700 mb-1">
               Category
             </label>
@@ -86,9 +86,9 @@ const SearchFilters = ({ filters, setFilters, onSearch, hideEngagement = false }
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
-          <div id="src_components_SearchFilters_kt8v">
+          {/* <div id="src_components_SearchFilters_kt8v">
             <label id="src_components_SearchFilters_zns7" className="block text-sm font-medium text-gray-700 mb-1">
               Country
             </label>
@@ -100,9 +100,9 @@ const SearchFilters = ({ filters, setFilters, onSearch, hideEngagement = false }
               placeholder="e.g., United States"
               className="input-field"
             />
-          </div>
+          </div> */}
 
-          <div id="src_components_SearchFilters_iap6">
+          {/* <div id="src_components_SearchFilters_iap6">
             <label id="src_components_SearchFilters_0guf" className="block text-sm font-medium text-gray-700 mb-1">
               City
             </label>
@@ -114,7 +114,7 @@ const SearchFilters = ({ filters, setFilters, onSearch, hideEngagement = false }
               placeholder="e.g., New York"
               className="input-field"
             />
-          </div>
+          </div> */}
 
           <div id="src_components_SearchFilters_5tie">
             <label id="src_components_SearchFilters_mzn1" className="block text-sm font-medium text-gray-700 mb-1">
@@ -146,35 +146,35 @@ const SearchFilters = ({ filters, setFilters, onSearch, hideEngagement = false }
 
           {!hideEngagement && (
             <>
-              <div id="src_components_SearchFilters_s0px">
-                <label id="src_components_SearchFilters_yyf8" className="block text-sm font-medium text-gray-700 mb-1">
-                  Min Engagement Rate (%)
-                </label>
-                <input
-                  id="src_components_SearchFilters_sz1p" type="number"
-                  step="0.1"
-                  name="minEngagement"
-                  value={filters.minEngagement}
-                  onChange={handleInputChange}
-                  placeholder="e.g., 2.0"
-                  className="input-field"
-                />
-              </div>
+          <div id="src_components_SearchFilters_s0px">
+            <label id="src_components_SearchFilters_yyf8" className="block text-sm font-medium text-gray-700 mb-1">
+              Min Engagement Rate (%)
+            </label>
+            <input
+              id="src_components_SearchFilters_sz1p" type="number"
+              step="0.1"
+              name="minEngagement"
+              value={filters.minEngagement}
+              onChange={handleInputChange}
+              placeholder="e.g., 2.0"
+              className="input-field"
+            />
+          </div>
 
-              <div id="src_components_SearchFilters_ezk3">
-                <label id="src_components_SearchFilters_3eqc" className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Engagement Rate (%)
-                </label>
-                <input
-                  id="src_components_SearchFilters_pi9a" type="number"
-                  step="0.1"
-                  name="maxEngagement"
-                  value={filters.maxEngagement}
-                  onChange={handleInputChange}
-                  placeholder="e.g., 10.0"
-                  className="input-field"
-                />
-              </div>
+          <div id="src_components_SearchFilters_ezk3">
+            <label id="src_components_SearchFilters_3eqc" className="block text-sm font-medium text-gray-700 mb-1">
+              Max Engagement Rate (%)
+            </label>
+            <input
+              id="src_components_SearchFilters_pi9a" type="number"
+              step="0.1"
+              name="maxEngagement"
+              value={filters.maxEngagement}
+              onChange={handleInputChange}
+              placeholder="e.g., 10.0"
+              className="input-field"
+            />
+          </div>
             </>
           )}
         </div>

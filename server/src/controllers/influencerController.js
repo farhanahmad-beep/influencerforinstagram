@@ -1,5 +1,6 @@
 import Influencer from '../models/Influencer.js';
 import axios from 'axios';
+import { OnboardedUser, Campaign } from '../models/OnboardedUser.js';
 import { Buffer } from 'buffer';
 
 // Helper function to get Unipile API configuration (read from env at runtime)
@@ -7,6 +8,13 @@ const getUnipileConfig = () => {
   const apiUrl = process.env.UNIPILE_API_URL?.replace(/\/$/, '') || '';
   const accessToken = process.env.UNIPILE_ACCESS_TOKEN || '';
   return { apiUrl, accessToken };
+};
+
+// Helper for Rocket API configuration
+const getRocketConfig = () => {
+  const apiUrl = (process.env.ROCKET_API_URL || 'https://v1.rocketapi.io/instagram').replace(/\/$/, '');
+  const apiKey = process.env.ROCKET_API_KEY || '';
+  return { apiUrl, apiKey };
 };
 
 // Helper function to get Unipile API headers
@@ -46,7 +54,7 @@ const fetchImageAsBase64 = async (url) => {
 
 // Helper function to fetch user counts (followers/following) from Unipile API
 const fetchUserCounts = async (userId, accountId, apiUrl, accessToken) => {
-  if (!userId || !accountId) return { followersCount: 0, followingCount: 0 };
+  if (!userId || !accountId) return { followersCount: 0, followingCount: 0, providerMessagingId: '' };
   
   try {
     const unipileResponse = await axios.get(`${apiUrl}/api/v1/users/${userId}`, {
@@ -60,6 +68,7 @@ const fetchUserCounts = async (userId, accountId, apiUrl, accessToken) => {
       return {
         followersCount: unipileResponse.data.followers_count || 0,
         followingCount: unipileResponse.data.following_count || 0,
+        providerMessagingId: unipileResponse.data.provider_messaging_id || '',
       };
     }
   } catch (err) {
@@ -67,7 +76,7 @@ const fetchUserCounts = async (userId, accountId, apiUrl, accessToken) => {
     console.error(`Failed to fetch counts for user ${userId}:`, err.message);
   }
   
-  return { followersCount: 0, followingCount: 0 };
+  return { followersCount: 0, followingCount: 0, providerMessagingId: '' };
 };
 
 // Helper function to process items with limited concurrency
@@ -79,6 +88,131 @@ const processWithConcurrency = async (items, processor, concurrency = 5) => {
     results.push(...batchResults);
   }
   return results;
+};
+
+// Search users via Rocket API (global search)
+export const searchRocketUsers = async (req, res) => {
+  try {
+    const { query, cursor = 0, limit = 10, account_id } = req.query;
+    if (!query || !query.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'query is required',
+        statusCode: 400,
+      });
+    }
+
+    const cursorInt = Math.max(parseInt(cursor, 10) || 0, 0);
+    let limitInt = parseInt(limit, 10) || 10;
+    if (limitInt < 1) limitInt = 1;
+    if (limitInt > 100) limitInt = 100; // cap to prevent huge payloads
+
+    const { apiUrl, apiKey } = getRocketConfig();
+    const { accessToken: unipileAccessToken, apiUrl: unipileApiUrl } = getUnipileConfig();
+    if (!apiKey || !apiUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Rocket API key not configured',
+        statusCode: 400,
+      });
+    }
+
+    try {
+      const rocketResponse = await axios.post(
+        `${apiUrl}/user/search`,
+        { query: query.trim() },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+            'X-API-Key': apiKey,
+          },
+          timeout: 15000,
+          validateStatus: () => true,
+        }
+      );
+
+      if (rocketResponse.status >= 200 && rocketResponse.status < 300 && rocketResponse.data) {
+        const users = rocketResponse.data?.response?.body?.users || rocketResponse.data?.users || [];
+
+        const mappedUsers = await processWithConcurrency(
+          users,
+          async (user) => {
+            const profilePicture = user.profile_pic_url || user.profile_picture || user.profile_picture_url || '';
+            const profilePictureData = profilePicture ? await fetchImageAsBase64(profilePicture) : '';
+            const baseUser = {
+              id: user.id || user.pk || user.pk_id || user.strong_id__ || '',
+              username: user.username || '',
+              name: user.full_name || user.username || '',
+              profilePicture,
+              profilePictureData,
+              isPrivate: !!user.is_private,
+              isVerified: !!user.is_verified,
+            };
+            // Try to enrich follower/following counts via Unipile if account_id provided
+            if (account_id && unipileAccessToken && unipileApiUrl) {
+              const counts = await fetchUserCounts(baseUser.id, account_id, unipileApiUrl, unipileAccessToken);
+              return {
+                ...baseUser,
+                followersCount: counts.followersCount,
+                followingCount: counts.followingCount,
+                providerMessagingId: counts.providerMessagingId,
+              };
+            }
+            return {
+              ...baseUser,
+              followersCount: user.follower_count || user.followers || 0,
+              followingCount: user.following_count || user.following || 0,
+            };
+          },
+          5
+        );
+
+        // Simple cursor-based pagination on our side (Rocket returns up to 50)
+        const sliced = mappedUsers.slice(cursorInt, cursorInt + limitInt);
+        const hasMore = cursorInt + limitInt < mappedUsers.length;
+        const nextCursor = hasMore ? cursorInt + limitInt : null;
+
+        return res.status(200).json({
+          success: true,
+          data: sliced,
+          pagination: {
+            cursor: nextCursor,
+            hasMore,
+            count: sliced.length,
+            total: mappedUsers.length,
+            limit: limitInt,
+          },
+          meta: {
+            numResults: rocketResponse.data?.response?.body?.num_results || mappedUsers.length || 0,
+            status: rocketResponse.data?.status || 'unknown',
+          },
+        });
+      }
+
+      return res.status(rocketResponse.status || 500).json({
+        success: false,
+        error: 'Failed to search users via Rocket API',
+        statusCode: rocketResponse.status || 500,
+        details: rocketResponse.data || null,
+      });
+    } catch (err) {
+      console.error('Rocket API error:', err.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to search users via Rocket API',
+        statusCode: 500,
+        message: err.message,
+        details: err.response?.data || null,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+      statusCode: 400,
+    });
+  }
 };
 export const searchInfluencers = async (req, res) => {
   try {
@@ -473,6 +607,8 @@ export const getUserProfile = async (req, res) => {
           profilePictureUrl: profile.profile_picture_url || '',
           profilePictureUrlLarge: profile.profile_picture_url_large || '',
           profilePictureData,
+          biography: profile.biography || '',
+          category: profile.category || '',
           followersCount: profile.followers_count || 0,
           mutualFollowersCount: profile.mutual_followers_count || 0,
           followingCount: profile.following_count || 0,
@@ -553,11 +689,29 @@ export const getStats = async (req, res) => {
       console.error('Failed to fetch linked accounts for stats:', linkedAccountsResponse.status);
     }
 
+    // Fetch onboarded users count
+    let onboardedUsersCount = 0;
+    try {
+      onboardedUsersCount = await OnboardedUser.countDocuments({});
+    } catch (dbError) {
+      console.error('Failed to fetch onboarded users count:', dbError.message);
+    }
+
+    // Fetch active campaigns count
+    let activeCampaignsCount = 0;
+    try {
+      activeCampaignsCount = await Campaign.countDocuments({ status: 'running' });
+    } catch (dbError) {
+      console.error('Failed to fetch active campaigns count:', dbError.message);
+    }
+
     return res.status(200).json({
       success: true,
       data: {
         linkedAccounts: linkedAccountsCount,
         messagesSent: messageCount,
+        onboardedUsers: onboardedUsersCount,
+        activeCampaigns: activeCampaignsCount,
       },
     });
   } catch (error) {
@@ -566,6 +720,486 @@ export const getStats = async (req, res) => {
       success: false,
       error: 'Failed to fetch stats',
       statusCode: 500,
+    });
+  }
+};
+
+// Get chats list from Unipile
+export const getChats = async (req, res) => {
+  try {
+    // Read environment variables at runtime
+    const { apiUrl, accessToken } = getUnipileConfig();
+    
+    if (!accessToken || !apiUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unipile API token not configured',
+        statusCode: 400,
+      });
+    }
+
+    // Extract query parameters
+    const { account_id, cursor, limit = 10 } = req.query;
+
+    // Validate required parameters
+    if (!account_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'account_id is required',
+        statusCode: 400,
+      });
+    }
+
+    // Build query parameters
+    const params = {
+      account_type: 'INSTAGRAM',
+      account_id: account_id,
+      limit: Math.min(Math.max(parseInt(limit) || 10, 1), 250), // Clamp between 1 and 250
+    };
+    
+    if (cursor) {
+      params.cursor = cursor;
+    }
+
+    console.log('Unipile Chats API Request:', {
+      url: `${apiUrl}/api/v1/chats`,
+      params: params,
+    });
+
+    try {
+      const unipileResponse = await axios.get(`${apiUrl}/api/v1/chats`, {
+        headers: getUnipileHeaders(accessToken),
+        params: params,
+        timeout: 30000,
+      });
+
+      if (unipileResponse.data) {
+        // Handle Unipile API response structure: { object: "ChatList", items: [...], cursor: "..." }
+        const items = unipileResponse.data.items || [];
+        
+        console.log(`Unipile API returned ${items.length} chats`);
+
+        const chats = items.map((chat) => ({
+          id: chat.id || '',
+          name: chat.name || 'Unknown',
+          type: chat.type || 0,
+          folder: chat.folder || [],
+          pinned: chat.pinned || 0,
+          unread: chat.unread || 0,
+          archived: chat.archived || 0,
+          readOnly: chat.read_only || 0,
+          timestamp: chat.timestamp || '',
+          accountId: chat.account_id || '',
+          mutedUntil: chat.muted_until || -1,
+          providerId: chat.provider_id || '',
+          accountType: chat.account_type || 'INSTAGRAM',
+          unreadCount: chat.unread_count || 0,
+          attendeeProviderId: chat.attendee_provider_id || '',
+        }));
+
+        console.log(`Processed ${chats.length} chats for response`);
+
+        return res.status(200).json({
+          success: true,
+          data: chats,
+          pagination: {
+            cursor: unipileResponse.data.cursor || null,
+            hasMore: !!unipileResponse.data.cursor,
+            count: chats.length,
+            limit: params.limit,
+          },
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: [],
+        pagination: {
+          cursor: null,
+          hasMore: false,
+          count: 0,
+          limit: params.limit,
+        },
+      });
+    } catch (unipileError) {
+      // Log detailed error information
+      console.error('Unipile API Error Details:', {
+        status: unipileError.response?.status,
+        statusText: unipileError.response?.statusText,
+        data: unipileError.response?.data,
+        message: unipileError.message,
+        url: unipileError.config?.url,
+        params: unipileError.config?.params,
+      });
+
+      if (unipileError.response?.status === 401) {
+        console.error('Unipile API: Invalid credentials. Please check UNIPILE_ACCESS_TOKEN in environment variables.');
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid Unipile API credentials',
+          statusCode: 401,
+        });
+      }
+
+      if (unipileError.response?.status >= 400 && unipileError.response?.status < 500) {
+        return res.status(unipileError.response.status).json({
+          success: false,
+          error: unipileError.response.data?.error || unipileError.response.data?.message || 'Unipile API client error',
+          statusCode: unipileError.response.status,
+          details: unipileError.response.data,
+        });
+      }
+      
+      // Handle network errors or other issues
+      if (unipileError.code === 'ECONNREFUSED' || unipileError.code === 'ETIMEDOUT') {
+        return res.status(503).json({
+          success: false,
+          error: 'Unable to connect to Unipile API',
+          statusCode: 503,
+          message: unipileError.message,
+        });
+      }
+      
+      console.error('Unipile API error:', unipileError.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch chats',
+        statusCode: 500,
+        message: unipileError.message,
+        details: unipileError.response?.data || null,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+      statusCode: 400,
+    });
+  }
+};
+
+// Get messages from a specific chat
+export const getChatMessages = async (req, res) => {
+  try {
+    // Read environment variables at runtime
+    const { apiUrl, accessToken } = getUnipileConfig();
+    
+    if (!accessToken || !apiUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unipile API token not configured',
+        statusCode: 400,
+      });
+    }
+
+    // Extract path and query parameters
+    const { chatId } = req.params;
+    const { cursor, limit = 10, sender_id } = req.query;
+
+    // Validate required parameters
+    if (!chatId) {
+      return res.status(400).json({
+        success: false,
+        error: 'chat_id is required',
+        statusCode: 400,
+      });
+    }
+
+    // Build query parameters
+    const params = {
+      limit: Math.min(Math.max(parseInt(limit) || 10, 1), 250), // Clamp between 1 and 250
+    };
+    
+    if (cursor) {
+      params.cursor = cursor;
+    }
+    
+    if (sender_id) {
+      params.sender_id = sender_id;
+    }
+
+    console.log('Unipile Chat Messages API Request:', {
+      url: `${apiUrl}/api/v1/chats/${chatId}/messages`,
+      params: params,
+    });
+
+    try {
+      const unipileResponse = await axios.get(`${apiUrl}/api/v1/chats/${chatId}/messages`, {
+        headers: getUnipileHeaders(accessToken),
+        params: params,
+        timeout: 30000,
+      });
+
+      if (unipileResponse.data) {
+        // Handle Unipile API response structure: { object: "MessageList", items: [...], cursor: "..." }
+        const items = unipileResponse.data.items || [];
+        
+        console.log(`Unipile API returned ${items.length} messages`);
+
+        const messages = items.map((message) => ({
+          id: message.id || '',
+          text: message.text || '',
+          seen: message.seen || 0,
+          edited: message.edited || 0,
+          hidden: message.hidden || 0,
+          deleted: message.deleted || 0,
+          chatId: message.chat_id || '',
+          seenBy: message.seen_by || {},
+          subject: message.subject || null,
+          behavior: message.behavior || null,
+          isEvent: message.is_event || 0,
+          original: message.original || '',
+          delivered: message.delivered || 0,
+          isSender: message.is_sender || 0,
+          reactions: message.reactions || [],
+          senderId: message.sender_id || '',
+          timestamp: message.timestamp || '',
+          accountId: message.account_id || '',
+          attachments: message.attachments || [],
+          providerId: message.provider_id || '',
+          chatProviderId: message.chat_provider_id || '',
+          senderAttendeeId: message.sender_attendee_id || '',
+        }));
+
+        console.log(`Processed ${messages.length} messages for response`);
+
+        return res.status(200).json({
+          success: true,
+          data: messages,
+          pagination: {
+            cursor: unipileResponse.data.cursor || null,
+            hasMore: !!unipileResponse.data.cursor,
+            count: messages.length,
+            limit: params.limit,
+          },
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: [],
+        pagination: {
+          cursor: null,
+          hasMore: false,
+          count: 0,
+          limit: params.limit,
+        },
+      });
+    } catch (unipileError) {
+      // Log detailed error information
+      console.error('Unipile API Error Details:', {
+        status: unipileError.response?.status,
+        statusText: unipileError.response?.statusText,
+        data: unipileError.response?.data,
+        message: unipileError.message,
+        url: unipileError.config?.url,
+        params: unipileError.config?.params,
+      });
+
+      if (unipileError.response?.status === 401) {
+        console.error('Unipile API: Invalid credentials. Please check UNIPILE_ACCESS_TOKEN in environment variables.');
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid Unipile API credentials',
+          statusCode: 401,
+        });
+      }
+
+      if (unipileError.response?.status >= 400 && unipileError.response?.status < 500) {
+        return res.status(unipileError.response.status).json({
+          success: false,
+          error: unipileError.response.data?.error || unipileError.response.data?.message || 'Unipile API client error',
+          statusCode: unipileError.response.status,
+          details: unipileError.response.data,
+        });
+      }
+      
+      // Handle network errors or other issues
+      if (unipileError.code === 'ECONNREFUSED' || unipileError.code === 'ETIMEDOUT') {
+        return res.status(503).json({
+          success: false,
+          error: 'Unable to connect to Unipile API',
+          statusCode: 503,
+          message: unipileError.message,
+        });
+      }
+      
+      console.error('Unipile API error:', unipileError.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch chat messages',
+        statusCode: 500,
+        message: unipileError.message,
+        details: unipileError.response?.data || null,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+      statusCode: 400,
+    });
+  }
+};
+
+// Send a message in a chat
+export const sendChatMessage = async (req, res) => {
+  try {
+    // Read environment variables at runtime
+    const { apiUrl, accessToken } = getUnipileConfig();
+    
+    if (!accessToken || !apiUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'Unipile API token not configured',
+        statusCode: 400,
+      });
+    }
+
+    const { chatId } = req.params;
+    const { account_id, text } = req.body;
+
+    // Validate required parameters
+    if (!chatId) {
+      return res.status(400).json({
+        success: false,
+        error: 'chat_id is required',
+        statusCode: 400,
+      });
+    }
+
+    if (!account_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'account_id is required',
+        statusCode: 400,
+      });
+    }
+
+    if (!text || text.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'text is required',
+        statusCode: 400,
+      });
+    }
+
+    // Create FormData-like body using URLSearchParams
+    const formData = new URLSearchParams();
+    formData.append('account_id', account_id);
+    formData.append('text', text.trim());
+
+    console.log('Unipile Send Chat Message API Request:', {
+      url: `${apiUrl}/api/v1/chats/${chatId}/messages`,
+      body: {
+        account_id,
+        text: text.trim(),
+      },
+    });
+
+    try {
+      const unipileResponse = await axios.post(
+        `${apiUrl}/api/v1/chats/${chatId}/messages`,
+        formData.toString(),
+        {
+          headers: {
+            ...getUnipileHeaders(accessToken),
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          timeout: 15000,
+        }
+      );
+
+      if (unipileResponse.data) {
+        const messageIds = unipileResponse.data.message_id || [];
+        
+        console.log(`Message sent successfully. Message IDs: ${messageIds.join(', ')}`);
+
+        // Increment in-memory counter for messages sent
+        messageCount += 1;
+
+        return res.status(200).json({
+          success: true,
+          data: {
+            messageIds: messageIds,
+            messageId: messageIds[0] || null,
+          },
+          message: 'Message sent successfully',
+          stats: {
+            messagesSent: messageCount,
+          },
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: null,
+        message: 'Message sent successfully',
+      });
+    } catch (unipileError) {
+      // Log detailed error information
+      console.error('Unipile API Error Details:', {
+        status: unipileError.response?.status,
+        statusText: unipileError.response?.statusText,
+        data: unipileError.response?.data,
+        message: unipileError.message,
+        url: unipileError.config?.url,
+        body: unipileError.config?.data,
+      });
+
+      if (unipileError.response?.status === 401) {
+        console.error('Unipile API: Invalid credentials. Please check UNIPILE_ACCESS_TOKEN in environment variables.');
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid Unipile API credentials',
+          statusCode: 401,
+        });
+      }
+
+      if (unipileError.response?.status === 400) {
+        console.error('Unipile API: Bad request', unipileError.response.data);
+        return res.status(400).json({
+          success: false,
+          error: unipileError.response.data?.error || unipileError.response.data?.message || 'Invalid request parameters',
+          statusCode: 400,
+          details: unipileError.response.data,
+        });
+      }
+
+      if (unipileError.response?.status === 500) {
+        console.error('Unipile API: Server error', unipileError.response.data);
+        return res.status(500).json({
+          success: false,
+          error: unipileError.response.data?.error || unipileError.response.data?.message || 'Unipile API server error',
+          statusCode: 500,
+          details: unipileError.response.data,
+        });
+      }
+      
+      // Handle network errors or other issues
+      if (unipileError.code === 'ECONNREFUSED' || unipileError.code === 'ETIMEDOUT') {
+        return res.status(503).json({
+          success: false,
+          error: 'Unable to connect to Unipile API',
+          statusCode: 503,
+          message: unipileError.message,
+        });
+      }
+      
+      console.error('Unipile API error:', unipileError.message);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to send message',
+        statusCode: 500,
+        message: unipileError.message,
+        details: unipileError.response?.data || null,
+      });
+    }
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message,
+      statusCode: 400,
     });
   }
 };
@@ -1200,6 +1834,345 @@ export const getFollowers = async (req, res) => {
       success: false,
       error: error.message,
       statusCode: 400,
+    });
+  }
+};
+
+// Onboard a user
+export const onboardUser = async (req, res) => {
+  try {
+    const { name, userId, providerId, providerMessagingId } = req.body;
+
+    if (!name || !userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'name and userId are required',
+        statusCode: 400,
+      });
+    }
+
+    // Check if user is already onboarded
+    const existingUser = await OnboardedUser.findOne({ userId });
+    if (existingUser) {
+      return res.status(200).json({
+        success: true,
+        data: existingUser,
+        message: 'User already onboarded',
+      });
+    }
+
+    // Create new onboarded user
+    const onboardedUser = await OnboardedUser.create({
+      name: name.trim(),
+      userId: userId.trim(),
+      providerId: providerId?.trim() || '',
+      providerMessagingId: providerMessagingId?.trim() || '',
+    });
+
+    return res.status(201).json({
+      success: true,
+      data: onboardedUser,
+      message: 'User onboarded successfully',
+    });
+  } catch (error) {
+    console.error('Error onboarding user:', error);
+    if (error.code === 11000) {
+      // Duplicate key error
+      return res.status(400).json({
+        success: false,
+        error: 'User with this ID already exists',
+        statusCode: 400,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to onboard user',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Get all onboarded users
+export const getOnboardedUsers = async (req, res) => {
+  try {
+    const onboardedUsers = await OnboardedUser.find({})
+      .sort({ createdAt: -1 })
+      .select('name userId providerId providerMessagingId createdAt updatedAt');
+
+    return res.status(200).json({
+      success: true,
+      data: onboardedUsers,
+      count: onboardedUsers.length,
+    });
+  } catch (error) {
+    console.error('Error fetching onboarded users:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch onboarded users',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Delete an onboarded user
+export const deleteOnboardedUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'userId is required',
+        statusCode: 400,
+      });
+    }
+
+    const deletedUser = await OnboardedUser.findOneAndDelete({ userId });
+
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'Onboarded user not found',
+        statusCode: 404,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: deletedUser,
+      message: 'Onboarded user deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting onboarded user:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to delete onboarded user',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Campaign Management Functions
+
+// Get all campaigns
+export const getCampaigns = async (req, res) => {
+  try {
+    const campaigns = await Campaign.find({})
+      .sort({ createdAt: -1 })
+      .select('name description status userIds userCount expiresAt isActive notes createdAt updatedAt');
+
+    return res.status(200).json({
+      success: true,
+      data: campaigns,
+      count: campaigns.length,
+    });
+  } catch (error) {
+    console.error('Error fetching campaigns:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch campaigns',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Create a new campaign
+export const createCampaign = async (req, res) => {
+  try {
+    const { name, description, userIds, expiresAt, notes } = req.body;
+
+    if (!name || !userIds || userIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Campaign name and user IDs are required',
+        statusCode: 400,
+      });
+    }
+
+    // Validate that all userIds exist in onboarded users
+    const existingUsers = await OnboardedUser.find({ userId: { $in: userIds } });
+    const existingUserIds = existingUsers.map(user => user.userId);
+
+    const invalidUserIds = userIds.filter(id => !existingUserIds.includes(id));
+    if (invalidUserIds.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid user IDs: ${invalidUserIds.join(', ')}`,
+        statusCode: 400,
+      });
+    }
+
+    const campaign = await Campaign.create({
+      name: name.trim(),
+      description: description?.trim() || '',
+      userIds: userIds,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      notes: notes?.trim() || '',
+    });
+
+    return res.status(201).json({
+      success: true,
+      data: campaign,
+      message: 'Campaign created successfully',
+    });
+  } catch (error) {
+    console.error('Error creating campaign:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to create campaign',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Update campaign
+export const updateCampaign = async (req, res) => {
+  try {
+    const { campaignId } = req.params;
+    const { name, description, status, userIds, expiresAt, notes } = req.body;
+
+    if (!campaignId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Campaign ID is required',
+        statusCode: 400,
+      });
+    }
+
+    const campaign = await Campaign.findById(campaignId);
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        error: 'Campaign not found',
+        statusCode: 404,
+      });
+    }
+
+    // Validate userIds if provided
+    if (userIds && userIds.length > 0) {
+      const existingUsers = await OnboardedUser.find({ userId: { $in: userIds } });
+      const existingUserIds = existingUsers.map(user => user.userId);
+      const invalidUserIds = userIds.filter(id => !existingUserIds.includes(id));
+
+      if (invalidUserIds.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid user IDs: ${invalidUserIds.join(', ')}`,
+          statusCode: 400,
+        });
+      }
+    }
+
+    // Update fields
+    if (name !== undefined) campaign.name = name.trim();
+    if (description !== undefined) campaign.description = description?.trim() || '';
+    if (status !== undefined) campaign.status = status;
+    if (userIds !== undefined) campaign.userIds = userIds;
+    if (expiresAt !== undefined) campaign.expiresAt = expiresAt ? new Date(expiresAt) : null;
+    if (notes !== undefined) campaign.notes = notes?.trim() || '';
+
+    await campaign.save();
+
+    return res.status(200).json({
+      success: true,
+      data: campaign,
+      message: 'Campaign updated successfully',
+    });
+  } catch (error) {
+    console.error('Error updating campaign:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to update campaign',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Delete campaign
+export const deleteCampaign = async (req, res) => {
+  try {
+    const { campaignId } = req.params;
+
+    if (!campaignId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Campaign ID is required',
+        statusCode: 400,
+      });
+    }
+
+    const deletedCampaign = await Campaign.findByIdAndDelete(campaignId);
+
+    if (!deletedCampaign) {
+      return res.status(404).json({
+        success: false,
+        error: 'Campaign not found',
+        statusCode: 404,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: deletedCampaign,
+      message: 'Campaign deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting campaign:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to delete campaign',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Get campaign by ID with user details
+export const getCampaignById = async (req, res) => {
+  try {
+    const { campaignId } = req.params;
+
+    if (!campaignId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Campaign ID is required',
+        statusCode: 400,
+      });
+    }
+
+    const campaign = await Campaign.findById(campaignId);
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        error: 'Campaign not found',
+        statusCode: 404,
+      });
+    }
+
+    // Get user details for the campaign
+    const users = await OnboardedUser.find({ userId: { $in: campaign.userIds } })
+      .select('name userId providerId providerMessagingId createdAt');
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        campaign: campaign,
+        users: users,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching campaign:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch campaign',
+      statusCode: 500,
+      message: error.message,
     });
   }
 };

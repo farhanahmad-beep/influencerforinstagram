@@ -33,6 +33,7 @@ Let me know if you want help getting started! 😊`;
 
   // Get account_id from location state or query params
   const accountId = location.state?.accountId || new URLSearchParams(location.search).get("account_id");
+  const fromPage = location.state?.from || null;
 
   useEffect(() => {
     if (userId && accountId) {
@@ -157,10 +158,16 @@ Let me know if you want help getting started! 😊`;
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
           <button
-            onClick={() => navigate(`/followers?account_id=${accountId}`)}
+            onClick={() => {
+              if (fromPage === "global-search") {
+                navigate("/global-search?account_id=${accountId}");
+              } else {
+                navigate(`/followers${accountId ? `?account_id=${accountId}` : ""}`);
+              }
+            }}
             className="btn-secondary"
           >
-            ← Back to Followers
+            ← Back
           </button>
           {profile.providerMessagingId && (
             <button
@@ -315,6 +322,37 @@ Let me know if you want help getting started! 😊`;
             </div>
           )}
 
+          {/* Biography Section */}
+          {profile.biography && (
+            <div className="card mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Biography</h2>
+              <p className="text-gray-700 whitespace-pre-wrap">{profile.biography}</p>
+            </div>
+          )}
+
+          {/* Business Information */}
+          {profile.relationshipStatus?.business && (
+            <div className="card mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Business Information</h2>
+              <div className="space-y-3">
+                {profile.relationshipStatus.business.category && (
+                  <div className="flex justify-between py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Business Category:</span>
+                    <span className="text-gray-900">{profile.relationshipStatus.business.category}</span>
+                  </div>
+                )}
+                {profile.relationshipStatus.business.is_business_account !== undefined && (
+                  <div className="flex justify-between py-3 border-b border-gray-200">
+                    <span className="text-gray-600 font-medium">Business Account:</span>
+                    <span className={`font-semibold ${profile.relationshipStatus.business.is_business_account ? "text-green-600" : "text-gray-400"}`}>
+                      {profile.relationshipStatus.business.is_business_account ? "Yes" : "No"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="card">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Profile Information</h2>
             <div className="space-y-3">
@@ -334,6 +372,12 @@ Let me know if you want help getting started! 😊`;
                 <div className="flex justify-between py-3 border-b border-gray-200">
                   <span className="text-gray-600 font-medium">Provider:</span>
                   <span className="text-gray-900">{profile.provider}</span>
+                </div>
+              )}
+              {profile.category && (
+                <div className="flex justify-between py-3 border-b border-gray-200">
+                  <span className="text-gray-600 font-medium">Category:</span>
+                  <span className="text-gray-900">{profile.category}</span>
                 </div>
               )}
               {profile.profileType && (
