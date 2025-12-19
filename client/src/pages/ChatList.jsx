@@ -108,6 +108,7 @@ const ChatList = () => {
     // Send messages sequentially to avoid overwhelming the API
     for (const chatId of chatIds) {
       try {
+        
         const formData = new URLSearchParams();
         formData.append("account_id", selectedAccountId);
         formData.append("text", messageText.trim());
