@@ -705,6 +705,14 @@ export const getStats = async (req, res) => {
       console.error('Failed to fetch active campaigns count:', dbError.message);
     }
 
+    // Fetch completed campaigns count
+    let completedCampaignsCount = 0;
+    try {
+      completedCampaignsCount = await Campaign.countDocuments({ status: 'completed' });
+    } catch (dbError) {
+      console.error('Failed to fetch completed campaigns count:', dbError.message);
+    }
+
     return res.status(200).json({
       success: true,
       data: {
@@ -712,6 +720,7 @@ export const getStats = async (req, res) => {
         messagesSent: messageCount,
         onboardedUsers: onboardedUsersCount,
         activeCampaigns: activeCampaignsCount,
+        completedCampaigns: completedCampaignsCount,
       },
     });
   } catch (error) {

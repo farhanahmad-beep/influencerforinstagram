@@ -337,6 +337,75 @@ const Followers = () => {
     });
   };
 
+  const handleDownloadCSV = () => {
+    if (filteredData.length === 0) {
+      toast.error("No data to download");
+      return;
+    }
+
+    try {
+      // Define CSV headers
+      const headers = [
+        'ID',
+        'Username',
+        'Name',
+        'Followers Count',
+        'Following Count',
+        'Provider',
+        'Provider ID',
+        'Provider Messaging ID'
+      ];
+
+      // Convert data to CSV rows
+      const csvRows = filteredData.map(user => [
+        user.id || '',
+        user.username || '',
+        user.name || '',
+        user.followersCount || 0,
+        user.followingCount || 0,
+        user.provider || 'Instagram',
+        user.id || '', // Use frontend ID as Provider ID
+        user.providerMessagingId || ''
+      ]);
+
+      // Create CSV content
+      const csvContent = [
+        headers.join(','),
+        ...csvRows.map(row =>
+          row.map(cell => {
+            // Escape quotes and wrap in quotes if contains comma, quote, or newline
+            const cellStr = String(cell);
+            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+              return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${viewMode}_results_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      toast.success(`Downloaded ${filteredData.length} results to CSV`);
+
+    } catch (error) {
+      console.error('Failed to download CSV:', error);
+      toast.error('Failed to download CSV');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -516,6 +585,15 @@ const Followers = () => {
                 Showing <span className="font-semibold">{filteredData.length}</span> of <span className="font-semibold">{allData.length}</span> {viewMode === "following" ? "following accounts" : "followers"}
                 {pagination.hasMore && " (more available)"}
               </p>
+              <button
+                onClick={handleDownloadCSV}
+                className="btn-secondary flex items-center space-x-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Download CSV</span>
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
