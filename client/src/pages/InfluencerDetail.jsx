@@ -58,9 +58,10 @@ const InfluencerDetail = () => {
   }
 
   return (
-    <div id="src_pages_InfluencerDetail_luo3" className="min-h-screen bg-gray-50">
+    <div id="src_pages_InfluencerDetail_luo3" className="h-screen bg-gray-50 flex overflow-hidden">
       <Navbar />
-      <div id="src_pages_InfluencerDetail_k1tl" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-1 lg:ml-0 overflow-y-auto">
+        <div id="src_pages_InfluencerDetail_k1tl" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
         <button
           id="src_pages_InfluencerDetail_d3bv" onClick={() => navigate("/dashboard")}
           className="btn-secondary mb-6"
@@ -229,6 +230,7 @@ const InfluencerDetail = () => {
             </div>
           )}
         </motion.div>
+      </div>
       </div>
     </div>
   );

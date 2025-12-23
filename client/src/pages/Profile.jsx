@@ -53,9 +53,10 @@ const Profile = () => {
   };
 
   return (
-    <div id="src_pages_Profile_5nll" className="min-h-screen bg-gray-50">
+    <div id="src_pages_Profile_5nll" className="h-screen bg-gray-50 flex overflow-hidden">
       <Navbar />
-      <div id="src_pages_Profile_0nta" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-1 lg:ml-0 overflow-y-auto">
+        <div id="src_pages_Profile_0nta" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
         <h1 id="src_pages_Profile_ggo7" className="text-3xl font-bold text-gray-900 mb-8">Profile Settings</h1>
 
         <motion.div
@@ -173,6 +174,7 @@ const Profile = () => {
             </form>
           </div>
         </motion.div>
+      </div>
       </div>
     </div>
   );

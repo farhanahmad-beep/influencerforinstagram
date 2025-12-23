@@ -173,13 +173,33 @@ const StatusTracking = () => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'contacted':
-        return '💬';
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="#06b6d4" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" fill="#06b6d4" fillOpacity="0.1" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" opacity="0.6" />
+          </svg>
+        );
       case 'onboarded':
-        return '✅';
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="#10b981" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" fill="#10b981" fillOpacity="0.1" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" opacity="0.6" />
+          </svg>
+        );
       case 'active':
-        return '🚀';
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="#8b5cf6" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" fill="#8b5cf6" fillOpacity="0.1" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M13 10V3L4 14h7v7l9-11h-7z" opacity="0.6" />
+          </svg>
+        );
       default:
-        return '❓';
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="#6b7280" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" fill="#6b7280" fillOpacity="0.1" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" opacity="0.6" />
+          </svg>
+        );
     }
   };
 
@@ -214,9 +234,10 @@ const StatusTracking = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
       <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-1 lg:ml-0 overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -547,6 +568,7 @@ const StatusTracking = () => {
             </motion.div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

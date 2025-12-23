@@ -172,9 +172,10 @@ Let me know if you want help getting started! 😊`;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
       <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-1 lg:ml-0 overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => {
@@ -506,6 +507,7 @@ Let me know if you want help getting started! 😊`;
             </motion.div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

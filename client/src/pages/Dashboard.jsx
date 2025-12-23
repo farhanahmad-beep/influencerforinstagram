@@ -104,9 +104,10 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
       <Navbar />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-1 lg:ml-0 overflow-y-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Dashboard
@@ -499,6 +500,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
