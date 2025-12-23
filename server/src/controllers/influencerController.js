@@ -1,6 +1,6 @@
 import Influencer from '../models/Influencer.js';
 import axios from 'axios';
-import { OnboardedUser, Campaign } from '../models/OnboardedUser.js';
+import { OnboardedUser, Campaign, UserStatus } from '../models/OnboardedUser.js';
 import { Buffer } from 'buffer';
 
 // Helper function to get Unipile API configuration (read from env at runtime)
@@ -1850,7 +1850,8 @@ export const getFollowers = async (req, res) => {
 // Onboard a user
 export const onboardUser = async (req, res) => {
   try {
-    const { name, userId, providerId, providerMessagingId } = req.body;
+    const { name, userId, chatId, providerId, providerMessagingId } = req.body;
+
 
     if (!name || !userId) {
       return res.status(400).json({
@@ -1870,10 +1871,19 @@ export const onboardUser = async (req, res) => {
       });
     }
 
+    console.log('Onboarding user with data:', {
+      name: name?.trim(),
+      userId: userId?.trim(),
+      chatId: chatId?.trim(),
+      providerId: providerId?.trim(),
+      providerMessagingId: providerMessagingId?.trim(),
+    });
+
     // Create new onboarded user
     const onboardedUser = await OnboardedUser.create({
       name: name.trim(),
       userId: userId.trim(),
+      chatId: chatId?.trim() || '',
       providerId: providerId?.trim() || '',
       providerMessagingId: providerMessagingId?.trim() || '',
     });
@@ -1907,7 +1917,7 @@ export const getOnboardedUsers = async (req, res) => {
   try {
     const onboardedUsers = await OnboardedUser.find({})
       .sort({ createdAt: -1 })
-      .select('name userId providerId providerMessagingId createdAt updatedAt');
+      .select('name userId chatId providerId providerMessagingId createdAt updatedAt');
 
     return res.status(200).json({
       success: true,
@@ -2180,6 +2190,367 @@ export const getCampaignById = async (req, res) => {
     return res.status(500).json({
       success: false,
       error: 'Failed to fetch campaign',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// User Status Tracking Endpoints
+
+// Update user status when sending message
+export const updateUserStatus = async (req, res) => {
+  try {
+    const { userId, username, name, profilePicture, followersCount, followingCount, provider, providerId, providerMessagingId, source } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required',
+        statusCode: 400,
+      });
+    }
+
+    // Find or create user status
+    let userStatus = await UserStatus.findOne({ userId });
+
+    if (userStatus) {
+      // Update existing user
+      userStatus.username = username || userStatus.username;
+      userStatus.name = name || userStatus.name;
+      userStatus.profilePicture = profilePicture || userStatus.profilePicture;
+      userStatus.followersCount = followersCount || userStatus.followersCount;
+      userStatus.followingCount = followingCount || userStatus.followingCount;
+      userStatus.provider = provider || userStatus.provider;
+      userStatus.providerId = providerId || userStatus.providerId;
+      userStatus.providerMessagingId = providerMessagingId || userStatus.providerMessagingId;
+      userStatus.source = source || userStatus.source;
+      userStatus.lastContacted = new Date();
+      userStatus.lastMessageSent = new Date();
+      userStatus.messageCount = (userStatus.messageCount || 0) + 1;
+
+      // Don't change status if user is already onboarded or active
+      // Only set to contacted if this is their first interaction
+
+      await userStatus.save();
+    } else {
+      // Create new user status
+      userStatus = new UserStatus({
+        userId,
+        username,
+        name,
+        profilePicture,
+        followersCount: followersCount || 0,
+        followingCount: followingCount || 0,
+        provider: provider || 'INSTAGRAM',
+        providerId,
+        providerMessagingId,
+        status: 'contacted',
+        source: source || 'direct',
+        lastContacted: new Date(),
+        lastMessageSent: new Date(),
+        messageCount: 1,
+      });
+      await userStatus.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: userStatus,
+      message: 'User status updated successfully',
+    });
+  } catch (error) {
+    console.error('Failed to update user status:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to update user status',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Update user status to onboarded
+export const updateUserStatusOnboarded = async (req, res) => {
+  try {
+    const { userId, chatName } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required',
+        statusCode: 400,
+      });
+    }
+
+    // First, try to find by userId
+    let userStatus = await UserStatus.findOne({ userId: userId.toString() });
+
+    // If not found by userId, try to find by providerMessagingId
+    if (!userStatus) {
+      userStatus = await UserStatus.findOne({ providerMessagingId: userId.toString() });
+    }
+
+    // If still not found by providerMessagingId, try to find by providerId
+    if (!userStatus) {
+      userStatus = await UserStatus.findOne({ providerId: userId.toString() });
+    }
+
+    // If still not found and we have a chat name, try to find by name (for same user matching)
+    if (!userStatus && chatName) {
+      // Remove emojis and special chars for better matching
+      const cleanChatName = chatName.replace(/[^\w\s]/g, '').trim();
+      userStatus = await UserStatus.findOne({
+        $or: [
+          { name: { $regex: new RegExp(chatName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') } },
+          { name: { $regex: new RegExp(cleanChatName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') } }
+        ],
+        provider: 'INSTAGRAM'
+      });
+    }
+
+    if (userStatus) {
+      // Update existing user status
+      userStatus.status = 'onboarded';
+      userStatus.lastContacted = new Date();
+      // Update name if we have it from chat
+      if (chatName && !userStatus.name) {
+        userStatus.name = chatName;
+      }
+      // If we found by name matching and the userId is different, update it to the canonical ID
+      if (userStatus.userId !== userId) {
+        userStatus.userId = userId;
+      }
+      await userStatus.save();
+    } else {
+      // Create new user status if not found
+      userStatus = new UserStatus({
+        userId,
+        name: chatName,
+        status: 'onboarded',
+        source: 'direct',
+        lastContacted: new Date(),
+      });
+      await userStatus.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: userStatus,
+      message: 'User status updated to onboarded',
+    });
+  } catch (error) {
+    console.error('Failed to update user status to onboarded:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to update user status',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Update user status to active (in campaign)
+export const updateUserStatusActive = async (req, res) => {
+  try {
+    const { userId, campaignId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required',
+        statusCode: 400,
+      });
+    }
+
+    // First, try to find by userId
+    let userStatus = await UserStatus.findOne({ userId: userId.toString() });
+
+    // If not found by userId, try to find by providerMessagingId
+    if (!userStatus) {
+      userStatus = await UserStatus.findOne({ providerMessagingId: userId.toString() });
+    }
+
+    // If still not found by providerMessagingId, try to find by providerId
+    if (!userStatus) {
+      userStatus = await UserStatus.findOne({ providerId: userId.toString() });
+    }
+
+    if (userStatus) {
+      // Update existing user status
+      userStatus.status = 'active';
+      userStatus.lastContacted = new Date();
+
+      if (campaignId) {
+        // Add campaignId to campaignIds array if not already present
+        if (!userStatus.campaignIds) {
+          userStatus.campaignIds = [];
+        }
+        if (!userStatus.campaignIds.includes(campaignId)) {
+          userStatus.campaignIds.push(campaignId);
+        }
+      }
+
+      await userStatus.save();
+    } else {
+      // Create new user status if not found
+      userStatus = new UserStatus({
+        userId,
+        status: 'active',
+        source: 'direct',
+        lastContacted: new Date(),
+        campaignIds: campaignId ? [campaignId] : [],
+      });
+      await userStatus.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: userStatus,
+      message: 'User status updated to active',
+    });
+  } catch (error) {
+    console.error('Failed to update user status to active:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to update user status',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Get all user statuses with filtering
+export const getUserStatuses = async (req, res) => {
+  try {
+    const { status, source, limit = 50, skip = 0, search } = req.query;
+
+    let filter = {};
+
+    if (status) {
+      filter.status = status;
+    }
+
+    if (source) {
+      filter.source = source;
+    }
+
+    if (search) {
+      filter.$or = [
+        { username: { $regex: search, $options: 'i' } },
+        { name: { $regex: search, $options: 'i' } },
+        { userId: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const userStatuses = await UserStatus.find(filter)
+      .sort({ lastContacted: -1 })
+      .limit(parseInt(limit))
+      .skip(parseInt(skip))
+      .populate('campaignIds', 'name status');
+
+    const total = await UserStatus.countDocuments(filter);
+
+    return res.status(200).json({
+      success: true,
+      data: userStatuses,
+      pagination: {
+        total,
+        limit: parseInt(limit),
+        skip: parseInt(skip),
+        hasMore: total > parseInt(skip) + parseInt(limit),
+      },
+    });
+  } catch (error) {
+    console.error('Failed to fetch user statuses:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch user statuses',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Get user status stats
+export const getUserStatusStats = async (req, res) => {
+  try {
+    const stats = await UserStatus.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const sourceStats = await UserStatus.aggregate([
+      {
+        $group: {
+          _id: '$source',
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const totalUsers = await UserStatus.countDocuments();
+    const totalMessages = await UserStatus.aggregate([
+      { $group: { _id: null, total: { $sum: '$messageCount' } } },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        statusBreakdown: stats,
+        sourceBreakdown: sourceStats,
+        totalUsers,
+        totalMessages: totalMessages[0]?.total || 0,
+      },
+    });
+  } catch (error) {
+    console.error('Failed to fetch user status stats:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch user status stats',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Delete user status
+export const deleteUserStatus = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required',
+        statusCode: 400,
+      });
+    }
+
+    const deletedUser = await UserStatus.findOneAndDelete({ userId });
+
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'User status not found',
+        statusCode: 404,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'User status deleted successfully',
+      data: deletedUser,
+    });
+  } catch (error) {
+    console.error('Failed to delete user status:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to delete user status',
       statusCode: 500,
       message: error.message,
     });

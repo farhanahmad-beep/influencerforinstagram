@@ -37,6 +37,12 @@ const Followers = () => {
     country: "",
     city: "",
   });
+  const [selectedUsers, setSelectedUsers] = useState(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [messageText, setMessageText] = useState("");
+  const [sendingMessages, setSendingMessages] = useState(false);
+  const [sendProgress, setSendProgress] = useState({});
 
   useEffect(() => {
     fetchLinkedAccounts();
@@ -337,6 +343,176 @@ const Followers = () => {
     });
   };
 
+  const handleUserSelect = (userId) => {
+    setSelectedUsers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    // Only select users that have providerMessagingId
+    const usersWithMessagingId = filteredData
+      .filter((item) => item.providerMessagingId)
+      .map((item) => item.id);
+
+    if (selectedUsers.size === usersWithMessagingId.length &&
+        usersWithMessagingId.every((id) => selectedUsers.has(id))) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(usersWithMessagingId));
+    }
+  };
+
+  const handleSendMessageClick = () => {
+    if (selectedUsers.size === 0) {
+      // Enable selection mode if no users are selected
+      setIsSelectionMode(true);
+      toast("Select users with messaging IDs to send message to", { duration: 3000 });
+    } else {
+      // Open modal if users are selected
+      setShowSendModal(true);
+    }
+  };
+
+  const handleSendToMultiple = async (e) => {
+    e.preventDefault();
+
+    if (!filters.account_id) {
+      toast.error("Account ID is required to send message");
+      return;
+    }
+
+    if (selectedUsers.size === 0) {
+      toast.error("Please select at least one user");
+      return;
+    }
+
+    if (!messageText.trim()) {
+      toast.error("Please enter a message");
+      return;
+    }
+
+    // Filter selected users to only those with providerMessagingId
+    const usersToSend = Array.from(selectedUsers)
+      .map((userId) => {
+        const user = filteredData.find((item) => item.id === userId);
+        return user && user.providerMessagingId ? { id: userId, messagingId: user.providerMessagingId, name: user.name || user.username } : null;
+      })
+      .filter(Boolean);
+
+    if (usersToSend.length === 0) {
+      toast.error("Selected users don't have messaging IDs. Please select users with messaging IDs.");
+      return;
+    }
+
+    setSendingMessages(true);
+    const progress = {};
+    usersToSend.forEach((user) => {
+      progress[user.id] = { status: "pending", message: "" };
+    });
+    setSendProgress(progress);
+
+    let successCount = 0;
+    let failCount = 0;
+
+    // Send messages sequentially to avoid overwhelming the API
+    for (const user of usersToSend) {
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/influencers/start-chat`,
+          {
+            account_id: filters.account_id,
+            text: messageText.trim(),
+            attendees_ids: [user.messagingId],
+          },
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (response.data.success) {
+          successCount++;
+          setSendProgress((prev) => ({
+            ...prev,
+            [user.id]: { status: "success", message: "Sent successfully" },
+          }));
+
+          // Update user status to contacted
+          try {
+            const userData = filteredData.find((item) => item.id === user.id);
+            await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/contacted`, {
+              userId: user.id,
+              username: userData?.username,
+              name: userData?.name,
+              profilePicture: userData?.profilePictureData || userData?.profilePicture,
+              followersCount: userData?.followersCount,
+              followingCount: userData?.followingCount,
+              provider: 'INSTAGRAM',
+              providerId: userData?.providerId,
+              providerMessagingId: userData?.providerMessagingId,
+              source: viewMode === 'following' ? 'following' : 'followers',
+            }, { withCredentials: true });
+          } catch (statusError) {
+            console.error('Failed to update user status:', statusError);
+          }
+        } else {
+          failCount++;
+          setSendProgress((prev) => ({
+            ...prev,
+            [user.id]: {
+              status: "error",
+              message: response.data.error || "Failed to send",
+            },
+          }));
+        }
+      } catch (error) {
+        failCount++;
+        const errorMessage =
+          error.response?.data?.error || error.message || "Failed to send";
+        setSendProgress((prev) => ({
+          ...prev,
+          [user.id]: { status: "error", message: errorMessage },
+        }));
+      }
+
+      // Small delay between messages to avoid rate limiting
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    setSendingMessages(false);
+
+    if (successCount > 0) {
+      toast.success(
+        `Message sent to ${successCount} user${successCount !== 1 ? "s" : ""}`
+      );
+    }
+    if (failCount > 0) {
+      toast.error(
+        `Failed to send to ${failCount} user${failCount !== 1 ? "s" : ""}`
+      );
+    }
+
+    // Reset after a delay to show progress
+    setTimeout(() => {
+      setShowSendModal(false);
+      setMessageText("");
+      setSelectedUsers(new Set());
+      setIsSelectionMode(false);
+      setSendProgress({});
+    }, 2000);
+  };
+
+  const handleCancelSelection = () => {
+    setIsSelectionMode(false);
+    setSelectedUsers(new Set());
+  };
+
   const handleDownloadCSV = () => {
     if (filteredData.length === 0) {
       toast.error("No data to download");
@@ -450,7 +626,7 @@ const Followers = () => {
         {/* Search Filters */}
         <div className="card mb-6">
           <form onSubmit={handleSearch} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Instagram Username (user_id)
@@ -503,7 +679,7 @@ const Followers = () => {
                   </div>
                 )}
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Limit (1-1000)
                 </label>
@@ -516,7 +692,7 @@ const Followers = () => {
                   max="1000"
                   className="input-field"
                 />
-              </div>
+              </div> */}
             </div>
             <div className="flex items-center space-x-4">
               <button type="submit" className="btn-primary" disabled={loading}>
@@ -585,15 +761,48 @@ const Followers = () => {
                 Showing <span className="font-semibold">{filteredData.length}</span> of <span className="font-semibold">{allData.length}</span> {viewMode === "following" ? "following accounts" : "followers"}
                 {pagination.hasMore && " (more available)"}
               </p>
-              <button
-                onClick={handleDownloadCSV}
-                className="btn-secondary flex items-center space-x-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Download CSV</span>
-              </button>
+              <div className="flex items-center space-x-3">
+                {isSelectionMode && (
+                  <>
+                    <button
+                      onClick={handleSelectAll}
+                      className="btn-secondary text-sm"
+                    >
+                      {(() => {
+                        const usersWithMessagingId = filteredData.filter((item) => item.providerMessagingId).map((item) => item.id);
+                        const allSelected = usersWithMessagingId.length > 0 && usersWithMessagingId.every((id) => selectedUsers.has(id));
+                        return allSelected ? "Deselect All" : "Select All";
+                      })()}
+                    </button>
+                    <button
+                      onClick={handleCancelSelection}
+                      className="btn-secondary text-sm"
+                    >
+                      Cancel
+                    </button>
+                    <span className="text-sm text-gray-600">
+                      {selectedUsers.size} selected
+                    </span>
+                  </>
+                )}
+                <button
+                  onClick={handleDownloadCSV}
+                  className="btn-secondary flex items-center space-x-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>Download CSV</span>
+                </button>
+                <button
+                  onClick={handleSendMessageClick}
+                  className="btn-primary"
+                  disabled={!filters.account_id || filteredData.length === 0}
+                >
+                  Send Message
+                  {selectedUsers.size > 0 && ` (${selectedUsers.size})`}
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
@@ -603,9 +812,35 @@ const Followers = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: (index % 20) * 0.05 }}
-                  className="card hover:shadow-lg transition-shadow"
+                  className={`card hover:shadow-lg transition-shadow ${
+                    isSelectionMode ? "cursor-default" : "cursor-pointer"
+                  } ${
+                    selectedUsers.has(item.id)
+                      ? "border-2 border-purple-500 bg-purple-50"
+                      : ""
+                  } ${!item.providerMessagingId && isSelectionMode ? "opacity-50" : ""}`}
+                  onClick={() => {
+                    if (isSelectionMode && item.providerMessagingId) {
+                      handleUserSelect(item.id);
+                    }
+                  }}
                 >
                   <div className="flex flex-col items-center text-center">
+                    {isSelectionMode && (
+                      <div className="mb-2 w-full flex justify-start">
+                        <input
+                          type="checkbox"
+                          checked={selectedUsers.has(item.id)}
+                          onChange={() => handleUserSelect(item.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          disabled={!item.providerMessagingId}
+                          className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                        {!item.providerMessagingId && (
+                          <span className="text-xs text-gray-400 ml-2">No messaging ID</span>
+                        )}
+                      </div>
+                    )}
                     <div className="mb-3 relative">
                       {(item.profilePictureData || item.profilePicture) ? (
                         <img
@@ -694,6 +929,111 @@ const Followers = () => {
               </div>
             )}
           </>
+        )}
+
+        {/* Send Message Modal */}
+        {showSendModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+            >
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Send Message to {selectedUsers.size} User{selectedUsers.size !== 1 ? "s" : ""}
+              </h2>
+
+              {/* Selected Users List */}
+              <div className="mb-4 max-h-40 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+                <p className="text-sm font-medium text-gray-700 mb-2">Selected Users:</p>
+                <div className="space-y-1">
+                  {Array.from(selectedUsers).map((userId) => {
+                    const user = filteredData.find((item) => item.id === userId);
+                    if (!user || !user.providerMessagingId) return null;
+                    const progress = sendProgress[userId];
+                    return (
+                      <div
+                        key={userId}
+                        className="flex items-center justify-between text-sm p-2 bg-white rounded"
+                      >
+                        <span className="text-gray-700">
+                          {user.name || user.username || userId}
+                        </span>
+                        {progress && (
+                          <span
+                            className={`text-xs ${
+                              progress.status === "success"
+                                ? "text-green-600"
+                                : progress.status === "error"
+                                ? "text-red-600"
+                                : "text-gray-500"
+                            }`}
+                          >
+                            {progress.status === "pending" && "⏳ Sending..."}
+                            {progress.status === "success" && "✓ Sent"}
+                            {progress.status === "error" && `✗ ${progress.message}`}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <form onSubmit={handleSendToMultiple} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Message
+                  </label>
+                  <textarea
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    placeholder="Type your message here..."
+                    className="input-field min-h-[120px] resize-y"
+                    required
+                    disabled={sendingMessages}
+                  />
+                </div>
+                {!filters.account_id && (
+                  <p className="text-sm text-red-600">
+                    Account ID is required to send messages
+                  </p>
+                )}
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowSendModal(false);
+                      setMessageText("");
+                      setSendProgress({});
+                    }}
+                    className="btn-secondary flex-1"
+                    disabled={sendingMessages}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary flex-1"
+                    disabled={sendingMessages || !filters.account_id || selectedUsers.size === 0}
+                  >
+                    {sendingMessages
+                      ? `Sending... (${Object.values(sendProgress).filter((p) => p.status === "success" || p.status === "error").length}/${Array.from(selectedUsers).filter((id) => {
+                          const user = filteredData.find((item) => item.id === id);
+                          return user && user.providerMessagingId;
+                        }).length})`
+                      : `Send to ${Array.from(selectedUsers).filter((id) => {
+                          const user = filteredData.find((item) => item.id === id);
+                          return user && user.providerMessagingId;
+                        }).length} User${Array.from(selectedUsers).filter((id) => {
+                          const user = filteredData.find((item) => item.id === id);
+                          return user && user.providerMessagingId;
+                        }).length !== 1 ? "s" : ""}`}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
         )}
       </div>
     </div>

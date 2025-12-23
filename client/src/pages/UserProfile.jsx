@@ -112,6 +112,25 @@ Let me know if you want help getting started! 😊`;
 
       if (response.data.success) {
         toast.success("Message sent successfully!");
+
+        // Update user status to contacted
+        try {
+          await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/contacted`, {
+            userId: userId,
+            username: profile?.username,
+            name: profile?.fullName || profile?.name,
+            profilePicture: profile?.profilePictureUrl,
+            followersCount: profile?.followersCount,
+            followingCount: profile?.followingCount,
+            provider: 'INSTAGRAM',
+            providerId: profile?.providerId,
+            providerMessagingId: profile?.providerMessagingId,
+            source: fromPage === 'followers' ? 'followers' : fromPage === 'following' ? 'following' : 'global_search',
+          }, { withCredentials: true });
+        } catch (statusError) {
+          console.error('Failed to update user status:', statusError);
+        }
+
         setMessageText(PREDEFINED_MESSAGE);
         setShowMessageModal(false);
       } else {

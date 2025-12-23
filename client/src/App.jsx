@@ -14,6 +14,7 @@ import GlobalSearch from "./pages/GlobalSearch.jsx";
 import ChatList from "./pages/ChatList.jsx";
 import ChatMessages from "./pages/ChatMessages.jsx";
 import Onboard from "./pages/Onboard.jsx";
+import StatusTracking from "./pages/StatusTracking.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
@@ -92,6 +93,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Onboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/status-tracking"
+          element={
+            <ProtectedRoute>
+              <StatusTracking />
             </ProtectedRoute>
           }
         />

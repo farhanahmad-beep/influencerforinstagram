@@ -17,7 +17,7 @@ const Navbar = () => {
         <div id="src_components_Navbar_9snp" className="flex justify-between h-16">
           <div id="src_components_Navbar_sq8k" className="flex items-center">
             <Link to="/dashboard" className="flex items-center" id="client_src_components_Navbar_a1b2">
-              <span id="src_components_Navbar_all8" className="text-2xl font-bold text-purple-600">InfluencerHub</span>
+              <span id="src_components_Navbar_all8" className="text-2xl font-bold text-black">InfluencerHub</span>
             </Link>
           </div>
           <div id="src_components_Navbar_u9qx" className="flex items-center space-x-4">
@@ -38,6 +38,9 @@ const Navbar = () => {
             </Link>
             <Link to="/followers" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_followers">
               Followers
+            </Link>
+            <Link to="/status-tracking" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_status">
+              Status Tracking
             </Link>
             <Link to="/profile" className="text-gray-700 hover:text-purple-600 transition-colors" id="client_src_components_Navbar_e5f6">
               Profile

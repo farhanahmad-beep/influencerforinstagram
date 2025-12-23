@@ -22,6 +22,12 @@ import {
   updateCampaign,
   deleteCampaign,
   getCampaignById,
+  updateUserStatus,
+  updateUserStatusOnboarded,
+  updateUserStatusActive,
+  getUserStatuses,
+  getUserStatusStats,
+  deleteUserStatus,
 } from '../controllers/influencerController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -50,6 +56,15 @@ router.post('/campaigns', protect, createCampaign);
 router.put('/campaigns/:campaignId', protect, updateCampaign);
 router.delete('/campaigns/:campaignId', protect, deleteCampaign);
 router.get('/campaigns/:campaignId', protect, getCampaignById);
+
+// Status tracking routes
+router.post('/user-status/contacted', protect, updateUserStatus);
+router.post('/user-status/onboarded', protect, updateUserStatusOnboarded);
+router.post('/user-status/active', protect, updateUserStatusActive);
+router.get('/user-statuses', protect, getUserStatuses);
+router.get('/user-statuses/stats', protect, getUserStatusStats);
+router.delete('/user-statuses/:userId', protect, deleteUserStatus);
+
 router.get('/:id', protect, getInfluencerById);
 
 export default router;

@@ -7,6 +7,22 @@ import { useNavigate } from "react-router-dom";
 
 const GlobalSearch = () => {
   const navigate = useNavigate();
+
+  // Predefined message template
+  const PREDEFINED_MESSAGE = `✨ Hey! Hope you're doing well!
+
+I wanted to share something super useful for creators — Dynamite Influencer Store just launched! 🚀
+
+It's a platform made specifically for influencers to create their own store, add products, and start selling directly to their audience — all in a few clicks.
+
+You can check it out here
+
+🔗 https://dynamiteinfluencerstore.icod.ai/
+
+If you've ever wanted to launch your own store, earn more, and manage everything in one place, this is the perfect tool for you.
+
+Let me know if you want help getting started! 😊`;
+
   const [keyword, setKeyword] = useState("");
   const [minFollowers, setMinFollowers] = useState("");
   const [maxFollowers, setMaxFollowers] = useState("");
@@ -214,6 +230,7 @@ const GlobalSearch = () => {
       toast("Select users with messaging IDs to send message to", { duration: 3000 });
     } else {
       // Open modal if users are selected
+      setMessageText(PREDEFINED_MESSAGE); // Pre-populate with predefined message
       setShowSendModal(true);
     }
   };
@@ -280,6 +297,24 @@ const GlobalSearch = () => {
             ...prev,
             [user.id]: { status: "success", message: "Sent successfully" },
           }));
+
+          // Update user status to contacted
+          try {
+            await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/contacted`, {
+              userId: user.id,
+              username: user.username,
+              name: user.name,
+              profilePicture: user.profilePictureData || user.profilePicture,
+              followersCount: user.followersCount,
+              followingCount: user.followingCount,
+              provider: 'INSTAGRAM',
+              providerId: user.providerId,
+              providerMessagingId: user.providerMessagingId,
+              source: 'global_search',
+            }, { withCredentials: true });
+          } catch (statusError) {
+            console.error('Failed to update user status:', statusError);
+          }
         } else {
           failCount++;
           setSendProgress((prev) => ({

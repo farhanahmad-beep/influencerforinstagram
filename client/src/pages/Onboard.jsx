@@ -544,6 +544,16 @@ Let me know if you want help getting started! 😊`;
           if (messageResponse.data.success) {
             successCount++;
             toast.success(`Message sent to ${user.name || userId} (${successCount}/${campaign.userIds.length - noChatCount})`);
+
+            // Update user status to active (in campaign)
+            try {
+              await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/active`, {
+                userId: userId,
+                campaignId: campaignId,
+              }, { withCredentials: true });
+            } catch (statusError) {
+              console.error('Failed to update user status to active:', statusError);
+            }
           } else {
             failCount++;
             console.error(`Failed to send to ${user.name || userId}:`, messageResponse.data.error);
@@ -872,9 +882,9 @@ Let me know if you want help getting started! 😊`;
 
                         <div className="space-y-3 mb-4">
                           <div className="flex justify-between items-start py-2 border-b border-gray-200">
-                            <span className="text-sm text-gray-600 font-medium">User ID:</span>
+                            <span className="text-sm text-gray-600 font-medium">Chat ID:</span>
                             <span className="text-sm text-gray-900 font-mono break-all text-right ml-2">
-                              {user.userId || "N/A"}
+                              {user.chatId || user.userId || "N/A"}
                             </span>
                           </div>
 

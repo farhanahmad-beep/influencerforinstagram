@@ -194,14 +194,17 @@ const ChatList = () => {
     }
 
     try {
+      const onboardingData = {
+        name: chatName,
+        userId: attendeeProviderId || chatId, // Use attendeeProviderId as userId if available
+        chatId: chatId, // Store the chat ID separately
+        providerId: providerId || attendeeProviderId || '',
+        providerMessagingId: attendeeProviderId || '',
+      };
+
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/influencers/onboard`,
-        {
-          name: chatName,
-          userId: chatId,
-          providerId: providerId || attendeeProviderId || '',
-          providerMessagingId: attendeeProviderId || '',
-        },
+        onboardingData,
         {
           withCredentials: true,
         }
@@ -209,6 +212,16 @@ const ChatList = () => {
 
       if (response.data.success) {
         toast.success(response.data.message || "User onboarded successfully!");
+
+        // Update user status to onboarded
+        try {
+          await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/onboarded`, {
+            userId: attendeeProviderId || chatId, // Use attendeeProviderId if available, fallback to chatId
+            chatName: chatName, // Pass chat name for user matching
+          }, { withCredentials: true });
+        } catch (statusError) {
+          console.error('Failed to update user status:', statusError);
+        }
       } else {
         toast.error(response.data.error || "Failed to onboard user");
       }
@@ -286,7 +299,8 @@ const ChatList = () => {
           `${import.meta.env.VITE_API_URL}/influencers/onboard`,
           {
             name: chat.name,
-            userId: chat.id,
+            userId: chat.attendeeProviderId || chat.id,
+            chatId: chat.id, // Store the chat ID separately
             providerId: chat.providerId || chat.attendeeProviderId || '',
             providerMessagingId: chat.attendeeProviderId || '',
           },
