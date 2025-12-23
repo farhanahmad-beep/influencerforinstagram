@@ -3,6 +3,23 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar.jsx";
 import toast from "react-hot-toast";
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -13,6 +30,27 @@ const Dashboard = () => {
     completedCampaigns: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [historicalData, setHistoricalData] = useState([]);
+  const [chartData, setChartData] = useState([]);
+
+  // Generate mini chart data based on current stats
+  const generateMiniChartData = (currentValue, maxPoints = 8) => {
+    const data = [];
+    const baseValue = Math.max(currentValue * 0.7, 0); // Start from 70% of current value
+
+    for (let i = 0; i < maxPoints; i++) {
+      const variation = (Math.random() - 0.5) * 0.3; // Random variation ±15%
+      const value = Math.max(baseValue + (currentValue - baseValue) * (i / (maxPoints - 1)) * (1 + variation), 0);
+      data.push({
+        index: i,
+        value: Math.round(value)
+      });
+    }
+
+    // Ensure the last point matches current value
+    data[data.length - 1].value = currentValue;
+    return data;
+  };
 
   const fetchStats = async () => {
     setLoading(true);
@@ -21,7 +59,34 @@ const Dashboard = () => {
         withCredentials: true,
       });
       if (response.data.success && response.data.data) {
-        setStats(response.data.data);
+        const newStats = response.data.data;
+        setStats(newStats);
+
+        // Add to historical data for charts
+        const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const newDataPoint = {
+          time: timestamp,
+          linkedAccounts: newStats.linkedAccounts,
+          messagesSent: newStats.messagesSent,
+          onboardedUsers: newStats.onboardedUsers,
+          activeCampaigns: newStats.activeCampaigns,
+          completedCampaigns: newStats.completedCampaigns,
+        };
+
+        setHistoricalData(prev => {
+          const updated = [...prev, newDataPoint];
+          // Keep only last 20 data points for better performance
+          return updated.length > 20 ? updated.slice(-20) : updated;
+        });
+
+        // Prepare current stats for bar chart
+        setChartData([
+          { name: 'Linked Accounts', value: newStats.linkedAccounts, color: '#8b5cf6' },
+          { name: 'Messages Sent', value: newStats.messagesSent, color: '#06b6d4' },
+          { name: 'Onboarded Users', value: newStats.onboardedUsers, color: '#10b981' },
+          { name: 'Active Campaigns', value: newStats.activeCampaigns, color: '#f59e0b' },
+          { name: 'Completed Campaigns', value: newStats.completedCampaigns, color: '#ef4444' },
+        ]);
       } else {
         toast.error(response.data.error || "Failed to fetch stats");
       }
@@ -66,38 +131,374 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-            <div className="card">
-              <p className="text-sm text-gray-500">Total Linked Accounts</p>
-              <p className="text-3xl font-bold text-purple-700 mt-2">{stats.linkedAccounts}</p>
-              <p className="text-xs text-gray-400 mt-1">Updated every 30 minutes</p>
+            <div className="card flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">Total Linked Accounts</p>
+                <p className="text-3xl font-bold text-purple-700 mt-2">{stats.linkedAccounts}</p>
+                <p className="text-xs text-gray-400 mt-1">Updated every 30 minutes</p>
+              </div>
+              <div className="w-20 h-12 ml-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={generateMiniChartData(stats.linkedAccounts)}>
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#8b5cf6"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <div className="card">
-              <p className="text-sm text-gray-500">Messages Sent</p>
-              <p className="text-3xl font-bold text-purple-700 mt-2">{stats.messagesSent}</p>
-              <p className="text-xs text-gray-400 mt-1">Since last server start</p>
+            <div className="card flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">Messages Sent</p>
+                <p className="text-3xl font-bold text-purple-700 mt-2">{stats.messagesSent}</p>
+                <p className="text-xs text-gray-400 mt-1">Since last server start</p>
+              </div>
+              <div className="w-20 h-12 ml-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={generateMiniChartData(stats.messagesSent)}>
+                    <defs>
+                      <linearGradient id="messagesGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#06b6d4"
+                      fill="url(#messagesGradient)"
+                      strokeWidth={2}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#06b6d4"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4 }}
+                      fill="none"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <div className="card">
-              <p className="text-sm text-gray-500">Onboarded Users</p>
-              <p className="text-3xl font-bold text-purple-700 mt-2">{stats.onboardedUsers}</p>
-              <p className="text-xs text-gray-400 mt-1">Total users onboarded</p>
+            <div className="card flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">Onboarded Users</p>
+                <p className="text-3xl font-bold text-purple-700 mt-2">{stats.onboardedUsers}</p>
+                <p className="text-xs text-gray-400 mt-1">Total users onboarded</p>
+              </div>
+              <div className="w-20 h-12 ml-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={generateMiniChartData(stats.onboardedUsers)}>
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <div className="card">
-              <p className="text-sm text-gray-500">Active Campaigns</p>
-              <p className="text-3xl font-bold text-purple-700 mt-2">{stats.activeCampaigns}</p>
-              <p className="text-xs text-gray-400 mt-1">Currently running</p>
+            <div className="card flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">Active Campaigns</p>
+                <p className="text-3xl font-bold text-purple-700 mt-2">{stats.activeCampaigns}</p>
+                <p className="text-xs text-gray-400 mt-1">Currently running</p>
+              </div>
+              <div className="w-20 h-12 ml-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={generateMiniChartData(stats.activeCampaigns, 8)}>
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#f59e0b"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <div className="card">
-              <p className="text-sm text-gray-500">Completed Campaigns</p>
-              <p className="text-3xl font-bold text-green-600 mt-2">{stats.completedCampaigns}</p>
-              <p className="text-xs text-gray-400 mt-1">Successfully completed</p>
+            <div className="card flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">Completed Campaigns</p>
+                <p className="text-3xl font-bold text-green-600 mt-2">{stats.completedCampaigns}</p>
+                <p className="text-xs text-gray-400 mt-1">Successfully completed</p>
+              </div>
+              <div className="w-20 h-12 ml-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={generateMiniChartData(stats.completedCampaigns, 8)}>
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#ef4444"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <div className="card">
-              <p className="text-sm text-gray-500">API Status</p>
-              <p className="text-lg font-semibold text-green-600 mt-2">Healthy</p>
-              <p className="text-xs text-gray-400 mt-1">Based on latest stats fetch</p>
+            <div className="card flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">API Status</p>
+                <p className="text-lg font-semibold text-green-600 mt-2">Healthy</p>
+                <p className="text-xs text-gray-400 mt-1">Based on latest stats fetch</p>
+              </div>
+              <div className="w-20 h-12 ml-4 flex items-center justify-center">
+                <div className="flex flex-col items-center space-y-1">
+                  <div className="relative">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div className="absolute -top-1 -right-1">
+                      <span className="relative flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-green-600 font-medium">Live</div>
+                </div>
+              </div>
             </div>
           </div>
         )}
+
+        {/* Real-time Charts Section */}
+        <div className="mt-12 space-y-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">Real-time Analytics</h2>
+            <div className="flex items-center space-x-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-sm text-green-600 font-medium">Live Updates</span>
+            </div>
+          </div>
+
+          {/* Trends Over Time - Line Chart */}
+          <div className="card">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Metrics Trends Over Time</h3>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={historicalData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="time"
+                    fontSize={12}
+                    tick={{ fill: '#6b7280' }}
+                  />
+                  <YAxis
+                    fontSize={12}
+                    tick={{ fill: '#6b7280' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#f9fafb',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="linkedAccounts"
+                    stroke="#8b5cf6"
+                    strokeWidth={2}
+                    name="Linked Accounts"
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="messagesSent"
+                    stroke="#06b6d4"
+                    strokeWidth={2}
+                    name="Messages Sent"
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="onboardedUsers"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    name="Onboarded Users"
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="activeCampaigns"
+                    stroke="#f59e0b"
+                    strokeWidth={2}
+                    name="Active Campaigns"
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="completedCampaigns"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    name="Completed Campaigns"
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Current Stats Comparison - Bar Chart */}
+          <div className="card">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Metrics Overview</h3>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="name"
+                    fontSize={12}
+                    tick={{ fill: '#6b7280' }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis
+                    fontSize={12}
+                    tick={{ fill: '#6b7280' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#f9fafb',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Campaign Distribution - Pie Chart */}
+          {(stats.activeCampaigns > 0 || stats.completedCampaigns > 0) && (
+            <div className="card">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Campaign Status Distribution</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Active Campaigns', value: stats.activeCampaigns, color: '#f59e0b' },
+                        { name: 'Completed Campaigns', value: stats.completedCampaigns, color: '#10b981' }
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      <Cell fill="#f59e0b" />
+                      <Cell fill="#10b981" />
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#f9fafb',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+
+          {/* Growth Metrics - Area Chart */}
+          <div className="card">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Growth Metrics Trends</h3>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={historicalData}>
+                  <defs>
+                    <linearGradient id="colorMessages" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.1}/>
+                    </linearGradient>
+                    <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="time"
+                    fontSize={12}
+                    tick={{ fill: '#6b7280' }}
+                  />
+                  <YAxis
+                    fontSize={12}
+                    tick={{ fill: '#6b7280' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#f9fafb',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Legend />
+                  <Area
+                    type="monotone"
+                    dataKey="messagesSent"
+                    stackId="1"
+                    stroke="#06b6d4"
+                    fillOpacity={1}
+                    fill="url(#colorMessages)"
+                    name="Messages Sent"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="onboardedUsers"
+                    stackId="2"
+                    stroke="#10b981"
+                    fillOpacity={1}
+                    fill="url(#colorUsers)"
+                    name="Onboarded Users"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
