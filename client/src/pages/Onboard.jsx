@@ -39,6 +39,13 @@ const Onboard = () => {
     fetchLinkedAccounts();
   }, []);
 
+  // Refresh campaigns when user switches to the campaigns tab
+  useEffect(() => {
+    if (activeTab === 'campaigns') {
+      fetchCampaigns();
+    }
+  }, [activeTab]);
+
   const fetchOnboardedUsers = async () => {
     setLoading(true);
     try {
@@ -1038,12 +1045,17 @@ Let me know if you want help getting started! 😊`;
                   </p>
                 )}
               </div>
-              {/* <button
-                onClick={() => setShowCreateCampaignModal(true)}
-                className="btn-primary"
+              <button
+                onClick={fetchCampaigns}
+                disabled={loadingCampaigns}
+                className="flex items-center px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                title="Refresh campaigns"
               >
-                Create Campaign
-              </button> */}
+                <svg className={`w-4 h-4 mr-2 ${loadingCampaigns ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </button>
             </div>
 
             {loadingCampaigns ? (
@@ -1117,9 +1129,29 @@ Let me know if you want help getting started! 😊`;
                               <span className="mr-1.5">{getStatusIcon(campaign.status)}</span>
                               {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
                             </span>
-                            <span className="text-sm text-gray-600 font-medium">
-                              {campaign.userCount || 0} users
-                            </span>
+                            <div className="relative group">
+                              <span className="text-sm text-gray-600 font-medium cursor-pointer">
+                                {campaign.userCount || 0} users
+                              </span>
+
+                              {/* Tooltip */}
+                              {campaign.userIds && campaign.userIds.length > 0 && (
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 whitespace-nowrap max-w-xs">
+                                  <div className="text-xs text-gray-300 mb-1">Campaign Users:</div>
+                                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                                    {campaign.userIds.map((userId) => {
+                                      const user = onboardedUsers.find(u => u.userId === userId);
+                                      return (
+                                        <div key={userId} className="text-xs">
+                                          {user?.name || userId}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
 
@@ -1287,7 +1319,7 @@ Let me know if you want help getting started! 😊`;
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto"
             >
               <h2 className="text-xl font-bold text-gray-900 mb-4">Create New Campaign</h2>
               <form onSubmit={handleCreateCampaign} className="space-y-4">
@@ -1317,10 +1349,59 @@ Let me know if you want help getting started! 😊`;
                   />
                 </div>
 
+                {/* Add Users Section */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Selected Users ({selectedUsers.size})
+                    Add Users to Campaign
                   </label>
+                  <div className="space-y-3">
+                    {/* User Selection Dropdown */}
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleUserSelect(e.target.value);
+                          e.target.value = ""; // Reset dropdown
+                        }
+                      }}
+                      className="input-field"
+                    >
+                      <option value="">Select a user to add...</option>
+                      {onboardedUsers
+                        .filter(user => !selectedUsers.has(user.userId))
+                        .map((user) => {
+                          const userCampaigns = usersInCampaigns.get(user.userId) || [];
+                          return (
+                            <option key={user.userId} value={user.userId}>
+                              {user.name || user.userId} {userCampaigns.length > 0 ? `(In ${userCampaigns.length} campaigns)` : ''}
+                            </option>
+                          );
+                        })}
+                    </select>
+
+                    {/* Available Users Count */}
+                    <div className="text-sm text-gray-600">
+                      {onboardedUsers.filter(user => !selectedUsers.has(user.userId)).length} users available to add
+                    </div>
+                  </div>
+                </div>
+
+                {/* Selected Users Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Selected Users ({selectedUsers.size})
+                    </label>
+                    {selectedUsers.size > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUsers(new Set())}
+                        className="text-xs text-red-600 hover:text-red-800 underline"
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
                   <div className="max-h-40 overflow-y-auto border rounded-lg p-3 bg-gray-50">
                     {Array.from(selectedUsers).length === 0 ? (
                       <p className="text-sm text-gray-500">No users selected</p>

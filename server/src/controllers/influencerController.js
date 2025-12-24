@@ -1979,6 +1979,16 @@ export const deleteOnboardedUser = async (req, res) => {
 // Get all campaigns
 export const getCampaigns = async (req, res) => {
   try {
+    // First, update any expired campaigns
+    const now = new Date();
+    await Campaign.updateMany(
+      {
+        expiresAt: { $lte: now },
+        status: { $ne: 'expired' }
+      },
+      { status: 'expired' }
+    );
+
     const campaigns = await Campaign.find({})
       .sort({ createdAt: -1 })
       .select('name description status userIds userCount expiresAt isActive notes createdAt updatedAt');
