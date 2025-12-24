@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar.jsx";
-import SearchFilters from "../components/SearchFilters.jsx";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 
@@ -231,12 +230,23 @@ const Followers = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (!filters.user_id && !filters.account_id) {
-      toast.error("Please provide either user_id or account_id");
+    if (!filters.account_id) {
+      toast.error("Please select an account");
       return;
     }
     setAllData([]);
     setFilteredData([]);
+    // Reset display filters for new search
+    setDisplayFilters({
+      keyword: "",
+      category: "",
+      minFollowers: "",
+      maxFollowers: "",
+      minEngagement: "",
+      maxEngagement: "",
+      country: "",
+      city: "",
+    });
     if (viewMode === "following") {
       fetchFollowing();
     } else {
@@ -286,11 +296,6 @@ const Followers = () => {
     }
 
     setFilteredData(filtered);
-  };
-
-  const handleFilterSearch = () => {
-    // Trigger filter application
-    applyFilters();
   };
 
   const loadMore = () => {
@@ -627,20 +632,7 @@ const Followers = () => {
         {/* Search Filters */}
         <div className="card mb-6">
           <form onSubmit={handleSearch} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Instagram Username (user_id)
-                </label>
-                <input
-                  type="text"
-                  name="user_id"
-                  value={filters.user_id}
-                  onChange={handleFilterChange}
-                  placeholder="e.g., farhan._.ahmad"
-                  className="input-field"
-                />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Account ID (account_id)
@@ -680,43 +672,61 @@ const Followers = () => {
                   </div>
                 )}
               </div>
-              {/* <div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Limit (1-1000)
+                  Keyword Search
+                </label>
+                <input
+                  type="text"
+                  value={displayFilters.keyword}
+                  onChange={(e) => setDisplayFilters(prev => ({ ...prev, keyword: e.target.value }))}
+                  placeholder="Search by name or username"
+                  className="input-field"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Min Followers
                 </label>
                 <input
                   type="number"
-                  name="limit"
-                  value={filters.limit}
-                  onChange={handleFilterChange}
-                  min="1"
-                  max="1000"
+                  value={displayFilters.minFollowers}
+                  onChange={(e) => setDisplayFilters(prev => ({ ...prev, minFollowers: e.target.value }))}
+                  placeholder="e.g., 1000"
+                  min="0"
                   className="input-field"
                 />
-              </div> */}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Max Followers
+                </label>
+                <input
+                  type="number"
+                  value={displayFilters.maxFollowers}
+                  onChange={(e) => setDisplayFilters(prev => ({ ...prev, maxFollowers: e.target.value }))}
+                  placeholder="e.g., 10000"
+                  min="0"
+                  className="input-field"
+                />
+              </div>
             </div>
+
             <div className="flex items-center space-x-4">
               <button type="submit" className="btn-primary" disabled={loading}>
                 {loading ? "Loading..." : "Search" + (viewMode === "following" ? " Following" : " Followers")}
               </button>
               <p className="text-sm text-gray-500">
-                {filters.user_id && filters.account_id
-                  ? "⚠️ Both fields filled - account_id will be used"
-                  : filters.user_id || filters.account_id
+                {filters.account_id
                   ? "✓ Ready to search"
-                  : "Please provide user_id or account_id"}
+                  : "Please select an account"}
               </p>
             </div>
           </form>
         </div>
-
-        {/* Display Filters */}
-        <SearchFilters
-          filters={displayFilters}
-          setFilters={setDisplayFilters}
-          onSearch={handleFilterSearch}
-          hideEngagement={true}
-        />
 
         {/* Results */}
         {loading && allData.length === 0 ? (
