@@ -32,6 +32,7 @@ import {
   getInfluencerGrowth,
   getInfluencerGrowthById,
   refreshInfluencerData,
+  deleteInfluencerGrowth,
 } from '../controllers/influencerController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -74,6 +75,7 @@ router.post('/influencer-growth', protect, saveInfluencerGrowth);
 router.get('/influencer-growth', protect, getInfluencerGrowth);
 router.get('/influencer-growth/:id', protect, getInfluencerGrowthById);
 router.post('/refresh-influencer', protect, refreshInfluencerData);
+router.delete('/influencer-growth', protect, deleteInfluencerGrowth);
 
 router.get('/:id', protect, getInfluencerById);
 

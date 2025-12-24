@@ -2863,3 +2863,32 @@ export const refreshInfluencerData = async (req, res) => {
     });
   }
 };
+
+export const deleteInfluencerGrowth = async (req, res) => {
+  try {
+    const { ids } = req.body; // Array of influencer IDs to delete
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid request",
+        message: "Please provide an array of influencer IDs to delete",
+      });
+    }
+
+    const result = await InfluencerGrowth.deleteMany({ id: { $in: ids } });
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully deleted ${result.deletedCount} influencer growth record(s)`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error("Error deleting influencer growth data:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete influencer growth data",
+      message: error.message,
+    });
+  }
+};

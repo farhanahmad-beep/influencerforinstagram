@@ -10,6 +10,9 @@ const InfluencerGrowth = () => {
   const [loading, setLoading] = useState(true);
   const [selectedInfluencer, setSelectedInfluencer] = useState(null);
   const [refreshingInfluencers, setRefreshingInfluencers] = useState(new Set());
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [selectedInfluencersForDelete, setSelectedInfluencersForDelete] = useState(new Set());
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     fetchInfluencerGrowth();
@@ -104,16 +107,96 @@ const InfluencerGrowth = () => {
     }
   };
 
+  const handleDeleteSelected = async () => {
+    if (selectedInfluencersForDelete.size === 0) {
+      toast.error("Please select influencers to delete");
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`${import.meta.env.VITE_API_URL}/influencers/influencer-growth`, {
+        data: { ids: Array.from(selectedInfluencersForDelete) },
+        withCredentials: true,
+      });
+
+      if (response.data.success) {
+        toast.success(`Successfully deleted ${response.data.deletedCount} influencer(s)`);
+        // Remove deleted influencers from the state
+        setInfluencers(prev => prev.filter(inf => !selectedInfluencersForDelete.has(inf.id)));
+        setSelectedInfluencersForDelete(new Set());
+        setIsDeleteMode(false);
+        setShowDeleteModal(false);
+      } else {
+        toast.error(response.data.error || "Failed to delete influencers");
+      }
+    } catch (error) {
+      toast.error("Failed to delete influencers");
+      console.error("Failed to delete influencers:", error);
+    }
+  };
+
+  const toggleInfluencerSelection = (influencerId) => {
+    const newSelection = new Set(selectedInfluencersForDelete);
+    if (newSelection.has(influencerId)) {
+      newSelection.delete(influencerId);
+    } else {
+      newSelection.add(influencerId);
+    }
+    setSelectedInfluencersForDelete(newSelection);
+  };
+
+  const selectAllInfluencers = () => {
+    if (selectedInfluencersForDelete.size === influencers.length) {
+      setSelectedInfluencersForDelete(new Set());
+    } else {
+      setSelectedInfluencersForDelete(new Set(influencers.map(inf => inf.id)));
+    }
+  };
+
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden">
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-8 pt-16">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Influencer Growth Tracking</h1>
-            <p className="text-gray-600">
-              Monitor follower and engagement growth for influencers you've contacted
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Influencer Growth Tracking</h1>
+                <p className="text-gray-600">
+                  Monitor follower and engagement growth for influencers you've contacted
+                </p>
+              </div>
+              {!loading && influencers.length > 0 && (
+                <div className="flex items-center space-x-3">
+                  {isDeleteMode && (
+                    <button
+                      onClick={selectAllInfluencers}
+                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                    >
+                      {selectedInfluencersForDelete.size === influencers.length ? 'Deselect All' : 'Select All'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setIsDeleteMode(!isDeleteMode)}
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      isDeleteMode
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-red-600 text-white hover:bg-red-700'
+                    }`}
+                  >
+                    {isDeleteMode ? 'Cancel Delete' : 'Delete Users'}
+                  </button>
+                  {isDeleteMode && selectedInfluencersForDelete.size > 0 && (
+                    <button
+                      onClick={() => setShowDeleteModal(true)}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      Delete Selected ({selectedInfluencersForDelete.size})
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {loading ? (
@@ -156,17 +239,32 @@ const InfluencerGrowth = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="card hover:shadow-lg transition-shadow cursor-pointer relative"
-                    onClick={() => setSelectedInfluencer(influencer)}
+                    className={`card hover:shadow-lg transition-shadow relative ${
+                      isDeleteMode ? 'cursor-default' : 'cursor-pointer'
+                    }`}
+                    onClick={() => !isDeleteMode && setSelectedInfluencer(influencer)}
                   >
+                    {isDeleteMode && (
+                      <div
+                        className="absolute top-4 left-4 z-10"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedInfluencersForDelete.has(influencer.id)}
+                          onChange={() => toggleInfluencerSelection(influencer.id)}
+                          className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                        />
+                      </div>
+                    )}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRefreshInfluencer(influencer.id);
                       }}
-                      disabled={refreshingInfluencers.has(influencer.id)}
+                      disabled={refreshingInfluencers.has(influencer.id) || isDeleteMode}
                       className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Refresh profile data"
+                      title={isDeleteMode ? "Disabled in delete mode" : "Refresh profile data"}
                     >
                       {refreshingInfluencers.has(influencer.id) ? (
                         <svg className="w-4 h-4 text-gray-600 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -447,6 +545,43 @@ const InfluencerGrowth = () => {
                         </div>
                       ))}
                     </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+
+          {/* Delete Confirmation Modal */}
+          {showDeleteModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-lg max-w-md w-full p-6"
+              >
+                <div className="text-center">
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Delete Influencers</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Are you sure you want to delete {selectedInfluencersForDelete.size} influencer(s)? This action cannot be undone and will permanently remove all growth data for these influencers.
+                  </p>
+                  <div className="flex space-x-3 justify-center">
+                    <button
+                      onClick={() => setShowDeleteModal(false)}
+                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDeleteSelected}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </motion.div>
