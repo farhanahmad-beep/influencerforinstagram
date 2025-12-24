@@ -1,6 +1,6 @@
 import Influencer from '../models/Influencer.js';
 import axios from 'axios';
-import { OnboardedUser, Campaign, UserStatus } from '../models/OnboardedUser.js';
+import { OnboardedUser, Campaign, UserStatus, InfluencerGrowth } from '../models/OnboardedUser.js';
 import { Buffer } from 'buffer';
 
 // Helper function to get Unipile API configuration (read from env at runtime)
@@ -2551,6 +2551,313 @@ export const deleteUserStatus = async (req, res) => {
     return res.status(500).json({
       success: false,
       error: 'Failed to delete user status',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Influencer Growth Tracking Functions
+export const saveInfluencerGrowth = async (req, res) => {
+  try {
+    const {
+      id,
+      username,
+      name,
+      profilePicture,
+      profilePictureData,
+      isPrivate,
+      isVerified,
+      followersCount,
+      followingCount,
+      providerMessagingId
+    } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "Influencer ID is required",
+        statusCode: 400,
+      });
+    }
+
+    // Find existing influencer or create new one
+    let influencer = await InfluencerGrowth.findOne({ id: id.toString() });
+
+    if (influencer) {
+      // Update existing influencer - add to growth history if counts changed
+      const lastHistory = influencer.growthHistory[influencer.growthHistory.length - 1];
+
+      if (lastHistory &&
+          (lastHistory.followersCount !== followersCount ||
+           lastHistory.followingCount !== followingCount)) {
+        // Add new growth data point
+        influencer.growthHistory.push({
+          followersCount,
+          followingCount,
+          timestamp: new Date(),
+        });
+      }
+
+      // Update current data
+      influencer.username = username;
+      influencer.name = name;
+      influencer.profilePicture = profilePicture;
+      influencer.profilePictureData = profilePictureData;
+      influencer.isPrivate = isPrivate;
+      influencer.isVerified = isVerified;
+      influencer.followersCount = followersCount;
+      influencer.followingCount = followingCount;
+      influencer.providerMessagingId = providerMessagingId;
+      influencer.lastUpdatedAt = new Date();
+
+      await influencer.save();
+    } else {
+      // Create new influencer
+      influencer = new InfluencerGrowth({
+        id: id.toString(),
+        username,
+        name,
+        profilePicture,
+        profilePictureData,
+        isPrivate,
+        isVerified,
+        followersCount,
+        followingCount,
+        providerMessagingId,
+        growthHistory: [{
+          followersCount,
+          followingCount,
+          timestamp: new Date(),
+        }],
+      });
+
+      await influencer.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: influencer,
+      message: "Influencer growth data saved successfully",
+    });
+  } catch (error) {
+    console.error("Failed to save influencer growth data:", error.message);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to save influencer growth data",
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+export const getInfluencerGrowth = async (req, res) => {
+  try {
+    const influencers = await InfluencerGrowth.find({})
+      .sort({ lastUpdatedAt: -1 })
+      .select("-__v");
+
+    return res.status(200).json({
+      success: true,
+      data: influencers,
+      count: influencers.length,
+    });
+  } catch (error) {
+    console.error("Failed to fetch influencer growth data:", error.message);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch influencer growth data",
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+export const getInfluencerGrowthById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "Influencer ID is required",
+        statusCode: 400,
+      });
+    }
+
+    const influencer = await InfluencerGrowth.findOne({ id: id.toString() });
+
+    if (!influencer) {
+      return res.status(404).json({
+        success: false,
+        error: "Influencer not found",
+        statusCode: 404,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: influencer,
+    });
+  } catch (error) {
+    console.error("Failed to fetch influencer growth data:", error.message);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch influencer growth data",
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
+// Refresh Influencer Data
+export const refreshInfluencerData = async (req, res) => {
+  try {
+    const { influencerId } = req.body;
+
+    if (!influencerId) {
+      return res.status(400).json({
+        success: false,
+        error: "Influencer ID is required",
+        statusCode: 400,
+      });
+    }
+
+    // Find the influencer in our database
+    const influencer = await InfluencerGrowth.findOne({ id: influencerId.toString() });
+
+    if (!influencer) {
+      return res.status(404).json({
+        success: false,
+        error: "Influencer not found",
+        statusCode: 404,
+      });
+    }
+
+    // Get linked accounts to use for API calls
+    const { apiUrl, accessToken } = getUnipileConfig();
+
+    if (!accessToken || !apiUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "Unipile API not configured",
+        statusCode: 400,
+      });
+    }
+
+    let accountId;
+    try {
+      const accountsResponse = await axios.get(`${apiUrl}/api/v1/accounts`, {
+        headers: getUnipileHeaders(accessToken),
+        timeout: 10000,
+      });
+
+      if (accountsResponse.data && accountsResponse.data.items && accountsResponse.data.items.length > 0) {
+        // Use the first available account
+        accountId = accountsResponse.data.items[0].id;
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: "No linked accounts available for API calls",
+          statusCode: 400,
+        });
+      }
+    } catch (accountError) {
+      console.error("Failed to fetch linked accounts:", accountError.message);
+      return res.status(400).json({
+        success: false,
+        error: "Failed to fetch linked accounts",
+        statusCode: 400,
+      });
+    }
+
+    // Call Unipile API to get latest profile data
+    const unipileResponse = await fetch(
+      `https://api24.unipile.com:15469/api/v1/users/${influencerId}?account_id=${accountId}`,
+      {
+        method: "GET",
+        headers: {
+          "accept": "application/json",
+          "X-API-KEY": process.env.UNIPILE_API_KEY || "3nFd5JpY.KIGhHHiUZly0cj03nVnZPjxHHcmwKEIfU+IeLcgE8OE="
+        }
+      }
+    );
+
+    if (!unipileResponse.ok) {
+      throw new Error(`Unipile API error: ${unipileResponse.status}`);
+    }
+
+    const latestProfileData = await unipileResponse.json();
+
+    // Extract the data we need
+    const {
+      full_name,
+      public_identifier,
+      profile_picture_url,
+      profile_picture_url_large,
+      biography,
+      category,
+      followers_count,
+      following_count,
+      is_verified,
+      is_private,
+      provider_messaging_id
+    } = latestProfileData;
+
+    // Always calculate growth from the FIRST data point (when message was sent)
+    const firstHistoryPoint = influencer.growthHistory[0]; // Always use the first entry
+    const originalFollowers = firstHistoryPoint.followersCount;
+    const originalFollowing = firstHistoryPoint.followingCount;
+
+    // Calculate total growth since first message was sent
+    const followersGrowth = followers_count - originalFollowers;
+    const followingGrowth = following_count - originalFollowing;
+
+    // Add new data point to growth history
+    influencer.growthHistory.push({
+      followersCount: followers_count,
+      followingCount: following_count,
+      timestamp: new Date(),
+    });
+
+    // Update current data
+    influencer.name = full_name;
+    influencer.username = public_identifier;
+    influencer.profilePicture = profile_picture_url;
+    influencer.followersCount = followers_count;
+    influencer.followingCount = following_count;
+    influencer.isVerified = is_verified;
+    influencer.isPrivate = is_private;
+    influencer.providerMessagingId = provider_messaging_id;
+    influencer.lastUpdatedAt = new Date();
+
+    // Add growth metrics
+    influencer.latestGrowth = {
+      followersGrowth,
+      followingGrowth,
+      lastUpdated: new Date()
+    };
+
+    await influencer.save();
+
+    return res.status(200).json({
+      success: true,
+      data: influencer,
+      growth: {
+        followersGrowth,
+        followingGrowth,
+        originalFollowers,
+        originalFollowing,
+        currentFollowers: followers_count,
+        currentFollowing: following_count
+      },
+      message: "Influencer data refreshed successfully",
+    });
+  } catch (error) {
+    console.error("Failed to refresh influencer data:", error.message);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to refresh influencer data",
       statusCode: 500,
       message: error.message,
     });

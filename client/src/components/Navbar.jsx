@@ -93,6 +93,16 @@ const Navbar = () => {
       )
     },
     {
+      path: "/influencer-growth",
+      label: "Influencer Growth",
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" opacity="0.3" />
+        </svg>
+      )
+    },
+    {
       path: "/profile",
       label: "Profile",
       icon: (

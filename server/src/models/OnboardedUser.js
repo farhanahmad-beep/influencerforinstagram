@@ -188,7 +188,7 @@ const userStatusSchema = new mongoose.Schema(
 );
 
 // Indexes
-userStatusSchema.index({ userId: 1 });
+// userStatusSchema.index({ userId: 1 });
 userStatusSchema.index({ status: 1 });
 userStatusSchema.index({ username: 1 });
 userStatusSchema.index({ provider: 1 });
@@ -209,6 +209,81 @@ userStatusSchema.pre('save', function(next) {
 
 const UserStatus = mongoose.model('UserStatus', userStatusSchema);
 
-export { OnboardedUser, Campaign, UserStatus };
+// Influencer Growth Tracking Schema
+const influencerGrowthSchema = new mongoose.Schema(
+  {
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    username: {
+      type: String,
+      trim: true,
+    },
+    name: {
+      type: String,
+      trim: true,
+    },
+    profilePicture: {
+      type: String,
+      trim: true,
+    },
+    profilePictureData: {
+      type: String,
+      trim: true,
+    },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    followersCount: {
+      type: Number,
+      default: 0,
+    },
+    followingCount: {
+      type: Number,
+      default: 0,
+    },
+    providerMessagingId: {
+      type: String,
+      trim: true,
+    },
+    // Growth tracking history
+    growthHistory: [
+      {
+        followersCount: { type: Number, required: true },
+        followingCount: { type: Number, required: true },
+        timestamp: { type: Date, default: Date.now },
+      },
+    ],
+    // When this influencer was first tracked
+    firstTrackedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    // Last update timestamp
+    lastUpdatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    // Latest growth metrics (calculated on refresh)
+    latestGrowth: {
+      followersGrowth: { type: Number, default: 0 },
+      followingGrowth: { type: Number, default: 0 },
+      lastUpdated: { type: Date, default: Date.now },
+    },
+  },
+  { timestamps: true }
+);
+
+const InfluencerGrowth = mongoose.model('InfluencerGrowth', influencerGrowthSchema);
+
+export { OnboardedUser, Campaign, UserStatus, InfluencerGrowth };
 export default OnboardedUser;
 

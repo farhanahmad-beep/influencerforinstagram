@@ -15,6 +15,7 @@ import ChatList from "./pages/ChatList.jsx";
 import ChatMessages from "./pages/ChatMessages.jsx";
 import Onboard from "./pages/Onboard.jsx";
 import StatusTracking from "./pages/StatusTracking.jsx";
+import InfluencerGrowth from "./pages/InfluencerGrowth.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
@@ -101,6 +102,14 @@ function App() {
           element={
             <ProtectedRoute>
               <StatusTracking />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/influencer-growth"
+          element={
+            <ProtectedRoute>
+              <InfluencerGrowth />
             </ProtectedRoute>
           }
         />

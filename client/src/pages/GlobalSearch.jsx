@@ -315,6 +315,27 @@ Let me know if you want help getting started! 😊`;
           } catch (statusError) {
             console.error('Failed to update user status:', statusError);
           }
+
+          // Save influencer data for growth tracking
+          try {
+            const userData = filteredResults.find((item) => item.id === user.id);
+            if (userData) {
+              await axios.post(`${import.meta.env.VITE_API_URL}/influencers/influencer-growth`, {
+                id: userData.id,
+                username: userData.username,
+                name: userData.name,
+                profilePicture: userData.profilePicture,
+                profilePictureData: userData.profilePictureData,
+                isPrivate: userData.isPrivate || false,
+                isVerified: userData.isVerified || false,
+                followersCount: userData.followersCount || 0,
+                followingCount: userData.followingCount || 0,
+                providerMessagingId: userData.providerMessagingId,
+              }, { withCredentials: true });
+            }
+          } catch (growthError) {
+            console.error('Failed to save influencer growth data:', growthError);
+          }
         } else {
           failCount++;
           setSendProgress((prev) => ({

@@ -28,6 +28,10 @@ import {
   getUserStatuses,
   getUserStatusStats,
   deleteUserStatus,
+  saveInfluencerGrowth,
+  getInfluencerGrowth,
+  getInfluencerGrowthById,
+  refreshInfluencerData,
 } from '../controllers/influencerController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -64,6 +68,12 @@ router.post('/user-status/active', protect, updateUserStatusActive);
 router.get('/user-statuses', protect, getUserStatuses);
 router.get('/user-statuses/stats', protect, getUserStatusStats);
 router.delete('/user-statuses/:userId', protect, deleteUserStatus);
+
+// Influencer growth tracking routes
+router.post('/influencer-growth', protect, saveInfluencerGrowth);
+router.get('/influencer-growth', protect, getInfluencerGrowth);
+router.get('/influencer-growth/:id', protect, getInfluencerGrowthById);
+router.post('/refresh-influencer', protect, refreshInfluencerData);
 
 router.get('/:id', protect, getInfluencerById);
 
