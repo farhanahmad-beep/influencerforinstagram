@@ -457,11 +457,54 @@ const Onboard = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'running': return '▶️';
-      case 'paused': return '⏸️';
-      case 'completed': return '✅';
-      case 'expired': return '⏰';
-      default: return '📝';
+      case 'running':
+        return (
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <path d="M8 5V19L19 12L8 5Z" fill="#10B981" stroke="#059669" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M5 7V17" stroke="#10B981" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        );
+      case 'draft':
+        return (
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V9L13 4H11Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M20 9V9C20.5523 9 21 8.55228 21 8V7C21 6.44772 20.5523 6 20 6H14C13.4477 6 13 6.44772 13 7V8C13 8.55228 13.4477 9 14 9H20Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M9 13H7" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M9 17H7" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M13 13H11" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        );
+      case 'completed':
+        return (
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.7089 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.39828 5.49706C5.79935 3.85781 7.69279 2.71537 9.79619 2.24013C11.8996 1.7649 14.1003 1.98232 16.07 2.85999" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M22 4L12 14.01L9 11.01" fill="#10B981" stroke="#059669" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        );
+      case 'paused':
+        return (
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <rect x="6" y="4" width="4" height="16" fill="#F59E0B" stroke="#D97706" strokeWidth="1.5" rx="2"/>
+            <rect x="14" y="4" width="4" height="16" fill="#F59E0B" stroke="#D97706" strokeWidth="1.5" rx="2"/>
+          </svg>
+        );
+      case 'expired':
+        return (
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" fill="#EF4444" stroke="#DC2626" strokeWidth="1.5"/>
+            <path d="M12 6V12L16 14" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 2V4" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M22 12H20" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        );
+      default:
+        return (
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+            <path d="M9 12L11 14L15 10" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#6B7280" strokeWidth="1.5"/>
+            <path d="M12 7V12L15 15" fill="#6B7280" stroke="#374151" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        );
     }
   };
 
@@ -841,13 +884,28 @@ Let me know if you want help getting started! 😊`;
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: (index % 20) * 0.05 }}
-                      className={`card hover:shadow-lg transition-shadow ${
+                      className={`relative bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200 ${
                         selectedUsers.has(user.userId) || selectedUsersForDelete.has(user.userId)
-                          ? "border-2 border-purple-500 bg-purple-50"
-                          : ""
+                          ? "border-2 border-purple-500 bg-purple-50/30 shadow-purple-100"
+                          : "hover:border-gray-300"
                       }`}
                     >
-                      <div className="flex flex-col">
+                      {/* Delete Icon - Top Right Corner */}
+                      {!isSelectionMode && !isDeleteMode && (
+                        <button
+                          onClick={() => handleDelete(user.userId, user.name)}
+                          disabled={deletingUserId === user.userId}
+                          className="absolute top-3 right-3 p-1.5 bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                          title="Delete user"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+
+                      <div className="p-6">
+                        {/* Header with Avatar and Name */}
                         <div className="flex items-center space-x-4 mb-4">
                           {(isSelectionMode || isDeleteMode) && (
                             <input
@@ -857,105 +915,105 @@ Let me know if you want help getting started! 😊`;
                               className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                             />
                           )}
-                          <div className={`w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
                             selectedUsers.has(user.userId) || selectedUsersForDelete.has(user.userId) ? 'bg-purple-200' : 'bg-purple-100'
                           }`}>
-                            <span className="text-purple-600 font-bold text-2xl">
+                            <span className="text-purple-600 font-bold text-lg">
                               {user.name?.charAt(0)?.toUpperCase() || "U"}
                             </span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between space-x-2">
-                              <h3 className="text-lg font-semibold text-gray-900 truncate">
-                                {user.name || "Unknown"}
-                              </h3>
-                              {usersInCampaigns.has(user.userId) && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 flex-shrink-0">
-                                  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                  </svg>
-                                  In {usersInCampaigns.get(user.userId).length} campaign{usersInCampaigns.get(user.userId).length !== 1 ? 's' : ''}
-                                </span>
-                              )}
-                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 truncate mb-1">
+                              {user.name || "Unknown"}
+                            </h3>
+                            {usersInCampaigns.has(user.userId) && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                In {usersInCampaigns.get(user.userId).length} campaign{usersInCampaigns.get(user.userId).length !== 1 ? 's' : ''}
+                              </span>
+                            )}
                           </div>
                         </div>
 
-                        <div className="space-y-3 mb-4">
-                          <div className="flex justify-between items-start py-2 border-b border-gray-200">
-                            <span className="text-sm text-gray-600 font-medium">Chat ID:</span>
-                            <span className="text-sm text-gray-900 font-mono break-all text-right ml-2">
-                              {user.chatId || user.userId || "N/A"}
+                        {/* User Details */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-500">User ID</span>
+                            <span className="text-sm font-mono text-gray-900 bg-gray-50 px-2 py-1 rounded">
+                              {user.userId}
                             </span>
                           </div>
 
-                          {user.providerId && (
-                            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-                              <span className="text-sm text-gray-600 font-medium">Provider ID:</span>
-                              <span className="text-sm text-gray-900 font-mono break-all text-right ml-2">
-                                {user.providerId}
+                          {user.chatId && user.chatId !== user.userId && (
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-500">Chat ID</span>
+                              <span className="text-sm font-mono text-gray-900 bg-gray-50 px-2 py-1 rounded">
+                                {user.chatId}
                               </span>
                             </div>
                           )}
 
                           {user.providerMessagingId && (
-                            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-                              <span className="text-sm text-gray-600 font-medium">Messaging ID:</span>
-                              <span className="text-sm text-gray-900 font-mono break-all text-right ml-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-500">Messaging ID</span>
+                              <span className="text-sm font-mono text-gray-900 bg-gray-50 px-2 py-1 rounded truncate max-w-[120px]">
                                 {user.providerMessagingId}
                               </span>
                             </div>
                           )}
 
-                          {usersInCampaigns.has(user.userId) && (
-                            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-                              <span className="text-sm text-gray-600 font-medium">Campaigns:</span>
-                              <div className="text-sm text-gray-900 text-right ml-2">
-                                <div className="flex flex-wrap gap-1 justify-end">
-                                  {usersInCampaigns.get(user.userId).map((campaignName, idx) => (
-                                    <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                      {campaignName}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
                           {user.createdAt && (
-                            <div className="flex justify-between items-start py-2">
-                              <span className="text-sm text-gray-600 font-medium">Created At:</span>
-                              <span className="text-sm text-gray-900 text-right ml-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-500">Onboarded</span>
+                              <span className="text-sm text-gray-900">
                                 {formatDate(user.createdAt)}
                               </span>
                             </div>
                           )}
                         </div>
 
-                        {!isSelectionMode && !isDeleteMode && (
-                          <button
-                            onClick={() => handleDelete(user.userId, user.name)}
-                            disabled={deletingUserId === user.userId}
-                            className="w-full mt-4 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {deletingUserId === user.userId ? "Deleting..." : "Delete User"}
-                          </button>
+                        {/* Campaigns Tags */}
+                        {usersInCampaigns.has(user.userId) && (
+                          <div className="mt-4 pt-3 border-t border-gray-100">
+                            <div className="flex flex-wrap gap-1">
+                              {usersInCampaigns.get(user.userId).map((campaignName, idx) => (
+                                <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                  {campaignName}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         )}
+
+                        {/* Delete Progress */}
                         {isDeleteMode && deleteProgress[user.userId] && (
-                          <div className="w-full mt-4 px-4 py-2 text-sm font-medium text-center rounded-lg bg-gray-100">
-                            <span
-                              className={`${
-                                deleteProgress[user.userId].status === "success"
-                                  ? "text-green-600"
-                                  : deleteProgress[user.userId].status === "error"
-                                  ? "text-red-600"
-                                  : "text-gray-500"
-                              }`}
-                            >
-                              {deleteProgress[user.userId].status === "pending" && "⏳ Deleting..."}
-                              {deleteProgress[user.userId].status === "success" && "✓ Deleted"}
-                              {deleteProgress[user.userId].status === "error" && `✗ ${deleteProgress[user.userId].message}`}
-                            </span>
+                          <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
+                            <div className="flex items-center space-x-2">
+                              {deleteProgress[user.userId].status === "pending" && (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                                  <span className="text-sm text-gray-600">Deleting...</span>
+                                </>
+                              )}
+                              {deleteProgress[user.userId].status === "success" && (
+                                <>
+                                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                  <span className="text-sm text-green-600">Deleted successfully</span>
+                                </>
+                              )}
+                              {deleteProgress[user.userId].status === "error" && (
+                                <>
+                                  <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                  <span className="text-sm text-red-600">{deleteProgress[user.userId].message}</span>
+                                </>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1035,44 +1093,56 @@ Let me know if you want help getting started! 😊`;
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: (index % 20) * 0.05 }}
-                      className="card hover:shadow-lg transition-shadow"
+                      className="relative bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200 hover:border-gray-300"
                     >
-                      <div className="flex flex-col">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold text-gray-900 truncate">
-                              {campaign.name}
-                            </h3>
-                            <div className="flex items-center mt-1">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
-                                <span className="mr-1">{getStatusIcon(campaign.status)}</span>
-                                {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
-                              </span>
-                              <span className="ml-2 text-sm text-gray-600">
-                                {campaign.userCount} users
-                              </span>
-                            </div>
+                      {/* Delete Icon - Top Right Corner */}
+                      <button
+                        onClick={() => handleDeleteCampaign(campaign._id, campaign.name)}
+                        className="absolute top-3 right-3 p-1.5 bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 rounded-full transition-colors z-10"
+                        title="Delete campaign"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+
+                      <div className="p-6">
+                        {/* Header with Title and Status */}
+                        <div className="mb-4">
+                          <h3 className="text-lg font-semibold text-gray-900 pr-12">
+                            {campaign.name}
+                          </h3>
+                          <div className="flex items-center justify-between mt-2">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
+                              <span className="mr-1.5">{getStatusIcon(campaign.status)}</span>
+                              {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
+                            </span>
+                            <span className="text-sm text-gray-600 font-medium">
+                              {campaign.userCount || 0} users
+                            </span>
                           </div>
                         </div>
 
+                        {/* Description */}
                         {campaign.description && (
                           <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                             {campaign.description}
                           </p>
                         )}
 
+                        {/* Campaign Details */}
                         <div className="space-y-3 mb-4">
-                          <div className="flex justify-between items-start py-2 border-b border-gray-200">
-                            <span className="text-sm text-gray-600 font-medium">Created:</span>
-                            <span className="text-sm text-gray-900 text-right ml-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-500">Created</span>
+                            <span className="text-sm text-gray-900 font-medium">
                               {formatDate(campaign.createdAt)}
                             </span>
                           </div>
 
                           {campaign.expiresAt && (
-                            <div className="flex justify-between items-start py-2 border-b border-gray-200">
-                              <span className="text-sm text-gray-600 font-medium">Expires:</span>
-                              <span className={`text-sm text-right ml-2 ${
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-500">Expires</span>
+                              <span className={`text-sm font-medium ${
                                 new Date(campaign.expiresAt) < new Date() ? 'text-red-600' : 'text-gray-900'
                               }`}>
                                 {formatDate(campaign.expiresAt)}
@@ -1081,14 +1151,15 @@ Let me know if you want help getting started! 😊`;
                           )}
 
                           {campaign.notes && (
-                            <div className="py-2">
-                              <span className="text-sm text-gray-600 font-medium">Notes:</span>
-                              <p className="text-sm text-gray-900 mt-1">{campaign.notes}</p>
+                            <div className="pt-2 border-t border-gray-100">
+                              <span className="text-sm text-gray-500">Notes</span>
+                              <p className="text-sm text-gray-900 mt-1 line-clamp-2">{campaign.notes}</p>
                             </div>
                           )}
                         </div>
 
-                        <div className="flex space-x-2">
+                        {/* Action Buttons */}
+                        <div className="flex flex-col space-y-2">
                           {campaign.status === 'draft' && (
                             <button
                               onClick={() => {
@@ -1099,14 +1170,22 @@ Let me know if you want help getting started! 😊`;
                                   handleUpdateCampaignStatus(campaign._id, 'running');
                                 }
                               }}
-                              className="flex-1 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                              className="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                               disabled={sendingCampaigns.has(campaign._id)}
                             >
-                              {sendingCampaigns.has(campaign._id) ? 'Sending...' : 'Send Message'}
+                              {sendingCampaigns.has(campaign._id) ? (
+                                <div className="flex items-center justify-center space-x-2">
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                  <span>Sending...</span>
+                                </div>
+                              ) : (
+                                'Send Message'
+                              )}
                             </button>
                           )}
+
                           {campaign.status === 'running' && !sendingCampaigns.has(campaign._id) && (
-                            <>
+                            <div className="flex space-x-2">
                               {!sentCampaigns.has(campaign._id) ? (
                                 <>
                                   <button
@@ -1132,30 +1211,43 @@ Let me know if you want help getting started! 😊`;
                                       sendCampaignMessages(campaign._id, campaign);
                                     }
                                   }}
-                                  className="flex-1 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                                  className="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
                                 >
-                                  Send Message Again
+                                  Send Again
                                 </button>
                               )}
-                            </>
+                            </div>
                           )}
+
                           {campaign.status === 'running' && sendingCampaigns.has(campaign._id) && (
                             <button
-                              className="flex-1 px-3 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg cursor-not-allowed"
+                              className="w-full px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg cursor-not-allowed"
                               disabled
                             >
-                              Sending...
+                              <div className="flex items-center justify-center space-x-2">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                <span>Sending...</span>
+                              </div>
                             </button>
                           )}
+
                           {campaign.status === 'paused' && (
                             <button
                               onClick={() => handleUpdateCampaignStatus(campaign._id, 'running')}
-                              className="flex-1 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                              className="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                               disabled={sendingCampaigns.has(campaign._id)}
                             >
-                              {sendingCampaigns.has(campaign._id) ? 'Sending...' : 'Send Message'}
+                              {sendingCampaigns.has(campaign._id) ? (
+                                <div className="flex items-center justify-center space-x-2">
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                  <span>Sending...</span>
+                                </div>
+                              ) : (
+                                'Send Message'
+                              )}
                             </button>
                           )}
+
                           {campaign.status === 'completed' && (
                             <button
                               onClick={() => {
@@ -1166,18 +1258,19 @@ Let me know if you want help getting started! 😊`;
                                   handleUpdateCampaignStatus(campaign._id, 'running');
                                 }
                               }}
-                              className="flex-1 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                              className="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                               disabled={sendingCampaigns.has(campaign._id)}
                             >
-                              {sendingCampaigns.has(campaign._id) ? 'Sending...' : 'Send Again'}
+                              {sendingCampaigns.has(campaign._id) ? (
+                                <div className="flex items-center justify-center space-x-2">
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                  <span>Sending...</span>
+                                </div>
+                              ) : (
+                                'Send Again'
+                              )}
                             </button>
                           )}
-                          <button
-                            onClick={() => handleDeleteCampaign(campaign._id, campaign.name)}
-                            className="px-3 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
-                          >
-                            Delete
-                          </button>
                         </div>
                       </div>
                     </motion.div>
