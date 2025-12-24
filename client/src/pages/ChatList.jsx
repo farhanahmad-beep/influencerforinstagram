@@ -37,6 +37,7 @@ const ChatList = () => {
   const [campaignMessages, setCampaignMessages] = useState(new Map()); // campaignId -> array of messages
   const [chatPreviews, setChatPreviews] = useState(new Map()); // chatId -> last message preview
   const [loadingPreviews, setLoadingPreviews] = useState(new Set()); // Track loading state for previews
+  const [onboardingStatus, setOnboardingStatus] = useState(new Map()); // chatId -> 'idle' | 'loading' | 'success' | 'error'
 
   // Calculate total unread messages
   const totalUnreadMessages = chats.reduce((total, chat) => total + (chat.unreadCount || 0), 0);
@@ -233,6 +234,9 @@ const ChatList = () => {
       return;
     }
 
+    // Set loading state
+    setOnboardingStatus(prev => new Map(prev).set(chatId, 'loading'));
+
     try {
       const onboardingData = {
         name: chatName,
@@ -253,6 +257,9 @@ const ChatList = () => {
       if (response.data.success) {
         toast.success(response.data.message || "User onboarded successfully!");
 
+        // Set success state
+        setOnboardingStatus(prev => new Map(prev).set(chatId, 'success'));
+
         // Update user status to onboarded
         try {
           await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/onboarded`, {
@@ -264,14 +271,17 @@ const ChatList = () => {
         }
       } else {
         toast.error(response.data.error || "Failed to onboard user");
+        setOnboardingStatus(prev => new Map(prev).set(chatId, 'error'));
       }
     } catch (error) {
       // Handle 409 Conflict (user already onboarded)
       if (error.response?.status === 409) {
         toast("User is already onboarded", { duration: 3000 });
+        setOnboardingStatus(prev => new Map(prev).set(chatId, 'success'));
       } else {
         const errorMessage = error.response?.data?.error || error.message || "Failed to onboard user";
         toast.error(errorMessage);
+        setOnboardingStatus(prev => new Map(prev).set(chatId, 'error'));
       }
       console.error("Failed to onboard user:", error);
     }
@@ -1130,10 +1140,30 @@ Let me know if you want help getting started! 😊`;
                             e.stopPropagation();
                             handleOnboard(chat.id, chat.name, chat.providerId, chat.attendeeProviderId);
                           }}
-                          className="btn-secondary text-xs px-2 py-1 mb-2"
-                          title="Onboard this user"
+                          className={`text-xs px-2 py-1 mb-2 rounded transition-colors ${
+                            onboardingStatus.get(chat.id) === 'success'
+                              ? 'bg-green-600 text-white hover:bg-green-700'
+                              : onboardingStatus.get(chat.id) === 'loading'
+                              ? 'bg-gray-500 text-white cursor-not-allowed'
+                              : 'bg-purple-600 text-white hover:bg-purple-700'
+                          }`}
+                          disabled={onboardingStatus.get(chat.id) === 'loading'}
+                          title={
+                            onboardingStatus.get(chat.id) === 'success'
+                              ? 'User onboarded'
+                              : onboardingStatus.get(chat.id) === 'loading'
+                              ? 'Onboarding in progress...'
+                              : 'Onboard this user'
+                          }
                         >
-                          Onboard
+                          {onboardingStatus.get(chat.id) === 'loading' && (
+                            <span className="flex items-center">
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                              Onboarding...
+                            </span>
+                          )}
+                          {onboardingStatus.get(chat.id) === 'success' && 'Onboarded'}
+                          {!onboardingStatus.get(chat.id) && 'Onboard'}
                         </button>
                       )}
                       {isOnboardingMode && onboardingProgress[chat.id] && (
