@@ -100,7 +100,7 @@ const AdminDashboard = () => {
             You have full administrative privileges. Additional admin features will be available here.
           </p>
         </div>
-      </div>
+        </div>
       </div>
     </div>
   );

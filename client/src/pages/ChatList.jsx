@@ -35,15 +35,55 @@ const ChatList = () => {
   const [onboardedUsers, setOnboardedUsers] = useState([]);
   const [loadingCampaigns, setLoadingCampaigns] = useState(false);
   const [campaignMessages, setCampaignMessages] = useState(new Map()); // campaignId -> array of messages
+  const [chatPreviews, setChatPreviews] = useState(new Map()); // chatId -> last message preview
+  const [loadingPreviews, setLoadingPreviews] = useState(new Set()); // Track loading state for previews
+
+  // Calculate total unread messages
+  const totalUnreadMessages = chats.reduce((total, chat) => total + (chat.unreadCount || 0), 0);
 
   const handleChatClick = (chatId, chatName, e) => {
     // Prevent navigation if clicking on checkbox or in selection mode
-    if (e?.target?.type === 'checkbox' || isSelectionMode) {
+    if (e?.target?.type === 'checkbox' || isSelectionMode || isOnboardingMode) {
       return;
     }
     navigate(`/chat-messages/${chatId}`, {
       state: { chatName, accountId: selectedAccountId },
     });
+  };
+
+  const fetchChatPreview = async (chatId) => {
+    if (!selectedAccountId) return;
+
+    setLoadingPreviews(prev => new Set(prev).add(chatId));
+
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/influencers/chats/${chatId}/messages`,
+        {
+          params: {
+            account_id: selectedAccountId,
+            limit: 1, // Just get the last message for preview
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success) {
+        const messages = response.data.data || [];
+        const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+        setChatPreviews(prev => new Map(prev).set(chatId, lastMessage));
+      }
+    } catch (error) {
+      console.error(`Failed to fetch preview for chat ${chatId}:`, error);
+      // Set null to prevent repeated fetches
+      setChatPreviews(prev => new Map(prev).set(chatId, null));
+    } finally {
+      setLoadingPreviews(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(chatId);
+        return newSet;
+      });
+    }
   };
 
   const handleChatSelect = (chatId) => {
@@ -432,13 +472,21 @@ const ChatList = () => {
 
       if (response.data.success) {
         const chatsData = response.data.data || [];
-        
+
         if (cursor) {
           // Append to existing data for pagination
           setChats((prev) => [...prev, ...chatsData]);
+          // Fetch previews for new chats
+          chatsData.forEach((chat) => {
+            fetchChatPreview(chat.id);
+          });
         } else {
           // Replace data for new search
           setChats(chatsData);
+          // Fetch previews for all chats
+          chatsData.forEach((chat) => {
+            fetchChatPreview(chat.id);
+          });
         }
 
         setPagination({
@@ -675,7 +723,14 @@ Let me know if you want help getting started! 😊`;
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Chat List</h1>
+              <div className="flex items-center space-x-3 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900">Chat List</h1>
+                {!showCampaignMessages && totalUnreadMessages > 0 && (
+                  <span className="bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full animate-pulse shadow-lg">
+                    {totalUnreadMessages} unread
+                  </span>
+                )}
+              </div>
               <p className="text-gray-600">
                 {showCampaignMessages
                   ? "View campaign messages grouped by campaign"
@@ -998,6 +1053,8 @@ Let me know if you want help getting started! 😊`;
                   } ${
                     selectedChats.has(chat.id) || selectedForOnboarding.has(chat.id)
                       ? "border-2 border-purple-500 bg-purple-50"
+                      : chat.unreadCount > 0
+                      ? "border-l-4 border-l-red-500 bg-red-50/30"
                       : ""
                   }`}
                   onClick={(e) => handleChatClick(chat.id, chat.name, e)}
@@ -1029,7 +1086,7 @@ Let me know if you want help getting started! 😊`;
                             </span>
                           )}
                           {chat.unreadCount > 0 && (
-                            <span className="bg-purple-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0">
+                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full flex-shrink-0 animate-pulse shadow-lg border-2 border-white">
                               {chat.unreadCount}
                             </span>
                           )}
@@ -1038,6 +1095,30 @@ Let me know if you want help getting started! 😊`;
                           <span>ID: {chat.id}</span>
                           {chat.providerId && (
                             <span>Provider ID: {chat.providerId}</span>
+                          )}
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            {loadingPreviews.has(chat.id) ? (
+                              <div className="flex items-center space-x-2">
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-purple-600"></div>
+                                <span className="text-xs text-gray-400">Loading preview...</span>
+                              </div>
+                            ) : chatPreviews.has(chat.id) && chatPreviews.get(chat.id) ? (
+                              <p className="text-sm text-gray-600 truncate">
+                                {chatPreviews.get(chat.id).isFromMe ? 'You: ' : ''}
+                                {chatPreviews.get(chat.id).text || 'No message content'}
+                              </p>
+                            ) : (
+                              <p className="text-sm text-gray-400 italic">
+                                Click to start conversation
+                              </p>
+                            )}
+                          </div>
+                          {chat.unreadCount > 0 && (
+                            <span className="text-red-600 font-semibold text-xs ml-2 flex-shrink-0">
+                              {chat.unreadCount} new
+                            </span>
                           )}
                         </div>
                       </div>

@@ -16,7 +16,6 @@ const ChatMessages = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [showSendModal, setShowSendModal] = useState(false);
   const [messageText, setMessageText] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const [pagination, setPagination] = useState({
@@ -61,11 +60,11 @@ const ChatMessages = () => {
         const messagesData = response.data.data || [];
 
         if (cursor) {
-          // Append to existing data for pagination
-          setMessages((prev) => [...prev, ...messagesData]);
+          // Append to existing data for pagination (newer messages)
+          setMessages((prev) => [...messagesData, ...prev]);
         } else {
-          // Replace data for new fetch
-          setMessages(messagesData);
+          // Replace data for new fetch and reverse to show chronological order
+          setMessages(messagesData.reverse());
         }
 
         setPagination({
@@ -137,7 +136,6 @@ const ChatMessages = () => {
       if (response.data.success) {
         toast.success("Message sent successfully!");
         setMessageText("");
-        setShowSendModal(false);
         // Refresh messages to show the new one
         fetchMessages();
       } else {
@@ -252,13 +250,6 @@ const ChatMessages = () => {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{chatName}</h1>
               <p className="text-gray-600">Chat ID: {chatId}</p>
             </div>
-            <button
-              onClick={() => setShowSendModal(true)}
-              className="btn-primary"
-              disabled={!accountId}
-            >
-              Send Message
-            </button>
           </div>
           {!accountId && (
             <p className="text-sm text-red-600 mt-2">
@@ -306,79 +297,141 @@ const ChatMessages = () => {
               </p>
             </div>
 
-            <div className="space-y-4 mb-6">
-              {messages.map((message, index) => (
-                <motion.div
-                  key={message.id || index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.02 }}
-                  className={`card ${message.isSender === 1 ? 'bg-purple-50 border-purple-200' : 'bg-white'}`}
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.isSender === 1 ? 'bg-purple-600' : 'bg-gray-300'
-                    }`}>
-                      <span className={`font-bold text-sm ${
-                        message.isSender === 1 ? 'text-white' : 'text-gray-700'
+            {/* Chat Messages Container */}
+            <div className="bg-white rounded-lg border border-gray-200 min-h-[500px] max-h-[600px] overflow-y-auto p-4 mb-6">
+              <div className="space-y-3">
+                {messages.map((message, index) => (
+                  <motion.div
+                    key={message.id || index}
+                    initial={{ opacity: 0, x: message.isSender === 1 ? 20 : -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.02 }}
+                    className={`flex ${message.isSender === 1 ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-xs lg:max-w-md xl:max-w-lg ${message.isSender === 1 ? 'order-2' : 'order-1'}`}>
+                      {/* Message Bubble */}
+                      <div
+                        className={`px-4 py-2 rounded-2xl shadow-sm ${
+                          message.isSender === 1
+                            ? 'bg-purple-600 text-white rounded-br-md'
+                            : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap break-words">
+                          {renderMessageWithLinks(message.text)}
+                        </p>
+                      </div>
+
+                      {/* Message Metadata */}
+                      <div className={`flex items-center space-x-2 mt-1 text-xs text-gray-500 ${
+                        message.isSender === 1 ? 'justify-end' : 'justify-start'
                       }`}>
-                        {message.isSender === 1 ? 'You' : chatName?.charAt(0)?.toUpperCase() || 'U'}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className={`text-sm font-semibold ${
-                          message.isSender === 1 ? 'text-purple-700' : 'text-gray-700'
-                        }`}>
-                          {message.isSender === 1 ? 'You' : chatName}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {formatDate(message.timestamp)}
-                        </span>
-                        {message.seen === 1 && message.isSender === 1 && (
-                          <span className="text-blue-500 text-xs" title="Seen">
-                            ✓✓
-                          </span>
-                        )}
-                        {message.delivered === 1 && message.seen === 0 && message.isSender === 1 && (
-                          <span className="text-gray-400 text-xs" title="Delivered">
-                            ✓
-                          </span>
+                        <span>{formatDate(message.timestamp)}</span>
+                        {message.isSender === 1 && (
+                          <>
+                            {message.seen === 1 && (
+                              <span className="text-blue-400" title="Seen">
+                                ✓✓
+                              </span>
+                            )}
+                            {message.delivered === 1 && message.seen === 0 && (
+                              <span className="text-gray-400" title="Delivered">
+                                ✓
+                              </span>
+                            )}
+                          </>
                         )}
                         {message.edited === 1 && (
-                          <span className="text-xs text-gray-400 italic">(edited)</span>
+                          <span className="italic">(edited)</span>
                         )}
                       </div>
-                      <p className="text-gray-900 whitespace-pre-wrap break-words">
-                        {renderMessageWithLinks(message.text)}
-                      </p>
+
+                      {/* Attachments */}
                       {message.attachments && message.attachments.length > 0 && (
-                        <div className="mt-2 text-xs text-gray-500">
+                        <div className={`mt-1 text-xs text-gray-500 ${
+                          message.isSender === 1 ? 'text-right' : 'text-left'
+                        }`}>
                           {message.attachments.length} attachment{message.attachments.length !== 1 ? 's' : ''}
                         </div>
                       )}
+
+                      {/* Reactions */}
                       {message.reactions && message.reactions.length > 0 && (
-                        <div className="mt-2 flex items-center space-x-1">
-                          {message.reactions.map((reaction, idx) => (
-                            <span key={idx} className="text-sm">
-                              {reaction}
-                            </span>
-                          ))}
+                        <div className={`mt-1 flex ${message.isSender === 1 ? 'justify-end' : 'justify-start'}`}>
+                          <div className="flex items-center space-x-1 bg-white rounded-full px-2 py-1 shadow-sm border">
+                            {message.reactions.map((reaction, idx) => (
+                              <span key={idx} className="text-sm">
+                                {reaction}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       )}
-                      <div className="mt-2 text-xs text-gray-400 space-x-2">
-                        {message.id && <span>ID: {message.id}</span>}
-                        {message.senderId && <span>• Sender: {message.senderId}</span>}
-                      </div>
+
+                      {/* Debug Info (only in development) */}
+                      {process.env.NODE_ENV === 'development' && (
+                        <div className={`mt-1 text-xs text-gray-400 ${
+                          message.isSender === 1 ? 'text-right' : 'text-left'
+                        }`}>
+                          {message.id && <span>ID: {message.id}</span>}
+                          {message.senderId && <span> • Sender: {message.senderId}</span>}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Message Input */}
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <form onSubmit={handleSendMessage} className="flex space-x-3">
+                <div className="flex-1">
+                  <textarea
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    placeholder="Type a message..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    rows="1"
+                    disabled={sendingMessage}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage(e);
+                      }
+                    }}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="px-4 py-2 h-10 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                  disabled={sendingMessage || !messageText.trim() || !accountId}
+                >
+                  {sendingMessage ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                      <span>Send</span>
+                    </>
+                  )}
+                </button>
+              </form>
+              {!accountId && (
+                <p className="text-sm text-red-600 mt-2">
+                  Account ID is required to send messages
+                </p>
+              )}
             </div>
 
             {/* Load More Button */}
             {pagination.hasMore && (
-              <div className="text-center">
+              <div className="text-center mt-4">
                 <button
                   onClick={loadMore}
                   disabled={loadingMore}
@@ -391,58 +444,6 @@ const ChatMessages = () => {
           </>
         )}
 
-        {/* Send Message Modal */}
-        {showSendModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
-            >
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Send Message</h2>
-              <form onSubmit={handleSendMessage} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Message
-                  </label>
-                  <textarea
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    placeholder="Type your message here..."
-                    className="input-field min-h-[120px] resize-y"
-                    required
-                    disabled={sendingMessage}
-                  />
-                </div>
-                {!accountId && (
-                  <p className="text-sm text-red-600">
-                    Account ID is required to send messages
-                  </p>
-                )}
-                <div className="flex space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowSendModal(false);
-                      setMessageText("");
-                    }}
-                    className="btn-secondary flex-1"
-                    disabled={sendingMessage}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn-primary flex-1"
-                    disabled={sendingMessage || !accountId}
-                  >
-                    {sendingMessage ? "Sending..." : "Send"}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
       </div>
       </div>
     </div>

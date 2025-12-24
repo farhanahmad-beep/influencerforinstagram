@@ -45,7 +45,7 @@ const Dashboard = () => {
         index: i,
         value: Math.round(value)
       });
-    }
+      }
 
     // Ensure the last point matches current value
     data[data.length - 1].value = currentValue;
@@ -182,7 +182,7 @@ const Dashboard = () => {
                       strokeWidth={2}
                       dot={false}
                       activeDot={{ r: 4 }}
-                      fill="none"
+              fill="none"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -243,7 +243,7 @@ const Dashboard = () => {
                       type="monotone"
                       dataKey="value"
                       stroke="#ef4444"
-                      strokeWidth={2}
+                strokeWidth={2}
                       dot={false}
                       activeDot={{ r: 4 }}
                     />
@@ -263,7 +263,7 @@ const Dashboard = () => {
                     <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
+            </svg>
                     </div>
                     <div className="absolute -top-1 -right-1">
                       <span className="relative flex h-3 w-3">
@@ -397,12 +397,12 @@ const Dashboard = () => {
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                     {chartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
+              ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
+            </div>
 
           {/* Campaign Distribution - Pie Chart */}
           {(stats.activeCampaigns > 0 || stats.completedCampaigns > 0) && (
@@ -439,8 +439,8 @@ const Dashboard = () => {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-            </div>
-          )}
+              </div>
+            )}
 
           {/* Growth Metrics - Area Chart */}
           <div className="card">
