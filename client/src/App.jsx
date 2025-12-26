@@ -7,9 +7,8 @@ import Dashboard from "./pages/Dashboard.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import Profile from "./pages/Profile.jsx";
 import InfluencerDetail from "./pages/InfluencerDetail.jsx";
-import Followers from "./pages/Followers.jsx";
+import UserDiscovery from "./pages/UserDiscovery.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
-import GlobalSearch from "./pages/GlobalSearch.jsx";
 import ChatList from "./pages/ChatList.jsx";
 import ChatMessages from "./pages/ChatMessages.jsx";
 import Onboard from "./pages/Onboard.jsx";
@@ -57,10 +56,10 @@ function App() {
           }
         />
         <Route
-          path="/global-search"
+          path="/user-discovery"
           element={
             <ProtectedRoute>
-              <GlobalSearch />
+              <UserDiscovery />
             </ProtectedRoute>
           }
         />
@@ -104,14 +103,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-              <Route
-                path="/followers"
-                element={
-                  <ProtectedRoute>
-                    <Followers />
-                  </ProtectedRoute>
-                }
-              />
               <Route
                 path="/user-profile/:userId"
                 element={

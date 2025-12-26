@@ -59,17 +59,68 @@ const InfluencerGrowth = () => {
   };
 
   const prepareChartData = (growthHistory) => {
-    return growthHistory.map((point, index) => ({
-      date: formatDate(point.timestamp),
-      followers: point.followersCount,
-      following: point.followingCount,
-      index,
-    }));
+    const sortedHistory = growthHistory.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    return sortedHistory.map((point, index) => {
+      const previousPoint = sortedHistory[index - 1];
+      const followersDiff = calculateDifference(point.followersCount, previousPoint?.followersCount);
+      const followingDiff = calculateDifference(point.followingCount, previousPoint?.followingCount);
+
+      return {
+        date: formatDate(point.timestamp),
+        followers: point.followersCount,
+        following: point.followingCount,
+        followersDiff,
+        followingDiff,
+        index,
+      };
+    });
   };
 
   const calculateGrowth = (current, previous) => {
     if (!previous || previous === 0) return 0;
     return ((current - previous) / previous * 100).toFixed(1);
+  };
+
+  const calculateDifference = (current, previous) => {
+    if (previous === undefined || previous === null) return null;
+    return current - previous;
+  };
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+          <p className="font-medium text-gray-900 mb-2">{label}</p>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-purple-600 font-medium">Followers:</span>
+              <span className="ml-2">
+                {data.followers.toLocaleString()}
+                {data.followersDiff !== null && (
+                  <span className={`ml-1 text-xs ${data.followersDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ({data.followersDiff >= 0 ? '+' : ''}{data.followersDiff})
+                  </span>
+                )}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-blue-600 font-medium">Following:</span>
+              <span className="ml-2">
+                {data.following.toLocaleString()}
+                {data.followingDiff !== null && (
+                  <span className={`ml-1 text-xs ${data.followingDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ({data.followingDiff >= 0 ? '+' : ''}{data.followingDiff})
+                  </span>
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   const handleRefreshInfluencer = async (influencerId) => {
@@ -157,7 +208,7 @@ const InfluencerGrowth = () => {
     <div className="h-screen bg-gray-50 flex overflow-hidden">
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-8 pt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -504,7 +555,7 @@ const InfluencerGrowth = () => {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="date" fontSize={12} />
                             <YAxis fontSize={12} />
-                            <Tooltip />
+                            <Tooltip content={<CustomTooltip />} />
                             <Legend />
                             <Line
                               type="monotone"
@@ -529,21 +580,37 @@ const InfluencerGrowth = () => {
                   <div className="border-t pt-6">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">Growth History</h4>
                     <div className="space-y-3 max-h-60 overflow-y-auto">
-                      {selectedInfluencer.growthHistory?.map((point, index) => (
-                        <div key={index} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
-                          <span className="text-sm text-gray-600">{formatDate(point.timestamp)}</span>
-                          <div className="flex space-x-4">
-                            <span className="text-sm">
-                              <span className="font-medium text-purple-600">{point.followersCount.toLocaleString()}</span>
-                              <span className="text-gray-500 ml-1">followers</span>
-                            </span>
-                            <span className="text-sm">
-                              <span className="font-medium text-blue-600">{point.followingCount.toLocaleString()}</span>
-                              <span className="text-gray-500 ml-1">following</span>
-                            </span>
+                      {selectedInfluencer.growthHistory?.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map((point, index, array) => {
+                        const nextPoint = array[index + 1]; // Next item is chronologically previous
+                        const followersDiff = calculateDifference(point.followersCount, nextPoint?.followersCount);
+                        const followingDiff = calculateDifference(point.followingCount, nextPoint?.followingCount);
+
+                        return (
+                          <div key={index} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                            <span className="text-sm text-gray-600">{formatDate(point.timestamp)}</span>
+                            <div className="flex space-x-4">
+                              <span className="text-sm">
+                                <span className="font-medium text-purple-600">{point.followersCount.toLocaleString()}</span>
+                                {followersDiff !== null && (
+                                  <span className={`ml-1 text-xs ${followersDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    ({followersDiff >= 0 ? '+' : ''}{followersDiff})
+                                  </span>
+                                )}
+                                <span className="text-gray-500 ml-1">followers</span>
+                              </span>
+                              <span className="text-sm">
+                                <span className="font-medium text-blue-600">{point.followingCount.toLocaleString()}</span>
+                                {followingDiff !== null && (
+                                  <span className={`ml-1 text-xs ${followingDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    ({followingDiff >= 0 ? '+' : ''}{followingDiff})
+                                  </span>
+                                )}
+                                <span className="text-gray-500 ml-1">following</span>
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
