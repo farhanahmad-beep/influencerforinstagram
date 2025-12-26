@@ -46,6 +46,7 @@ Let me know if you want help getting started! 😊`;
   const [messageText, setMessageText] = useState("");
   const [sendingMessages, setSendingMessages] = useState(false);
   const [sendProgress, setSendProgress] = useState({});
+  const [isFollowerMode, setIsFollowerMode] = useState(false);
 
   useEffect(() => {
     applyFilters();
@@ -54,6 +55,12 @@ Let me know if you want help getting started! 😊`;
   useEffect(() => {
     fetchLinkedAccounts();
   }, []);
+
+  useEffect(() => {
+    if (isFollowerMode) {
+      navigate('/followers');
+    }
+  }, [isFollowerMode, navigate]);
 
   const fetchLinkedAccounts = async () => {
     setLoadingAccounts(true);
@@ -475,6 +482,28 @@ Let me know if you want help getting started! 😊`;
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Global Search (Rocket API)</h1>
               <p className="text-gray-600">Search Instagram users globally without providing account_id.</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium text-gray-700">Linked Account Users</label>
+                <button
+                  onClick={() => {
+                    setIsFollowerMode(!isFollowerMode);
+                    if (!isFollowerMode) {
+                      navigate('/followers');
+                    }
+                  }}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    isFollowerMode ? 'bg-purple-600' : 'bg-gray-200'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isFollowerMode ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
             {filteredResults.length > 0 && (
               <div className="flex items-center space-x-3">

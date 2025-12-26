@@ -42,9 +42,27 @@ const Followers = () => {
   const [messageText, setMessageText] = useState("");
   const [sendingMessages, setSendingMessages] = useState(false);
   const [sendProgress, setSendProgress] = useState({});
+  const [isGlobalSearchMode, setIsGlobalSearchMode] = useState(false);
 
   useEffect(() => {
     fetchLinkedAccounts();
+    if (filters.user_id || filters.account_id) {
+      if (viewMode === "following") {
+        fetchFollowing();
+      } else {
+        fetchFollowers();
+      }
+    }
+  }, [viewMode]);
+
+  useEffect(() => {
+    if (isGlobalSearchMode) {
+      navigate('/global-search');
+    }
+  }, [isGlobalSearchMode, navigate]);
+
+  // Apply filters whenever allData or displayFilters change
+  useEffect(() => {
     if (filters.user_id || filters.account_id) {
       if (viewMode === "following") {
         fetchFollowing();
@@ -604,27 +622,49 @@ const Followers = () => {
                   : "View and manage followers from your linked Instagram accounts"}
               </p>
             </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handleModeChange("followers")}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  viewMode === "followers"
-                    ? "bg-purple-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                Followers
-              </button>
-              <button
-                onClick={() => handleModeChange("following")}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  viewMode === "following"
-                    ? "bg-purple-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                Following
-              </button>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium text-gray-700">Global Search</label>
+                <button
+                  onClick={() => {
+                    setIsGlobalSearchMode(!isGlobalSearchMode);
+                    if (!isGlobalSearchMode) {
+                      navigate('/global-search');
+                    }
+                  }}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    isGlobalSearchMode ? 'bg-purple-600' : 'bg-gray-200'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isGlobalSearchMode ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => handleModeChange("followers")}
+                  className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                    viewMode === "followers"
+                      ? "bg-white text-purple-700 shadow-sm"
+                      : "text-gray-600 hover:text-gray-800"
+                  }`}
+                >
+                  Followers
+                </button>
+                <button
+                  onClick={() => handleModeChange("following")}
+                  className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
+                    viewMode === "following"
+                      ? "bg-white text-purple-700 shadow-sm"
+                      : "text-gray-600 hover:text-gray-800"
+                  }`}
+                >
+                  Following
+                </button>
+              </div>
             </div>
           </div>
         </div>
