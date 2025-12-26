@@ -221,7 +221,7 @@ const ChatMessages = () => {
                 href={part.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-purple-600 hover:text-purple-700 underline break-all"
+                className="text-gray-900 hover:text-gray-800 underline break-all"
               >
                 {part.content}
               </a>
@@ -238,16 +238,16 @@ const ChatMessages = () => {
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
-        <div className="mb-6">
+        <div className="mb-2">
           <button
             onClick={() => navigate("/chat-list")}
-            className="btn-secondary mb-4"
+            className="btn-secondary mb-1"
           >
             ← Back to Chat List
           </button>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-1">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{chatName}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">{chatName}</h1>
               <p className="text-gray-600">Chat ID: {chatId}</p>
             </div>
           </div>
@@ -259,7 +259,7 @@ const ChatMessages = () => {
         </div>
 
         {loading && messages.length === 0 ? (
-          <div className="flex justify-center items-center py-12">
+          <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
           </div>
         ) : messages.length === 0 ? (
@@ -290,7 +290,7 @@ const ChatMessages = () => {
           </motion.div>
         ) : (
           <>
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-2 flex items-center justify-between">
               <p className="text-sm text-gray-600">
                 Showing <span className="font-semibold">{messages.length}</span> message{messages.length !== 1 ? 's' : ''}
                 {pagination.hasMore && " (more available)"}
@@ -298,7 +298,7 @@ const ChatMessages = () => {
             </div>
 
             {/* Chat Messages Container */}
-            <div className="bg-white rounded-lg border border-gray-200 min-h-[500px] max-h-[600px] overflow-y-auto p-4 mb-6">
+            <div className="bg-white rounded-lg border border-gray-200 min-h-[400px] max-h-[450px] overflow-y-auto p-4 mb-2">
               <div className="space-y-3">
                 {messages.map((message, index) => (
                   <motion.div

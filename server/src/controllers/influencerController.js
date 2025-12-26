@@ -1,6 +1,7 @@
 import Influencer from '../models/Influencer.js';
 import axios from 'axios';
 import { OnboardedUser, Campaign, UserStatus, InfluencerGrowth } from '../models/OnboardedUser.js';
+import MessageStats from '../models/MessageStats.js';
 import { Buffer } from 'buffer';
 
 // Helper function to get Unipile API configuration (read from env at runtime)
@@ -24,8 +25,7 @@ const getUnipileHeaders = (accessToken) => ({
   'Content-Type': 'application/json',
 });
 
-// In-memory counter for sent messages (resets on server restart)
-let messageCount = 0;
+// Message stats are now stored in database (MessageStats model)
 
 // Fetch remote image as base64 data URI (used to avoid browser CORS on CDN images)
 const fetchImageAsBase64 = async (url) => {
@@ -713,11 +713,20 @@ export const getStats = async (req, res) => {
       console.error('Failed to fetch completed campaigns count:', dbError.message);
     }
 
+    // Fetch persistent message count from database
+    let messagesSentCount = 0;
+    try {
+      const messageStats = await MessageStats.getStats();
+      messagesSentCount = messageStats.totalMessagesSent;
+    } catch (dbError) {
+      console.error('Failed to fetch message stats:', dbError.message);
+    }
+
     return res.status(200).json({
       success: true,
       data: {
         linkedAccounts: linkedAccountsCount,
-        messagesSent: messageCount,
+        messagesSent: messagesSentCount,
         onboardedUsers: onboardedUsersCount,
         activeCampaigns: activeCampaignsCount,
         completedCampaigns: completedCampaignsCount,
@@ -1124,8 +1133,8 @@ export const sendChatMessage = async (req, res) => {
         
         console.log(`Message sent successfully. Message IDs: ${messageIds.join(', ')}`);
 
-        // Increment in-memory counter for messages sent
-        messageCount += 1;
+        // Increment persistent counter for messages sent
+        const currentMessageCount = await MessageStats.incrementMessageCount();
 
         return res.status(200).json({
           success: true,
@@ -1135,7 +1144,7 @@ export const sendChatMessage = async (req, res) => {
           },
           message: 'Message sent successfully',
           stats: {
-            messagesSent: messageCount,
+            messagesSent: currentMessageCount,
           },
         });
       }
@@ -1379,16 +1388,16 @@ export const startChat = async (req, res) => {
 
       if (unipileResponse.data) {
         console.log('Unipile API returned chat data:', unipileResponse.data);
-        
-        // Increment in-memory counter for messages sent
-        messageCount += 1;
+
+        // Increment persistent counter for messages sent
+        const currentMessageCount = await MessageStats.incrementMessageCount();
 
         return res.status(200).json({
           success: true,
           data: unipileResponse.data,
           message: 'Chat started successfully',
           stats: {
-            messagesSent: messageCount,
+            messagesSent: currentMessageCount,
           },
         });
       }

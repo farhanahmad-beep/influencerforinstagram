@@ -157,7 +157,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 <p className="text-sm text-gray-500">Messages Sent</p>
                 <p className="text-3xl font-bold text-purple-700 mt-2">{stats.messagesSent}</p>
-                <p className="text-xs text-gray-400 mt-1">Since last server start</p>
+                <p className="text-xs text-gray-400 mt-1">Total messages sent</p>
               </div>
               <div className="w-20 h-12 ml-4">
                 <ResponsiveContainer width="100%" height="100%">
