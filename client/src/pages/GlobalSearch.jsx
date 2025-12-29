@@ -52,6 +52,15 @@ Let me know if you want help getting started! 😊`;
     applyFilters();
   }, [results, minFollowers, maxFollowers]);
 
+  // Enable selection mode when there are results and keep it enabled
+  useEffect(() => {
+    if (filteredResults.length > 0) {
+      setIsSelectionMode(true);
+    }
+    // Don't turn off selection mode when results are empty
+    // This allows continued selection even after sending messages
+  }, [filteredResults]);
+
   useEffect(() => {
     fetchLinkedAccounts();
   }, []);
@@ -107,6 +116,10 @@ Let me know if you want help getting started! 😊`;
     }
 
     setFilteredResults(filtered);
+    // Clear selections when filters change the results
+    if (filtered.length !== filteredResults.length) {
+      setSelectedUsers(new Set());
+    }
   };
 
   const performSearch = async (opts = { cursor: null, append: false }) => {
@@ -173,6 +186,7 @@ Let me know if you want help getting started! 😊`;
     // Reset state for fresh search
     setResults([]);
     setFilteredResults([]);
+    setSelectedUsers(new Set()); // Clear selections for new search
     setPagination({
       cursor: null,
       hasMore: false,
@@ -385,7 +399,7 @@ Let me know if you want help getting started! 😊`;
       setShowSendModal(false);
       setMessageText("");
       setSelectedUsers(new Set());
-      setIsSelectionMode(false);
+      // Keep selection mode on for continued selection
       setSendProgress({});
     }, 2000);
   };

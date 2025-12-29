@@ -9,6 +9,21 @@ import { motion } from "framer-motion";
 const Followers = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // Predefined message template
+  const PREDEFINED_MESSAGE = `✨ Hey! Hope you're doing well!
+
+I wanted to share something super useful for creators — Dynamite Influencer Store just launched! 🚀
+
+It's a platform made specifically for influencers to create their own store, add products, and start selling directly to their audience — all in a few clicks.
+
+You can check it out here
+
+🔗 https://dynamiteinfluencerstore.icod.ai/
+
+If you've ever wanted to launch your own store, earn more, and manage everything in one place, this is the perfect tool for you.
+
+Let me know if you want help getting started! 😊`;
   const [allData, setAllData] = useState([]); // Store all fetched data
   const [filteredData, setFilteredData] = useState([]); // Store filtered data for display
   const [loading, setLoading] = useState(false);
@@ -76,6 +91,15 @@ const Followers = () => {
   useEffect(() => {
     applyFilters();
   }, [allData, displayFilters]);
+
+  // Enable selection mode when there are results and keep it enabled
+  useEffect(() => {
+    if (filteredData.length > 0) {
+      setIsSelectionMode(true);
+    }
+    // Don't turn off selection mode when results are empty
+    // This allows continued selection even after sending messages
+  }, [filteredData]);
 
   const fetchLinkedAccounts = async () => {
     setLoadingAccounts(true);
@@ -254,6 +278,7 @@ const Followers = () => {
     }
     setAllData([]);
     setFilteredData([]);
+    setSelectedUsers(new Set()); // Clear selections for new search
     // Reset display filters for new search
     setDisplayFilters({
       keyword: "",
@@ -330,6 +355,7 @@ const Followers = () => {
     setViewMode(mode);
     setAllData([]);
     setFilteredData([]);
+    setSelectedUsers(new Set()); // Clear selections when switching modes
     setPagination({
       cursor: null,
       hasMore: false,
@@ -398,7 +424,8 @@ const Followers = () => {
       setIsSelectionMode(true);
       toast("Select users with messaging IDs to send message to", { duration: 3000 });
     } else {
-      // Open modal if users are selected
+      // Open modal if users are selected and pre-populate with message
+      setMessageText(PREDEFINED_MESSAGE);
       setShowSendModal(true);
     }
   };
@@ -526,7 +553,7 @@ const Followers = () => {
       setShowSendModal(false);
       setMessageText("");
       setSelectedUsers(new Set());
-      setIsSelectionMode(false);
+      // Keep selection mode on for continued selection
       setSendProgress({});
     }, 2000);
   };
