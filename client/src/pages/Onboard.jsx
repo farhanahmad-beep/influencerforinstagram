@@ -32,6 +32,9 @@ const Onboard = () => {
   const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
   const [sendingCampaigns, setSendingCampaigns] = useState(new Set()); // Track campaigns currently sending messages
   const [sentCampaigns, setSentCampaigns] = useState(new Set()); // Track campaigns that have been sent at least once
+  const [showRenewModal, setShowRenewModal] = useState(false);
+  const [renewingCampaign, setRenewingCampaign] = useState(null);
+  const [newExpirationDate, setNewExpirationDate] = useState('');
 
   useEffect(() => {
     fetchOnboardedUsers();
@@ -383,6 +386,48 @@ const Onboard = () => {
       toast.error(errorMessage);
       console.error("Failed to update campaign expiration:", error);
     }
+  };
+
+  const handleRenewCampaign = async (campaignId) => {
+    if (!newExpirationDate) {
+      toast.error("Please select a new expiration date");
+      return;
+    }
+
+    try {
+      // Update the expiration date
+      const response = await axios.put(
+        `${import.meta.env.VITE_API_URL}/influencers/campaigns/${campaignId}`,
+        {
+          expiresAt: new Date(newExpirationDate).toISOString(),
+          status: 'draft' // Reset to draft status when renewing
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("Campaign renewed successfully");
+        setShowRenewModal(false);
+        setRenewingCampaign(null);
+        setNewExpirationDate('');
+        fetchCampaigns();
+      } else {
+        toast.error(response.data.error || "Failed to renew campaign");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.error || error.message || "Failed to renew campaign";
+      toast.error(errorMessage);
+      console.error("Failed to renew campaign:", error);
+    }
+  };
+
+  const handleRenewClick = (campaign) => {
+    setRenewingCampaign(campaign);
+    setNewExpirationDate('');
+    setShowRenewModal(true);
   };
 
   const handleDeleteCampaign = async (campaignId, campaignName) => {
@@ -1303,6 +1348,15 @@ Let me know if you want help getting started! 😊`;
                               )}
                             </button>
                           )}
+
+                          {campaign.status === 'expired' && (
+                            <button
+                              onClick={() => handleRenewClick(campaign)}
+                              className="w-full px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                            >
+                              Renew Campaign
+                            </button>
+                          )}
                         </div>
                       </div>
                     </motion.div>
@@ -1489,6 +1543,65 @@ Let me know if you want help getting started! 😊`;
                     disabled={!campaignForm.name.trim() || selectedUsers.size === 0}
                   >
                     Create Campaign
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Renew Campaign Modal */}
+        {showRenewModal && renewingCampaign && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
+            >
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Renew Campaign</h2>
+              <p className="text-gray-600 mb-4">
+                Renew "{renewingCampaign.name}" by setting a new expiration date. The campaign will be reset to draft status.
+              </p>
+
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                handleRenewCampaign(renewingCampaign._id);
+              }} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    New Expiration Date *
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={newExpirationDate}
+                    onChange={(e) => setNewExpirationDate(e.target.value)}
+                    min={new Date().toISOString().slice(0, 16)}
+                    className="input-field"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Select when the renewed campaign should expire
+                  </p>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowRenewModal(false);
+                      setRenewingCampaign(null);
+                      setNewExpirationDate('');
+                    }}
+                    className="btn-secondary flex-1"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary flex-1"
+                    disabled={!newExpirationDate}
+                  >
+                    Renew Campaign
                   </button>
                 </div>
               </form>

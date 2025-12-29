@@ -13,10 +13,20 @@ const InfluencerGrowth = () => {
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedInfluencersForDelete, setSelectedInfluencersForDelete] = useState(new Set());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [dateRange, setDateRange] = useState({ start: null, end: null });
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     fetchInfluencerGrowth();
   }, []);
+
+  // Reset date range when modal closes
+  useEffect(() => {
+    if (!selectedInfluencer) {
+      setDateRange({ start: null, end: null });
+      setShowDatePicker(false);
+    }
+  }, [selectedInfluencer]);
 
   const fetchInfluencerGrowth = async () => {
     setLoading(true);
@@ -65,6 +75,7 @@ const InfluencerGrowth = () => {
       const previousPoint = sortedHistory[index - 1];
       const followersDiff = calculateDifference(point.followersCount, previousPoint?.followersCount);
       const followingDiff = calculateDifference(point.followingCount, previousPoint?.followingCount);
+      const timeDiff = calculateTimeDifference(point.timestamp, previousPoint?.timestamp);
 
       return {
         date: formatDate(point.timestamp),
@@ -72,6 +83,7 @@ const InfluencerGrowth = () => {
         following: point.followingCount,
         followersDiff,
         followingDiff,
+        timeDiff,
         index,
       };
     });
@@ -87,12 +99,72 @@ const InfluencerGrowth = () => {
     return current - previous;
   };
 
+  const calculateTimeDifference = (currentTimestamp, previousTimestamp) => {
+    if (!previousTimestamp) return null;
+
+    const current = new Date(currentTimestamp);
+    const previous = new Date(previousTimestamp);
+    const diffMs = current - previous;
+
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) {
+      return `${days} day${days !== 1 ? 's' : ''}`;
+    } else if (hours > 0) {
+      return `${hours} hour${hours !== 1 ? 's' : ''}`;
+    } else {
+      const minutes = Math.floor(diffMs / (1000 * 60));
+      return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    }
+  };
+
+  const filterGrowthHistoryByDateRange = (growthHistory, startDate, endDate) => {
+    if (!startDate || !endDate) return growthHistory;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    return growthHistory.filter(point => {
+      const pointDate = new Date(point.timestamp);
+      return pointDate >= start && pointDate <= end;
+    }).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  };
+
+  const calculatePeriodGrowth = (filteredHistory) => {
+    if (filteredHistory.length < 2) return null;
+
+    const firstPoint = filteredHistory[0];
+    const lastPoint = filteredHistory[filteredHistory.length - 1];
+
+    return {
+      followersGrowth: lastPoint.followersCount - firstPoint.followersCount,
+      followingGrowth: lastPoint.followingCount - firstPoint.followingCount,
+      startDate: firstPoint.timestamp,
+      endDate: lastPoint.timestamp,
+      dataPoints: filteredHistory.length
+    };
+  };
+
+  const getDateRangeBounds = (growthHistory) => {
+    if (!growthHistory || growthHistory.length === 0) return { min: null, max: null };
+
+    const timestamps = growthHistory.map(point => new Date(point.timestamp));
+    return {
+      min: new Date(Math.min(...timestamps)).toISOString().slice(0, 16),
+      max: new Date(Math.max(...timestamps)).toISOString().slice(0, 16)
+    };
+  };
+
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
           <p className="font-medium text-gray-900 mb-2">{label}</p>
+          {data.timeDiff && (
+            <p className="text-xs text-gray-500 mb-2">Time since previous: +{data.timeDiff}</p>
+          )}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-purple-600 font-medium">Followers:</span>
@@ -449,6 +521,13 @@ const InfluencerGrowth = () => {
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-900">Growth Details</h2>
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => setShowDatePicker(!showDatePicker)}
+                        className="px-3 py-2 bg-blue-50 text-purple-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                      >
+                        Filter by Date
+                      </button>
                     <button
                       onClick={() => setSelectedInfluencer(null)}
                       className="text-gray-400 hover:text-gray-600"
@@ -458,6 +537,61 @@ const InfluencerGrowth = () => {
                       </svg>
                     </button>
                   </div>
+                  </div>
+
+                  {/* Date Range Picker */}
+                  {showDatePicker && selectedInfluencer.growthHistory && selectedInfluencer.growthHistory.length > 0 && (
+                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Filter Growth Data</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Start Date & Time
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={dateRange.start || ''}
+                            onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                            min={getDateRangeBounds(selectedInfluencer.growthHistory).min}
+                            max={getDateRangeBounds(selectedInfluencer.growthHistory).max}
+                            className="input-field"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            End Date & Time
+                          </label>
+                          <input
+                            type="datetime-local"
+                            value={dateRange.end || ''}
+                            onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                            min={dateRange.start || getDateRangeBounds(selectedInfluencer.growthHistory).min}
+                            max={getDateRangeBounds(selectedInfluencer.growthHistory).max}
+                            className="input-field"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-4">
+                        <div className="text-sm text-gray-600">
+                          Showing data from {getDateRangeBounds(selectedInfluencer.growthHistory).min ? formatDate(getDateRangeBounds(selectedInfluencer.growthHistory).min) : 'N/A'} to {getDateRangeBounds(selectedInfluencer.growthHistory).max ? formatDate(getDateRangeBounds(selectedInfluencer.growthHistory).max) : 'N/A'}
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => setDateRange({ start: null, end: null })}
+                            className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                          >
+                            Clear Filter
+                          </button>
+                          <button
+                            onClick={() => setShowDatePicker(false)}
+                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                          >
+                            Done
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-start space-x-6 mb-6">
                     <div className="relative">
@@ -509,20 +643,69 @@ const InfluencerGrowth = () => {
                     </div>
                   </div>
 
+                  {(() => {
+                    // Calculate filtered data for display
+                    const isFiltered = dateRange.start && dateRange.end;
+                    const filteredHistory = selectedInfluencer.growthHistory ?
+                      (isFiltered ? filterGrowthHistoryByDateRange(selectedInfluencer.growthHistory, dateRange.start, dateRange.end) : selectedInfluencer.growthHistory) : [];
+                    const periodGrowth = isFiltered ? calculatePeriodGrowth(filteredHistory) : null;
+
+                    return (
+                      <>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-purple-600">{selectedInfluencer.followersCount.toLocaleString()}</p>
-                      <p className="text-sm text-gray-500">Current Followers</p>
+                      <p className="text-2xl font-bold text-purple-600">
+                              {isFiltered && filteredHistory.length > 0 ?
+                                filteredHistory[filteredHistory.length - 1].followersCount.toLocaleString() :
+                                selectedInfluencer.followersCount.toLocaleString()}
+                            </p>
+                      <p className="text-sm text-gray-500">
+                              {isFiltered ? 'Followers (Filtered)' : 'Current Followers'}
+                            </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-purple-600">{selectedInfluencer.followingCount.toLocaleString()}</p>
-                      <p className="text-sm text-gray-500">Current Following</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-500">Data Points</p>
-                      <p className="text-2xl font-bold text-purple-600">{selectedInfluencer.growthHistory?.length || 0}</p>
-                    </div>
-                  </div>
+                      <p className="text-2xl font-bold text-purple-600">
+                              {isFiltered && filteredHistory.length > 0 ?
+                                filteredHistory[filteredHistory.length - 1].followingCount.toLocaleString() :
+                                selectedInfluencer.followingCount.toLocaleString()}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {isFiltered ? 'Following (Filtered)' : 'Current Following'}
+                            </p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-sm text-gray-500">Data Points</p>
+                            <p className="text-2xl font-bold text-purple-600">{filteredHistory.length || selectedInfluencer.growthHistory?.length || 0}</p>
+                          </div>
+                        </div>
+
+                        {/* Period Growth Metrics */}
+                        {periodGrowth && dateRange.start && dateRange.end && (
+                          <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                              Growth in Selected Period ({formatDate(periodGrowth.startDate)} - {formatDate(periodGrowth.endDate)})
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                                <p className="text-sm text-gray-500 mb-1">Followers Growth</p>
+                                <p className={`text-2xl font-bold ${periodGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {periodGrowth.followersGrowth >= 0 ? '+' : ''}{periodGrowth.followersGrowth.toLocaleString()}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">Over {periodGrowth.dataPoints} data points</p>
+                              </div>
+                              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                                <p className="text-sm text-gray-500 mb-1">Following Growth</p>
+                                <p className={`text-2xl font-bold ${periodGrowth.followingGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {periodGrowth.followingGrowth >= 0 ? '+' : ''}{periodGrowth.followingGrowth.toLocaleString()}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">Over {periodGrowth.dataPoints} data points</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
 
                   {selectedInfluencer.latestGrowth && (
                     <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
@@ -546,72 +729,106 @@ const InfluencerGrowth = () => {
                     </div>
                   )}
 
-                  {selectedInfluencer.growthHistory && selectedInfluencer.growthHistory.length > 1 && (
-                    <div className="mb-6">
-                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Growth Chart</h4>
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={prepareChartData(selectedInfluencer.growthHistory)}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="date" fontSize={12} />
-                            <YAxis fontSize={12} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend />
-                            <Line
-                              type="monotone"
-                              dataKey="followers"
-                              stroke="#8b5cf6"
-                              strokeWidth={2}
-                              name="Followers"
-                            />
-                            <Line
-                              type="monotone"
-                              dataKey="following"
-                              stroke="#06b6d4"
-                              strokeWidth={2}
-                              name="Following"
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
+                  {(() => {
+                    const filteredHistory = selectedInfluencer.growthHistory ?
+                      filterGrowthHistoryByDateRange(selectedInfluencer.growthHistory, dateRange.start, dateRange.end) : [];
+                    const chartData = filteredHistory.length > 1 ? prepareChartData(filteredHistory) : [];
+
+                    return filteredHistory.length > 1 ? (
+                      <div className="mb-6">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                          Growth Chart {dateRange.start && dateRange.end ? '(Filtered Period)' : '(All Time)'}
+                        </h4>
+                        <div className="h-64">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={chartData}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="date" fontSize={12} />
+                              <YAxis fontSize={12} />
+                              <Tooltip content={<CustomTooltip />} />
+                              <Legend />
+                              <Line
+                                type="monotone"
+                                dataKey="followers"
+                                stroke="#8b5cf6"
+                                strokeWidth={2}
+                                name="Followers"
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="following"
+                                stroke="#06b6d4"
+                                strokeWidth={2}
+                                name="Following"
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    ) : null;
+                  })()}
 
                   <div className="border-t pt-6">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Growth History</h4>
-                    <div className="space-y-3 max-h-60 overflow-y-auto">
-                      {selectedInfluencer.growthHistory?.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map((point, index, array) => {
-                        const nextPoint = array[index + 1]; // Next item is chronologically previous
-                        const followersDiff = calculateDifference(point.followersCount, nextPoint?.followersCount);
-                        const followingDiff = calculateDifference(point.followingCount, nextPoint?.followingCount);
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                      Growth History {dateRange.start && dateRange.end ? '(Filtered Period)' : '(All Time)'}
+                    </h4>
+                    {(() => {
+                      const filteredHistory = selectedInfluencer.growthHistory ?
+                        filterGrowthHistoryByDateRange(selectedInfluencer.growthHistory, dateRange.start, dateRange.end) : [];
 
-                        return (
-                          <div key={index} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
-                            <span className="text-sm text-gray-600">{formatDate(point.timestamp)}</span>
-                            <div className="flex space-x-4">
-                              <span className="text-sm">
-                                <span className="font-medium text-purple-600">{point.followersCount.toLocaleString()}</span>
-                                {followersDiff !== null && (
-                                  <span className={`ml-1 text-xs ${followersDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    ({followersDiff >= 0 ? '+' : ''}{followersDiff})
-                                  </span>
-                                )}
-                                <span className="text-gray-500 ml-1">followers</span>
-                              </span>
-                              <span className="text-sm">
-                                <span className="font-medium text-blue-600">{point.followingCount.toLocaleString()}</span>
-                                {followingDiff !== null && (
-                                  <span className={`ml-1 text-xs ${followingDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    ({followingDiff >= 0 ? '+' : ''}{followingDiff})
-                                  </span>
-                                )}
-                                <span className="text-gray-500 ml-1">following</span>
-                              </span>
+                      return (
+                        <div className="space-y-3 max-h-60 overflow-y-auto">
+                          {filteredHistory.length > 0 ? (
+                            filteredHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map((point, index, array) => {
+                              const nextPoint = array[index + 1]; // Next item is chronologically previous
+                              const followersDiff = calculateDifference(point.followersCount, nextPoint?.followersCount);
+                              const followingDiff = calculateDifference(point.followingCount, nextPoint?.followingCount);
+                              const timeDiff = calculateTimeDifference(point.timestamp, nextPoint?.timestamp);
+
+                              return (
+                                <div key={index} className="py-3 px-3 bg-gray-50 rounded-lg">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-gray-900">{formatDate(point.timestamp)}</span>
+                                    {timeDiff && (
+                                      <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">
+                                        +{timeDiff}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex space-x-6">
+                                      <span className="text-sm">
+                                        <span className="font-medium text-purple-600">{point.followersCount.toLocaleString()}</span>
+                                        {followersDiff !== null && (
+                                          <span className={`ml-1 text-xs ${followersDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            ({followersDiff >= 0 ? '+' : ''}{followersDiff})
+                                          </span>
+                                        )}
+                                        <span className="text-gray-500 ml-1">followers</span>
+                                      </span>
+                                      <span className="text-sm">
+                                        <span className="font-medium text-blue-600">{point.followingCount.toLocaleString()}</span>
+                                        {followingDiff !== null && (
+                                          <span className={`ml-1 text-xs ${followingDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            ({followingDiff >= 0 ? '+' : ''}{followingDiff})
+                                          </span>
+                                        )}
+                                        <span className="text-gray-500 ml-1">following</span>
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <p>No data points found in the selected date range.</p>
+                              <p className="text-sm mt-1">Try adjusting your date filter or clearing it to see all data.</p>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </motion.div>
