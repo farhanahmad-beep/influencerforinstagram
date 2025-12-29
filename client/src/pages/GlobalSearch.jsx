@@ -494,8 +494,8 @@ Let me know if you want help getting started! 😊`;
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Global Search (Rocket API)</h1>
-              <p className="text-gray-600">Search Instagram users globally without providing account_id.</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Global Search</h1>
+              <p className="text-gray-600">Search Instagram users globally</p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
@@ -630,7 +630,7 @@ Let me know if you want help getting started! 😊`;
               <button type="submit" className="btn-primary" disabled={loading}>
                 {loading ? "Searching..." : "Search Users"}
               </button>
-              <p className="text-sm text-gray-500">Powered by Rocket API</p>
+              {/* <p className="text-sm text-gray-500">Powered by Rocket API</p> */}
             </div>
           </form>
         </div>
