@@ -10,6 +10,7 @@ const InfluencerGrowth = () => {
   const [loading, setLoading] = useState(true);
   const [selectedInfluencer, setSelectedInfluencer] = useState(null);
   const [refreshingInfluencers, setRefreshingInfluencers] = useState(new Set());
+  const [isGlobalRefreshing, setIsGlobalRefreshing] = useState(false);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedInfluencersForDelete, setSelectedInfluencersForDelete] = useState(new Set());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -230,6 +231,65 @@ const InfluencerGrowth = () => {
     }
   };
 
+  const handleRefreshAllInfluencers = async () => {
+    if (influencers.length === 0) {
+      toast.error("No influencers to refresh");
+      return;
+    }
+
+    setIsGlobalRefreshing(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    // Set all influencers as refreshing
+    setRefreshingInfluencers(new Set(influencers.map(inf => inf.id)));
+
+    try {
+      // Refresh all influencers sequentially to avoid overwhelming the API
+      for (const influencer of influencers) {
+        try {
+          const response = await axios.post(`${import.meta.env.VITE_API_URL}/influencers/refresh-influencer`, {
+            influencerId: influencer.id
+          }, { withCredentials: true });
+
+          if (response.data.success) {
+            successCount++;
+            // Update the influencer data
+            setInfluencers(prev => prev.map(inf =>
+              inf.id === influencer.id ? response.data.data : inf
+            ));
+
+            // Update selected influencer if it's the one being refreshed
+            if (selectedInfluencer && selectedInfluencer.id === influencer.id) {
+              setSelectedInfluencer(response.data.data);
+            }
+          } else {
+            failCount++;
+          }
+        } catch (error) {
+          failCount++;
+          console.error(`Failed to refresh influencer ${influencer.id}:`, error);
+        }
+
+        // Small delay between requests to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      if (successCount > 0) {
+        toast.success(`Successfully refreshed ${successCount} influencer(s)`);
+      }
+      if (failCount > 0) {
+        toast.error(`Failed to refresh ${failCount} influencer(s)`);
+      }
+    } catch (error) {
+      toast.error("Failed to refresh influencers");
+      console.error("Failed to refresh all influencers:", error);
+    } finally {
+      setIsGlobalRefreshing(false);
+      setRefreshingInfluencers(new Set());
+    }
+  };
+
   const handleDeleteSelected = async () => {
     if (selectedInfluencersForDelete.size === 0) {
       toast.error("Please select influencers to delete");
@@ -291,6 +351,28 @@ const InfluencerGrowth = () => {
               </div>
               {!loading && influencers.length > 0 && (
                 <div className="flex items-center space-x-3">
+                  <button
+                    onClick={handleRefreshAllInfluencers}
+                    disabled={isGlobalRefreshing}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                  >
+                    {isGlobalRefreshing ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Refreshing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        <span>Refresh All</span>
+                      </>
+                    )}
+                  </button>
                   {isDeleteMode && (
                     <button
                       onClick={selectAllInfluencers}
@@ -385,9 +467,9 @@ const InfluencerGrowth = () => {
                         e.stopPropagation();
                         handleRefreshInfluencer(influencer.id);
                       }}
-                      disabled={refreshingInfluencers.has(influencer.id) || isDeleteMode}
+                      disabled={refreshingInfluencers.has(influencer.id) || isDeleteMode || isGlobalRefreshing}
                       className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title={isDeleteMode ? "Disabled in delete mode" : "Refresh profile data"}
+                      title={isGlobalRefreshing ? "Global refresh in progress" : isDeleteMode ? "Disabled in delete mode" : "Refresh profile data"}
                     >
                       {refreshingInfluencers.has(influencer.id) ? (
                         <svg className="w-4 h-4 text-gray-600 animate-spin" fill="none" viewBox="0 0 24 24">
