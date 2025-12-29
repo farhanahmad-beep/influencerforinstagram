@@ -319,20 +319,24 @@ Let me know if you want help getting started! 😊`;
             [user.id]: { status: "success", message: "Sent successfully" },
           }));
 
-          // Update user status to contacted
+          // Update user status to contacted with profile picture data and counts
           try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/contacted`, {
-              userId: user.id,
-              username: user.username,
-              name: user.name,
-              profilePicture: user.profilePictureData || user.profilePicture,
-              followersCount: user.followersCount,
-              followingCount: user.followingCount,
-              provider: 'INSTAGRAM',
-              providerId: user.providerId,
-              providerMessagingId: user.providerMessagingId,
-              source: 'global_search',
-            }, { withCredentials: true });
+            const fullUserData = filteredResults.find((item) => item.id === user.id);
+            if (fullUserData) {
+              await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/contacted`, {
+                userId: user.id,
+                username: fullUserData.username,
+                name: fullUserData.name,
+                profilePicture: fullUserData.profilePicture,
+                profilePictureData: fullUserData.profilePictureData, // Save the base64 profile image
+                followersCount: fullUserData.followersCount,
+                followingCount: fullUserData.followingCount,
+                provider: 'INSTAGRAM',
+                providerId: user.id,
+                providerMessagingId: user.messagingId,
+                source: 'global_search',
+              }, { withCredentials: true });
+            }
           } catch (statusError) {
             console.error('Failed to update user status:', statusError);
           }

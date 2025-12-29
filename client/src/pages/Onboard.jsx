@@ -705,6 +705,12 @@ Let me know if you want help getting started! 😊`;
     }
   };
 
+  const formatNumber = (num) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return num.toString();
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     try {
@@ -967,19 +973,43 @@ Let me know if you want help getting started! 😊`;
                               className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                             />
                           )}
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            selectedUsers.has(user.userId) || selectedUsersForDelete.has(user.userId) ? 'bg-purple-200' : 'bg-purple-100'
-                          }`}>
-                            <span className="text-purple-600 font-bold text-lg">
-                              {user.name?.charAt(0)?.toUpperCase() || "U"}
-                            </span>
+                          <div className="relative">
+                            {(user.profilePictureData || user.profilePicture) ? (
+                              <img
+                                src={user.profilePictureData || user.profilePicture}
+                                alt={user.username || user.name}
+                                className="w-20 h-20 rounded-full object-cover flex-shrink-0"
+                                referrerPolicy="no-referrer"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  const fallback = e.target.nextElementSibling;
+                                  if (fallback) fallback.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            <div
+                              className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                (user.profilePictureData || user.profilePicture)
+                                  ? 'hidden'
+                                  : selectedUsers.has(user.userId) || selectedUsersForDelete.has(user.userId)
+                                    ? 'bg-purple-200'
+                                    : 'bg-purple-100'
+                              }`}
+                            >
+                              <span className="text-purple-600 font-bold text-lg">
+                                {user.name?.charAt(0)?.toUpperCase() || user.username?.charAt(0)?.toUpperCase() || "U"}
+                              </span>
+                            </div>
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="text-lg font-semibold text-gray-900 truncate mb-1">
                               {user.name || "Unknown"}
                             </h3>
+                            {user.username && (
+                              <p className="text-sm text-gray-500 truncate">@{user.username}</p>
+                            )}
                             {usersInCampaigns.has(user.userId) && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
                                 <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
@@ -991,12 +1021,43 @@ Let me know if you want help getting started! 😊`;
 
                         {/* User Details */}
                         <div className="space-y-3">
+                          {(user.followersCount > 0 || user.followingCount > 0) && (
+                            <div className="flex items-center justify-center space-x-4 py-2">
+                              {user.followersCount !== undefined && user.followersCount > 0 && (
+                                <div className="flex flex-col items-center">
+                                  <span className="font-semibold text-gray-900 text-sm">{formatNumber(user.followersCount)}</span>
+                                  <span className="text-xs text-gray-500">Followers</span>
+                                </div>
+                              )}
+                              {user.followingCount !== undefined && user.followingCount > 0 && (
+                                <div className="flex flex-col items-center">
+                                  <span className="font-semibold text-gray-900 text-sm">{formatNumber(user.followingCount)}</span>
+                                  <span className="text-xs text-gray-500">Following</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-500">User ID</span>
                             <span className="text-sm font-mono text-gray-900 bg-gray-50 px-2 py-1 rounded">
                               {user.userId}
                             </span>
                           </div>
+
+                          {user.status && (
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-500">Status</span>
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                user.status === 'onboarded' ? 'bg-green-100 text-green-800' :
+                                user.status === 'contacted' ? 'bg-blue-100 text-blue-800' :
+                                user.status === 'active' ? 'bg-purple-100 text-purple-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                              </span>
+                            </div>
+                          )}
 
                           {user.chatId && user.chatId !== user.userId && (
                             <div className="flex items-center justify-between">
@@ -1188,7 +1249,7 @@ Let me know if you want help getting started! 😊`;
                                       const user = onboardedUsers.find(u => u.userId === userId);
                                       return (
                                         <div key={userId} className="text-xs">
-                                          {user?.name || userId}
+                                          {user?.username || user?.name || userId}
                                         </div>
                                       );
                                     })}
@@ -1427,7 +1488,7 @@ Let me know if you want help getting started! 😊`;
                           const userCampaigns = usersInCampaigns.get(user.userId) || [];
                           return (
                             <option key={user.userId} value={user.userId}>
-                              {user.name || user.userId} {userCampaigns.length > 0 ? `(In ${userCampaigns.length} campaigns)` : ''}
+                              {user.username || user.userId} {userCampaigns.length > 0 ? `(In ${userCampaigns.length} campaigns)` : ''}
                             </option>
                           );
                         })}
@@ -1468,7 +1529,7 @@ Let me know if you want help getting started! 😊`;
                             <div key={userId} className="flex items-center justify-between text-sm">
                               <div className="flex items-center space-x-2">
                                 <span className="text-gray-700">
-                                  {user?.name || userId}
+                                  {user?.username || userId}
                                 </span>
                                 {userCampaigns.length > 0 && (
                                   <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">

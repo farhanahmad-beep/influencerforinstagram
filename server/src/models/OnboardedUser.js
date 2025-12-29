@@ -112,6 +112,10 @@ const userStatusSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    profilePictureData: {
+      type: String,
+      trim: true,
+    },
     followersCount: {
       type: Number,
       default: 0,

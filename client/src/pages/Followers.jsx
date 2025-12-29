@@ -493,21 +493,24 @@ Let me know if you want help getting started! 😊`;
             [user.id]: { status: "success", message: "Sent successfully" },
           }));
 
-          // Update user status to contacted
+          // Update user status to contacted with profile picture data and counts
           try {
-            const userData = filteredData.find((item) => item.id === user.id);
-            await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/contacted`, {
-              userId: user.id,
-              username: userData?.username,
-              name: userData?.name,
-              profilePicture: userData?.profilePictureData || userData?.profilePicture,
-              followersCount: userData?.followersCount,
-              followingCount: userData?.followingCount,
-              provider: 'INSTAGRAM',
-              providerId: userData?.providerId,
-              providerMessagingId: userData?.providerMessagingId,
-              source: viewMode === 'following' ? 'following' : 'followers',
-            }, { withCredentials: true });
+            const fullUserData = filteredData.find((item) => item.id === user.id);
+            if (fullUserData) {
+              await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/contacted`, {
+                userId: user.id,
+                username: fullUserData.username,
+                name: fullUserData.name,
+                profilePicture: fullUserData.profilePicture,
+                profilePictureData: fullUserData.profilePictureData, // Save the base64 profile image
+                followersCount: fullUserData.followersCount,
+                followingCount: fullUserData.followingCount,
+                provider: 'INSTAGRAM',
+                providerId: user.id,
+                providerMessagingId: user.messagingId,
+                source: viewMode === 'following' ? 'following' : 'followers',
+              }, { withCredentials: true });
+            }
           } catch (statusError) {
             console.error('Failed to update user status:', statusError);
           }

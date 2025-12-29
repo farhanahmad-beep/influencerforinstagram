@@ -1928,10 +1928,28 @@ export const getOnboardedUsers = async (req, res) => {
       .sort({ createdAt: -1 })
       .select('name userId chatId providerId providerMessagingId createdAt updatedAt');
 
+    // Fetch profile picture data from UserStatus collection for each onboarded user
+    const enrichedUsers = await Promise.all(
+      onboardedUsers.map(async (user) => {
+        const userStatus = await UserStatus.findOne({ userId: user.userId.toString() })
+          .select('profilePicture profilePictureData followersCount followingCount username status');
+
+        return {
+          ...user.toObject(),
+          profilePicture: userStatus?.profilePicture || '',
+          profilePictureData: userStatus?.profilePictureData || '',
+          followersCount: userStatus?.followersCount || 0,
+          followingCount: userStatus?.followingCount || 0,
+          username: userStatus?.username || '',
+          status: userStatus?.status || 'unknown',
+        };
+      })
+    );
+
     return res.status(200).json({
       success: true,
-      data: onboardedUsers,
-      count: onboardedUsers.length,
+      data: enrichedUsers,
+      count: enrichedUsers.length,
     });
   } catch (error) {
     console.error('Error fetching onboarded users:', error);
@@ -2220,7 +2238,19 @@ export const getCampaignById = async (req, res) => {
 // Update user status when sending message
 export const updateUserStatus = async (req, res) => {
   try {
-    const { userId, username, name, profilePicture, followersCount, followingCount, provider, providerId, providerMessagingId, source } = req.body;
+    const {
+      userId,
+      username,
+      name,
+      profilePicture,
+      profilePictureData,
+      followersCount,
+      followingCount,
+      provider,
+      providerId,
+      providerMessagingId,
+      source
+    } = req.body;
 
     if (!userId) {
       return res.status(400).json({
@@ -2234,36 +2264,36 @@ export const updateUserStatus = async (req, res) => {
     let userStatus = await UserStatus.findOne({ userId });
 
     if (userStatus) {
-      // Update existing user
-      userStatus.username = username || userStatus.username;
-      userStatus.name = name || userStatus.name;
-      userStatus.profilePicture = profilePicture || userStatus.profilePicture;
-      userStatus.followersCount = followersCount || userStatus.followersCount;
-      userStatus.followingCount = followingCount || userStatus.followingCount;
-      userStatus.provider = provider || userStatus.provider;
-      userStatus.providerId = providerId || userStatus.providerId;
-      userStatus.providerMessagingId = providerMessagingId || userStatus.providerMessagingId;
-      userStatus.source = source || userStatus.source;
+      // Update existing user with available data
+      if (username !== undefined) userStatus.username = username;
+      if (name !== undefined) userStatus.name = name;
+      if (profilePicture !== undefined) userStatus.profilePicture = profilePicture;
+      if (profilePictureData !== undefined) userStatus.profilePictureData = profilePictureData;
+      if (followersCount !== undefined) userStatus.followersCount = followersCount;
+      if (followingCount !== undefined) userStatus.followingCount = followingCount;
+      if (provider !== undefined) userStatus.provider = provider;
+      if (providerId !== undefined) userStatus.providerId = providerId;
+      if (providerMessagingId !== undefined) userStatus.providerMessagingId = providerMessagingId;
+      if (source !== undefined) userStatus.source = source;
+
       userStatus.lastContacted = new Date();
       userStatus.lastMessageSent = new Date();
       userStatus.messageCount = (userStatus.messageCount || 0) + 1;
 
-      // Don't change status if user is already onboarded or active
-      // Only set to contacted if this is their first interaction
-
       await userStatus.save();
     } else {
-      // Create new user status
+      // Create new user status with available data
       userStatus = new UserStatus({
         userId,
-        username,
-        name,
-        profilePicture,
+        username: username || '',
+        name: name || '',
+        profilePicture: profilePicture || '',
+        profilePictureData: profilePictureData || '',
         followersCount: followersCount || 0,
         followingCount: followingCount || 0,
         provider: provider || 'INSTAGRAM',
-        providerId,
-        providerMessagingId,
+        providerId: providerId || '',
+        providerMessagingId: providerMessagingId || '',
         status: 'contacted',
         source: source || 'direct',
         lastContacted: new Date(),

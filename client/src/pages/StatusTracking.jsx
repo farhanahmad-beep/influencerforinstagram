@@ -434,9 +434,9 @@ const StatusTracking = () => {
                       </div>
                     )}
                     <div className="mb-3 relative">
-                      {user.profilePicture ? (
+                      {(user.profilePictureData || user.profilePicture) ? (
                         <img
-                          src={user.profilePicture}
+                          src={user.profilePictureData || user.profilePicture}
                           alt={user.username}
                           className="w-16 h-16 rounded-full object-cover mx-auto"
                           referrerPolicy="no-referrer"
@@ -448,7 +448,7 @@ const StatusTracking = () => {
                         />
                       ) : null}
                       <div
-                        className={`w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto ${(user.profilePicture) ? 'hidden' : 'flex'}`}
+                        className={`w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto ${(user.profilePictureData || user.profilePicture) ? 'hidden' : 'flex'}`}
                       >
                         <span className="text-purple-600 font-bold text-lg">
                           {user.username?.charAt(0)?.toUpperCase() || user.name?.charAt(0)?.toUpperCase() || "U"}
