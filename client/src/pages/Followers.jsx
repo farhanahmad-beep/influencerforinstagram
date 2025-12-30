@@ -402,7 +402,7 @@ Let me know if you want help getting started! 😊`;
       }
       return newSet;
     });
-    
+
   };
 
   const handleSelectAll = () => {
@@ -418,6 +418,7 @@ Let me know if you want help getting started! 😊`;
       setSelectedUsers(new Set(usersWithMessagingId));
     }
   };
+  
 
   const handleSendMessageClick = () => {
     if (selectedUsers.size === 0) {
