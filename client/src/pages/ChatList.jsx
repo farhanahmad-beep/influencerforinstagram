@@ -483,18 +483,54 @@ const ChatList = () => {
       if (response.data.success) {
         const chatsData = response.data.data || [];
 
+        // Enrich chats with profile picture data for contacted users
+        const enrichedChats = await Promise.all(
+          chatsData.map(async (chat) => {
+            try {
+              // Try to find user status by attendeeProviderId (preferred) or chat id
+              const userResponse = await axios.get(
+                `${import.meta.env.VITE_API_URL}/influencers/user-statuses`,
+                {
+                  params: {
+                    search: chat.attendeeProviderId || chat.id,
+                    limit: 1,
+                  },
+                  withCredentials: true,
+                }
+              );
+
+              if (userResponse.data.success && userResponse.data.data.length > 0) {
+                const userStatus = userResponse.data.data[0];
+                return {
+                  ...chat,
+                  profilePicture: userStatus.profilePicture,
+                  profilePictureData: userStatus.profilePictureData,
+                  userFollowersCount: userStatus.followersCount,
+                  userFollowingCount: userStatus.followingCount,
+                  userStatus: userStatus.status,
+                };
+              }
+            } catch (userError) {
+              // User not found in database, continue without enrichment
+              console.debug(`No user status found for chat ${chat.id}`);
+            }
+
+            return chat;
+          })
+        );
+
         if (cursor) {
           // Append to existing data for pagination
-          setChats((prev) => [...prev, ...chatsData]);
+          setChats((prev) => [...prev, ...enrichedChats]);
           // Fetch previews for new chats
-          chatsData.forEach((chat) => {
+          enrichedChats.forEach((chat) => {
             fetchChatPreview(chat.id);
           });
         } else {
           // Replace data for new search
-          setChats(chatsData);
+          setChats(enrichedChats);
           // Fetch previews for all chats
-          chatsData.forEach((chat) => {
+          enrichedChats.forEach((chat) => {
             fetchChatPreview(chat.id);
           });
         }
@@ -502,14 +538,14 @@ const ChatList = () => {
         setPagination({
           cursor: response.data.pagination?.cursor || null,
           hasMore: response.data.pagination?.hasMore || false,
-          count: response.data.pagination?.count || chatsData.length,
+          count: response.data.pagination?.count || enrichedChats.length,
           limit: response.data.pagination?.limit || 10,
         });
 
-        if (chatsData.length === 0 && !cursor) {
+        if (enrichedChats.length === 0 && !cursor) {
           toast("No chats found for this account", { duration: 3000 });
-        } else if (chatsData.length > 0 && !cursor) {
-          toast.success(`Found ${chatsData.length} chat${chatsData.length !== 1 ? 's' : ''}`);
+        } else if (enrichedChats.length > 0 && !cursor) {
+          toast.success(`Found ${enrichedChats.length} chat${enrichedChats.length !== 1 ? 's' : ''}`);
         }
       } else {
         toast.error(response.data.error || "Failed to fetch chats");
@@ -662,6 +698,8 @@ Let me know if you want help getting started! 😊`;
                   chatId: chat.id,
                   chatName: chat.name,
                   messagingId: user.providerMessagingId,
+                    profilePicture: user.profilePicture,
+                    profilePictureData: user.profilePictureData,
                   message: campaignMsg || {
                     text: campaignMessage,
                     timestamp: campaign.createdAt || new Date().toISOString(),
@@ -679,6 +717,8 @@ Let me know if you want help getting started! 😊`;
                 chatId: chat.id,
                 chatName: chat.name,
                 messagingId: user.providerMessagingId,
+                profilePicture: user.profilePicture,
+                profilePictureData: user.profilePictureData,
                 message: {
                   text: campaignMessage,
                   timestamp: campaign.createdAt || new Date().toISOString(),
@@ -982,10 +1022,29 @@ Let me know if you want help getting started! 😊`;
                               className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer border border-gray-200"
                               onClick={(e) => handleChatClick(user.chatId, user.chatName, e)}
                             >
-                              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <span className="text-purple-600 font-bold text-sm">
-                                  {user.name?.charAt(0)?.toUpperCase() || "U"}
-                                </span>
+                              <div className="relative">
+                                {user.profilePictureData || user.profilePicture ? (
+                                  <img
+                                    src={user.profilePictureData || user.profilePicture}
+                                    alt={user.name}
+                                    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                                    referrerPolicy="no-referrer"
+                                    onError={(e) => {
+                                      e.target.style.display = 'none';
+                                      const fallback = e.target.nextElementSibling;
+                                      if (fallback) fallback.style.display = 'flex';
+                                    }}
+                                  />
+                                ) : null}
+                                <div
+                                  className={`w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                    (user.profilePictureData || user.profilePicture) ? 'hidden' : 'flex'
+                                  }`}
+                                >
+                                  <span className="text-purple-600 font-bold text-sm">
+                                    {user.name?.charAt(0)?.toUpperCase() || "U"}
+                                  </span>
+                                </div>
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h4 className="text-sm font-semibold text-gray-900 truncate">
@@ -1080,10 +1139,29 @@ Let me know if you want help getting started! 😊`;
                           className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
                         />
                       )}
-                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-purple-600 font-bold text-lg">
-                          {chat.name?.charAt(0)?.toUpperCase() || "C"}
-                        </span>
+                      <div className="relative">
+                        {(chat.profilePictureData || chat.profilePicture) ? (
+                          <img
+                            src={chat.profilePictureData || chat.profilePicture}
+                            alt={chat.name}
+                            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                            referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              const fallback = e.target.nextElementSibling;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className={`w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            (chat.profilePictureData || chat.profilePicture) ? 'hidden' : 'flex'
+                          }`}
+                        >
+                          <span className="text-purple-600 font-bold text-lg">
+                            {chat.name?.charAt(0)?.toUpperCase() || "C"}
+                          </span>
+                        </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-1">
