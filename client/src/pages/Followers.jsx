@@ -402,6 +402,7 @@ Let me know if you want help getting started! 😊`;
       }
       return newSet;
     });
+    
   };
 
   const handleSelectAll = () => {
