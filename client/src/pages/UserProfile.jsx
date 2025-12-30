@@ -147,10 +147,12 @@ Let me know if you want help getting started! 😊`;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="h-screen bg-gray-50 flex overflow-hidden">
         <Navbar />
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className="flex-1 lg:ml-0 overflow-y-auto">
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          </div>
         </div>
       </div>
     );

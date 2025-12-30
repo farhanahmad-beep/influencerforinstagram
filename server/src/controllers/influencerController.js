@@ -1569,10 +1569,16 @@ export const getFollowing = async (req, res) => {
               ...account,
               followersCount: counts.followersCount,
               followingCount: counts.followingCount,
+              providerMessagingId: counts.providerMessagingId || account.messagingId || '',
             };
           },
           5 // Process 5 users at a time to avoid overwhelming the API
-        ) : followingBasic.map(f => ({ ...f, followersCount: 0, followingCount: 0 }));
+        ) : followingBasic.map(f => ({
+          ...f,
+          followersCount: 0,
+          followingCount: 0,
+          providerMessagingId: f.messagingId || ''
+        }));
 
         console.log(`Processed ${following.length} following accounts for response`);
 
@@ -1759,10 +1765,16 @@ export const getFollowers = async (req, res) => {
               ...follower,
               followersCount: counts.followersCount,
               followingCount: counts.followingCount,
+              providerMessagingId: counts.providerMessagingId || follower.messagingId || '',
             };
           },
           5 // Process 5 users at a time to avoid overwhelming the API
-        ) : followersBasic.map(f => ({ ...f, followersCount: 0, followingCount: 0 }));
+        ) : followersBasic.map(f => ({
+          ...f,
+          followersCount: 0,
+          followingCount: 0,
+          providerMessagingId: f.messagingId || ''
+        }));
 
         console.log(`Processed ${followers.length} followers for response`);
 
