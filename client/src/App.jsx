@@ -7,9 +7,14 @@ import Dashboard from "./pages/Dashboard.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import Profile from "./pages/Profile.jsx";
 import InfluencerDetail from "./pages/InfluencerDetail.jsx";
-import LinkedAccounts from "./pages/LinkedAccounts.jsx";
 import Followers from "./pages/Followers.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
+import GlobalSearch from "./pages/GlobalSearch.jsx";
+import ChatList from "./pages/ChatList.jsx";
+import ChatMessages from "./pages/ChatMessages.jsx";
+import Onboard from "./pages/Onboard.jsx";
+import StatusTracking from "./pages/StatusTracking.jsx";
+import InfluencerGrowth from "./pages/InfluencerGrowth.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
@@ -52,10 +57,50 @@ function App() {
           }
         />
         <Route
-          path="/linked-accounts"
+          path="/global-search"
           element={
             <ProtectedRoute>
-              <LinkedAccounts />
+              <GlobalSearch />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat-list"
+          element={
+            <ProtectedRoute>
+              <ChatList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/chat-messages/:chatId"
+          element={
+            <ProtectedRoute>
+              <ChatMessages />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/onboard"
+          element={
+            <ProtectedRoute>
+              <Onboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/status-tracking"
+          element={
+            <ProtectedRoute>
+              <StatusTracking />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/influencer-growth"
+          element={
+            <ProtectedRoute>
+              <InfluencerGrowth />
             </ProtectedRoute>
           }
         />

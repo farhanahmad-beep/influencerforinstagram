@@ -58,9 +58,10 @@ const InfluencerDetail = () => {
   }
 
   return (
-    <div id="src_pages_InfluencerDetail_luo3" className="min-h-screen bg-gray-50">
+    <div id="src_pages_InfluencerDetail_luo3" className="h-screen bg-gray-50 flex overflow-hidden">
       <Navbar />
-      <div id="src_pages_InfluencerDetail_k1tl" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-1 lg:ml-0 overflow-y-auto">
+        <div id="src_pages_InfluencerDetail_k1tl" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
         <button
           id="src_pages_InfluencerDetail_d3bv" onClick={() => navigate("/dashboard")}
           className="btn-secondary mb-6"
@@ -77,11 +78,11 @@ const InfluencerDetail = () => {
             <div id="src_pages_InfluencerDetail_ras8" className="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
               <div className="relative w-32 h-32">
                 {(influencer.profileImage || influencer.profilePicture) ? (
-                  <img
+              <img
                     id="src_pages_InfluencerDetail_h0jk" 
                     src={influencer.profileImage || influencer.profilePicture}
-                    alt={influencer.fullName}
-                    className="w-32 h-32 rounded-full object-cover"
+                alt={influencer.fullName}
+                className="w-32 h-32 rounded-full object-cover"
                     onError={(e) => {
                       e.target.style.display = 'none';
                       const fallback = e.target.nextElementSibling;
@@ -109,15 +110,15 @@ const InfluencerDetail = () => {
                   )}
                 </div>
                 {influencer.username && (
-                  <p id="src_pages_InfluencerDetail_fs5u" className="text-lg text-gray-600 mb-2">
-                    @{influencer.username}
-                  </p>
+                <p id="src_pages_InfluencerDetail_fs5u" className="text-lg text-gray-600 mb-2">
+                  @{influencer.username}
+                </p>
                 )}
                 <div id="src_pages_InfluencerDetail_zl0i" className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
                   {influencer.category && (
-                    <span id="src_pages_InfluencerDetail_cty1" className="inline-block px-3 py-1 text-sm font-medium text-purple-600 bg-purple-100 rounded-full">
-                      {influencer.category}
-                    </span>
+                  <span id="src_pages_InfluencerDetail_cty1" className="inline-block px-3 py-1 text-sm font-medium text-purple-600 bg-purple-100 rounded-full">
+                    {influencer.category}
+                  </span>
                   )}
                   {influencer.niche && Array.isArray(influencer.niche) && influencer.niche.length > 0 && influencer.niche.map((n, index) => (
                     <span
@@ -229,6 +230,7 @@ const InfluencerDetail = () => {
             </div>
           )}
         </motion.div>
+      </div>
       </div>
     </div>
   );

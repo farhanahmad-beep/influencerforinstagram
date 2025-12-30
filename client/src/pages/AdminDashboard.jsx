@@ -44,9 +44,10 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div id="src_pages_AdminDashboard_am1c" className="min-h-screen bg-gray-50">
+    <div id="src_pages_AdminDashboard_am1c" className="h-screen bg-gray-50 flex overflow-hidden">
       <Navbar />
-      <div id="src_pages_AdminDashboard_bas8" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-1 lg:ml-0 overflow-y-auto">
+        <div id="src_pages_AdminDashboard_bas8" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
         <div id="src_pages_AdminDashboard_3hur" className="mb-8">
           <h1 id="src_pages_AdminDashboard_bkv9" className="text-3xl font-bold text-gray-900 mb-2">
             Admin Dashboard
@@ -98,6 +99,7 @@ const AdminDashboard = () => {
           <p id="src_pages_AdminDashboard_infop" className="text-blue-700">
             You have full administrative privileges. Additional admin features will be available here.
           </p>
+        </div>
         </div>
       </div>
     </div>
