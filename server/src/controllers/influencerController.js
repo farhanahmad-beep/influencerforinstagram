@@ -1569,10 +1569,16 @@ export const getFollowing = async (req, res) => {
               ...account,
               followersCount: counts.followersCount,
               followingCount: counts.followingCount,
+              providerMessagingId: counts.providerMessagingId || account.messagingId || '',
             };
           },
           5 // Process 5 users at a time to avoid overwhelming the API
-        ) : followingBasic.map(f => ({ ...f, followersCount: 0, followingCount: 0 }));
+        ) : followingBasic.map(f => ({
+          ...f,
+          followersCount: 0,
+          followingCount: 0,
+          providerMessagingId: f.messagingId || ''
+        }));
 
         console.log(`Processed ${following.length} following accounts for response`);
 
@@ -1759,10 +1765,16 @@ export const getFollowers = async (req, res) => {
               ...follower,
               followersCount: counts.followersCount,
               followingCount: counts.followingCount,
+              providerMessagingId: counts.providerMessagingId || follower.messagingId || '',
             };
           },
           5 // Process 5 users at a time to avoid overwhelming the API
-        ) : followersBasic.map(f => ({ ...f, followersCount: 0, followingCount: 0 }));
+        ) : followersBasic.map(f => ({
+          ...f,
+          followersCount: 0,
+          followingCount: 0,
+          providerMessagingId: f.messagingId || ''
+        }));
 
         console.log(`Processed ${followers.length} followers for response`);
 
@@ -2260,6 +2272,18 @@ export const updateUserStatus = async (req, res) => {
       });
     }
 
+    // Convert profilePicture URL to base64 if it's a URL and not already base64
+    let profilePictureBase64 = profilePicture;
+    if (profilePicture && !profilePicture.startsWith('data:image/')) {
+      // It's a URL, convert to base64
+      try {
+        profilePictureBase64 = await fetchImageAsBase64(profilePicture);
+      } catch (error) {
+        console.error('Failed to convert profile picture URL to base64:', error);
+        profilePictureBase64 = profilePicture; // Keep original URL if conversion fails
+      }
+    }
+
     // Find or create user status
     let userStatus = await UserStatus.findOne({ userId });
 
@@ -2267,7 +2291,7 @@ export const updateUserStatus = async (req, res) => {
       // Update existing user with available data
       if (username !== undefined) userStatus.username = username;
       if (name !== undefined) userStatus.name = name;
-      if (profilePicture !== undefined) userStatus.profilePicture = profilePicture;
+      if (profilePictureBase64 !== undefined) userStatus.profilePicture = profilePictureBase64;
       if (profilePictureData !== undefined) userStatus.profilePictureData = profilePictureData;
       if (followersCount !== undefined) userStatus.followersCount = followersCount;
       if (followingCount !== undefined) userStatus.followingCount = followingCount;
@@ -2287,7 +2311,7 @@ export const updateUserStatus = async (req, res) => {
         userId,
         username: username || '',
         name: name || '',
-        profilePicture: profilePicture || '',
+        profilePicture: profilePictureBase64 || '',
         profilePictureData: profilePictureData || '',
         followersCount: followersCount || 0,
         followingCount: followingCount || 0,
