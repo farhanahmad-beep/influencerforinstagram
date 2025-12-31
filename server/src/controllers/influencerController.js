@@ -18,6 +18,12 @@ const getRocketConfig = () => {
   return { apiUrl, apiKey };
 };
 
+// Helper for Modash API configuration
+const getModashConfig = () => {
+  const baseUrl = (process.env.MODASH_BASE_URL || 'https://api.modash.io/v1').replace(/\/$/, '');
+  const accessToken = process.env.MODASH_ACCESS_TOKEN || '';
+  return { baseUrl, accessToken };
+};
 // Helper function to get Unipile API headers
 const getUnipileHeaders = (accessToken) => ({
   'accept': 'application/json',
@@ -88,6 +94,292 @@ const processWithConcurrency = async (items, processor, concurrency = 5) => {
     results.push(...batchResults);
   }
   return results;
+};
+
+// Search influencers via Modash API
+export const searchModashInfluencers = async (req, res) => {
+  try {
+    const { baseUrl, accessToken } = getModashConfig();
+
+
+    if (!baseUrl || !accessToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Modash API configuration not found. Please set MODASH_BASE_URL and MODASH_ACCESS_TOKEN environment variables.',
+        statusCode: 400,
+      });
+    }
+
+    const requestBody = req.body;
+
+    const fullUrl = `${baseUrl}/instagram/search`;
+
+    const response = await axios.post(fullUrl, requestBody, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      timeout: 30000,
+      validateStatus: () => true, // Don't throw on any status code
+    });
+
+    // If it's a 400 error, let's also try without the Bearer prefix
+    if (response.status === 400) {
+      const responseWithoutBearer = await axios.post(fullUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': accessToken, // Try without Bearer prefix
+        },
+        timeout: 30000,
+        validateStatus: () => true,
+      });
+
+      if (responseWithoutBearer.status < 400) {
+        return res.status(200).json({
+          success: true,
+          data: responseWithoutBearer.data,
+        });
+      }
+    }
+
+    if (response.status >= 200 && response.status < 300) {
+      return res.status(200).json({
+        success: true,
+        data: response.data,
+      });
+    } else {
+      return res.status(response.status).json({
+        success: false,
+        error: `Modash API returned status ${response.status}`,
+        statusCode: response.status,
+        details: response.data,
+        requestBody: requestBody, // Include for debugging
+      });
+    }
+  } catch (error) {
+    console.error('Modash API error:', error);
+
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to search influencers via Modash API',
+      statusCode: 500,
+      message: error.message,
+      details: error.response?.data,
+    });
+  }
+};
+
+// Get locations from Modash API
+export const getLocations = async (req, res) => {
+  try {
+    const { baseUrl, accessToken } = getModashConfig();
+
+    if (!baseUrl || !accessToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Modash API configuration not found. Please set MODASH_BASE_URL and MODASH_ACCESS_TOKEN environment variables.',
+        statusCode: 400,
+      });
+    }
+
+    const { query, limit = 30 } = req.query;
+    const locationsUrl = `${baseUrl}/instagram/locations`;
+
+    const params = new URLSearchParams();
+    if (query) params.append('query', query);
+    params.append('limit', limit.toString());
+
+    const fullUrl = `${locationsUrl}?${params.toString()}`;
+
+    const response = await axios.get(fullUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      timeout: 30000,
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+      return res.status(200).json({
+        success: true,
+        data: response.data,
+      });
+    } else {
+      return res.status(response.status).json({
+        success: false,
+        error: `Modash API returned status ${response.status}`,
+        statusCode: response.status,
+        details: response.data,
+      });
+    }
+  } catch (error) {
+    console.error('Modash locations error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch locations from Modash API',
+      statusCode: 500,
+      message: error.message,
+      details: error.response?.data,
+    });
+  }
+};
+
+// Get languages from Modash API
+export const getLanguages = async (req, res) => {
+  try {
+    const { baseUrl, accessToken } = getModashConfig();
+
+    if (!baseUrl || !accessToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Modash API configuration not found. Please set MODASH_BASE_URL and MODASH_ACCESS_TOKEN environment variables.',
+        statusCode: 400,
+      });
+    }
+
+    const { query, limit = 30 } = req.query;
+    const languagesUrl = `${baseUrl}/instagram/languages`;
+
+    const params = new URLSearchParams();
+    if (query) params.append('query', query);
+    params.append('limit', limit.toString());
+
+    const fullUrl = `${languagesUrl}?${params.toString()}`;
+
+    const response = await axios.get(fullUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      timeout: 30000,
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+      return res.status(200).json({
+        success: true,
+        data: response.data,
+      });
+    } else {
+      return res.status(response.status).json({
+        success: false,
+        error: `Modash API returned status ${response.status}`,
+        statusCode: response.status,
+        details: response.data,
+      });
+    }
+  } catch (error) {
+    console.error('Modash languages error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch languages from Modash API',
+      statusCode: 500,
+      message: error.message,
+      details: error.response?.data,
+    });
+  }
+};
+
+// Get interests from Modash API
+export const getInterests = async (req, res) => {
+  try {
+    const { baseUrl, accessToken } = getModashConfig();
+
+    if (!baseUrl || !accessToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Modash API configuration not found. Please set MODASH_BASE_URL and MODASH_ACCESS_TOKEN environment variables.',
+        statusCode: 400,
+      });
+    }
+
+    const { query, limit = 30 } = req.query;
+    const interestsUrl = `${baseUrl}/instagram/interests`;
+
+    const params = new URLSearchParams();
+    if (query) params.append('query', query);
+    params.append('limit', limit.toString());
+
+    const fullUrl = `${interestsUrl}?${params.toString()}`;
+
+    const response = await axios.get(fullUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      timeout: 30000,
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+      return res.status(200).json({
+        success: true,
+        data: response.data,
+      });
+    } else {
+      return res.status(response.status).json({
+        success: false,
+        error: `Modash API returned status ${response.status}`,
+        statusCode: response.status,
+        details: response.data,
+      });
+    }
+  } catch (error) {
+    console.error('Modash interests error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch interests from Modash API',
+      statusCode: 500,
+      message: error.message,
+      details: error.response?.data,
+    });
+  }
+};
+
+// AI Text-based search for influencers
+export const aiTextSearch = async (req, res) => {
+  try {
+    const { baseUrl, accessToken } = getModashConfig();
+
+    if (!baseUrl || !accessToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Modash API configuration not found. Please set MODASH_BASE_URL and MODASH_ACCESS_TOKEN environment variables.',
+        statusCode: 400,
+      });
+    }
+
+    const requestBody = req.body;
+
+    const fullUrl = `${baseUrl}/ai/instagram/text-search`;
+
+    const response = await axios.post(fullUrl, requestBody, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      timeout: 60000, // Longer timeout for AI search
+      validateStatus: () => true,
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+      return res.status(200).json({
+        success: true,
+        data: response.data,
+      });
+    } else {
+      return res.status(response.status).json({
+        success: false,
+        error: `Modash AI API returned status ${response.status}`,
+        statusCode: response.status,
+        details: response.data,
+      });
+    }
+  } catch (error) {
+    console.error('Modash AI search error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to perform AI text search via Modash API',
+      statusCode: 500,
+      message: error.message,
+      details: error.response?.data,
+    });
+  }
 };
 
 // Search users via Rocket API (global search)
@@ -2513,6 +2805,8 @@ export const getUserStatuses = async (req, res) => {
         { username: { $regex: search, $options: 'i' } },
         { name: { $regex: search, $options: 'i' } },
         { userId: { $regex: search, $options: 'i' } },
+        { providerMessagingId: { $regex: search, $options: 'i' } },
+        { providerId: { $regex: search, $options: 'i' } },
       ];
     }
 

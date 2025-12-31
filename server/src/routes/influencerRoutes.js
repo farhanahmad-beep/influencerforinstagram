@@ -9,6 +9,11 @@ import {
   getFollowers,
   getFollowing,
   searchRocketUsers,
+  searchModashInfluencers,
+  getLocations,
+  getLanguages,
+  getInterests,
+  aiTextSearch,
   startChat,
   getChats,
   getChatMessages,
@@ -46,6 +51,11 @@ router.get('/user-profile', protect, getUserProfile);
 router.get('/followers', protect, getFollowers);
 router.get('/following', protect, getFollowing);
 router.get('/search-users', protect, searchRocketUsers);
+router.post('/instagram/search', protect, searchModashInfluencers);
+router.get('/locations', protect, getLocations);
+router.get('/languages', protect, getLanguages);
+router.get('/interests', protect, getInterests);
+router.post('/ai/text-search', protect, aiTextSearch);
 router.post('/start-chat', protect, startChat);
 router.get('/chats', protect, getChats);
 router.get('/chats/:chatId/messages', protect, getChatMessages);

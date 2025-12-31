@@ -10,6 +10,7 @@ import InfluencerDetail from "./pages/InfluencerDetail.jsx";
 import Followers from "./pages/Followers.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import GlobalSearch from "./pages/GlobalSearch.jsx";
+import ModashSearch from "./pages/ModashSearch.jsx";
 import ChatList from "./pages/ChatList.jsx";
 import ChatMessages from "./pages/ChatMessages.jsx";
 import Onboard from "./pages/Onboard.jsx";
@@ -61,6 +62,14 @@ function App() {
           element={
             <ProtectedRoute>
               <GlobalSearch />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/modash-search"
+          element={
+            <ProtectedRoute>
+              <ModashSearch />
             </ProtectedRoute>
           }
         />
