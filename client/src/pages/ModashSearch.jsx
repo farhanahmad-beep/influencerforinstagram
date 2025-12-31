@@ -105,7 +105,12 @@ const ModashSearch = () => {
   const handleDetailClick = async (influencer) => {
     const accountId = await fetchLinkedAccounts();
     if (accountId && influencer.id) {
-      navigate(`/user-profile/${influencer.id}?account_id=${accountId}`);
+      navigate(`/user-profile/${influencer.id}?account_id=${accountId}`, {
+        state: {
+          accountId: accountId,
+          from: 'modash-search'
+        }
+      });
     } else {
       toast.error('Unable to open profile details');
     }

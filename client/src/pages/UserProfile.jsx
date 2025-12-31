@@ -183,6 +183,8 @@ Let me know if you want help getting started! 😊`;
             onClick={() => {
               if (fromPage === "global-search") {
                 navigate("/global-search?account_id=${accountId}");
+              } else if (fromPage === "modash-search") {
+                navigate("/modash-search");
               } else {
                 navigate(`/followers${accountId ? `?account_id=${accountId}` : ""}`);
               }
