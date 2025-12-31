@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar.jsx";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 
 const ModashSearch = () => {
+  const navigate = useNavigate();
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -81,6 +83,32 @@ const ModashSearch = () => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
+  };
+
+  const fetchLinkedAccounts = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/influencers/linked-accounts`, {
+        withCredentials: true,
+      });
+
+      if (response.data.success && response.data.data && response.data.data.length > 0) {
+        return response.data.data[0].id; // Return the first account ID
+      }
+      return null;
+    } catch (error) {
+      console.error('Failed to fetch linked accounts:', error);
+      toast.error('Failed to fetch linked accounts');
+      return null;
+    }
+  };
+
+  const handleDetailClick = async (influencer) => {
+    const accountId = await fetchLinkedAccounts();
+    if (accountId && influencer.id) {
+      navigate(`/user-profile/${influencer.id}?account_id=${accountId}`);
+    } else {
+      toast.error('Unable to open profile details');
+    }
   };
 
   const handleInputChange = (field, value, nestedPath = []) => {
@@ -1119,9 +1147,17 @@ const ModashSearch = () => {
                           )}
 
                           {/* User ID */}
-                          <div className="text-xs text-gray-400 text-center">
+                          <div className="text-xs text-gray-400 text-center mt-2">
                             ID: {influencer.id}
                           </div>
+
+                          {/* Detail Button */}
+                          <button
+                            onClick={() => handleDetailClick(influencer)}
+                            className="mt-3 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                          >
+                            Detail & Message
+                          </button>
                         </div>
                     </div>
                   </motion.div>
