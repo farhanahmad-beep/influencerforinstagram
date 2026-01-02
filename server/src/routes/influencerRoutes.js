@@ -11,6 +11,7 @@ import {
   searchRocketUsers,
   searchModashInfluencers,
   searchModashUsers,
+  searchModashImage,
   getLocations,
   getLanguages,
   getInterests,
@@ -58,6 +59,7 @@ router.get('/locations', protect, getLocations);
 router.get('/languages', protect, getLanguages);
 router.get('/interests', protect, getInterests);
 router.post('/ai/text-search', protect, aiTextSearch);
+router.post('/ai/instagram/image-search', protect, searchModashImage);
 router.post('/start-chat', protect, startChat);
 router.get('/chats', protect, getChats);
 router.get('/chats/:chatId/messages', protect, getChatMessages);

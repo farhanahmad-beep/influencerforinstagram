@@ -29,6 +29,9 @@ const ModashSearch = () => {
   const [aiQuery, setAiQuery] = useState('');
   const [isUserSearch, setIsUserSearch] = useState(false);
   const [userQuery, setUserQuery] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imageType, setImageType] = useState('');
+  const [base64Image, setBase64Image] = useState('');
   const resultsRef = useRef(null);
   const [searchParams, setSearchParams] = useState({
     calculationMethod: 'median',
@@ -85,6 +88,95 @@ const ModashSearch = () => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
+  };
+
+  const handleImageSelect = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Please select a valid image file (JPEG, PNG, or WebP)');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image file must be less than 5MB');
+      return;
+    }
+
+    try {
+      // Compress and resize image to ensure base64 < 1MB
+      const compressedBase64 = await compressImage(file);
+
+      setSelectedImage(file);
+      setImageType(file.type);
+      setBase64Image(compressedBase64);
+      toast.success('Image uploaded and compressed successfully');
+    } catch (error) {
+      console.error('Error processing image:', error);
+      toast.error('Failed to process image');
+    }
+  };
+
+  const compressImage = (file) => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        // Calculate new dimensions to ensure base64 < 1MB
+        // Base64 is ~33% larger than original, so target ~750KB original size
+        const maxSizeBytes = 750 * 1024; // 750KB target for ~1MB base64
+        let { width, height } = img;
+
+        // Calculate current file size estimate
+        const aspectRatio = width / height;
+        let newWidth = width;
+        let newHeight = height;
+
+        // Estimate compressed size and resize if needed
+        const estimatedSize = (width * height * 3) * 0.8; // Rough estimate with compression
+        if (estimatedSize > maxSizeBytes) {
+          const scale = Math.sqrt(maxSizeBytes / estimatedSize);
+          newWidth = Math.floor(width * scale);
+          newHeight = Math.floor(height * scale);
+        }
+
+        // Set canvas dimensions
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+
+        // Draw and compress image
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+        // Convert to base64 with quality adjustment
+        let quality = 0.9;
+        let base64 = canvas.toDataURL(file.type, quality).split(',')[1];
+
+        // If still too large, reduce quality further
+        while (base64.length > 1024 * 1024 && quality > 0.1) { // 1MB limit
+          quality -= 0.1;
+          base64 = canvas.toDataURL(file.type, quality).split(',')[1];
+        }
+
+        // Final check - if still too large, reduce dimensions further
+        if (base64.length > 1024 * 1024) {
+          const emergencyScale = Math.sqrt((1024 * 1024 * 0.75) / base64.length);
+          canvas.width = Math.floor(newWidth * emergencyScale);
+          canvas.height = Math.floor(newHeight * emergencyScale);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          base64 = canvas.toDataURL(file.type, 0.7).split(',')[1];
+        }
+
+        resolve(base64);
+      };
+
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
   };
 
   const fetchLinkedAccounts = async () => {
@@ -506,7 +598,138 @@ const ModashSearch = () => {
     }
   };
 
+  const performImageSearch = async (page = 0, appendResults = false) => {
+    if (appendResults) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+      setSearchResults([]);
+      setCurrentPage(0);
+      setTotalResults(0);
+      setHasMoreResults(false);
+    }
+
+    // Build image search payload
+    const imagePayload = {
+      page,
+      imageType,
+      base64Image,
+      filters: {}
+    };
+
+    // Add follower filters if specified
+    if (searchParams.filter.influencer.followers.min || searchParams.filter.influencer.followers.max) {
+      imagePayload.filters.followersCount = {
+        min: searchParams.filter.influencer.followers.min || 0,
+        max: searchParams.filter.influencer.followers.max || 0
+      };
+    }
+
+    // Add location filters
+    if (searchParams.filter.influencer.location && searchParams.filter.influencer.location.length > 0) {
+      imagePayload.filters.locations = searchParams.filter.influencer.location;
+    }
+
+    // Add gender filter
+    if (searchParams.filter.influencer.gender && searchParams.filter.influencer.gender !== '') {
+      imagePayload.filters.gender = searchParams.filter.influencer.gender;
+    }
+
+    // Add last posted filter
+    if (searchParams.filter.influencer.lastposted) {
+      imagePayload.filters.lastPostedInDays = searchParams.filter.influencer.lastposted;
+    }
+
+    // Add language filter
+    if (searchParams.filter.influencer.language && searchParams.filter.influencer.language !== '') {
+      imagePayload.filters.language = searchParams.filter.influencer.language;
+    }
+
+    // Add age filters
+    if (searchParams.filter.influencer.age?.min || searchParams.filter.influencer.age?.max) {
+      imagePayload.filters.age = {
+        min: searchParams.filter.influencer.age?.min,
+        max: searchParams.filter.influencer.age?.max
+      };
+    }
+
+    // Add engagement rate filter
+    if (searchParams.filter.influencer.engagementRate && searchParams.filter.influencer.engagementRate > 0) {
+      imagePayload.filters.engagementRate = {
+        min: searchParams.filter.influencer.engagementRate
+      };
+    }
+
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/influencers/ai/instagram/image-search`, imagePayload, {
+        withCredentials: true,
+      });
+
+      if (response.data.success && response.data.data) {
+        const imageData = response.data.data;
+
+        // Transform image search results to match expected influencer format
+        const results = imageData.profiles.map(profile => ({
+          id: profile.userId,
+          username: profile.username,
+          name: profile.fullName || profile.username,
+          profilePicture: profile.profilePicture,
+          followersCount: profile.followersCount,
+          engagementRate: profile.engagementRate / 100, // Convert to decimal (5.09% -> 0.0509)
+          bio: profile.accountCategory,
+          matchedPosts: profile.matchedPosts || [],
+          recentPosts: profile.recentPosts || [],
+          isFromImageSearch: true, // Flag to identify image search results
+          // Additional fields from image search response
+          accountCategory: profile.accountCategory,
+        }));
+
+        if (appendResults) {
+          setSearchResults(prev => [...prev, ...results]);
+          setCurrentPage(page);
+        } else {
+          setSearchResults(results);
+          setCurrentPage(0);
+          setTotalResults(imageData.total || results.length);
+        }
+
+        setHasMoreResults((page + 1) * 6 < (imageData.total || 0)); // Image API returns max 6 per page
+
+        if (!appendResults) {
+          if (results.length > 0) {
+            toast.success(`Found ${results.length} of ${imageData.total || results.length} influencers matching your image`);
+            // Scroll to results after a delay to allow UI to update
+            setTimeout(() => scrollToResults(), 1000);
+          } else {
+            toast.success('No influencers found matching your image');
+          }
+        } else if (results.length > 0) {
+          toast.success(`Loaded ${results.length} more influencers`);
+        }
+      } else {
+        console.error('Image search API Error:', response.data);
+        toast.error(response.data.error || "Image search failed");
+        setSearchResults([]);
+        setHasMoreResults(false);
+      }
+    } catch (error) {
+      console.error("Image search error:", error);
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Image search failed";
+      toast.error(errorMessage);
+      setSearchResults([]);
+      setHasMoreResults(false);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
   const performSearch = async (page = 0, appendResults = false) => {
+    // Use image search if image is selected
+    if (selectedImage && base64Image) {
+      return performImageSearch(page);
+    }
+
     // Use AI search if enabled and query is provided
     if (isAISearch && aiQuery.trim()) {
       return performAISearch(page);
@@ -624,7 +847,10 @@ const ModashSearch = () => {
   };
 
   const handleSearch = () => {
-    if (isAISearch) {
+    if (selectedImage && base64Image) {
+      // Image search - image is already validated
+      performImageSearch(0);
+    } else if (isAISearch) {
       if (!aiQuery.trim()) {
         toast.error('Please enter an AI search query');
         return;
@@ -652,7 +878,9 @@ const ModashSearch = () => {
 
   const handleLoadMore = () => {
     const nextPage = currentPage + 1;
-    if (isAISearch) {
+    if (selectedImage && base64Image) {
+      performImageSearch(nextPage, true);
+    } else if (isAISearch) {
       performAISearch(nextPage, true);
     } else if (isUserSearch) {
       performUserSearch(nextPage, true);
@@ -774,6 +1002,58 @@ const ModashSearch = () => {
             {/* Traditional Filters - Only show when not in user search mode */}
             {!isUserSearch && (
               <>
+
+                {/* Image Upload for AI Image Search */}
+                <div className="col-span-full mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Image Search (Optional)
+                  </label>
+                  <div className="flex items-center">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {selectedImage ? 'Change Image' : 'Upload Image'}
+                    </label>
+                    {selectedImage && (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm text-gray-600">{selectedImage.name}</span>
+                        <button
+                          onClick={() => {
+                            setSelectedImage(null);
+                            setImageType('');
+                            setBase64Image('');
+                          }}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {selectedImage && (
+                    <div className="mt-2">
+                      <img
+                        src={URL.createObjectURL(selectedImage)}
+                        alt="Selected for search"
+                        className="max-w-xs max-h-32 object-cover rounded border"
+                      />
+                    </div>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Upload an image to find influencers who post similar content. Max 5MB, JPEG/PNG/WebP only.
+                  </p>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Basic Filters */}
@@ -1062,7 +1342,15 @@ const ModashSearch = () => {
                     disabled={loading}
                     className="btn-primary"
                   >
-                    {loading ? (isUserSearch ? "User Searching..." : isAISearch ? "AI Searching..." : "Searching...") : (isUserSearch ? "Search Users" : isAISearch ? "AI Search Influencers" : "Search Influencers")}
+                    {loading ? (
+                      selectedImage ? "Image Searching..." :
+                      isUserSearch ? "User Searching..." :
+                      isAISearch ? "AI Searching..." : "Searching..."
+                    ) : (
+                      selectedImage ? "Search by Image" :
+                      isUserSearch ? "Search Users" :
+                      isAISearch ? "AI Search Influencers" : "Search Influencers"
+                    )}
                   </button>
                 </div>
               </>
@@ -1232,14 +1520,14 @@ const ModashSearch = () => {
                             </p>
                           )}
 
-                          {/* AI Search Posts */}
-                          {influencer.isFromAISearch && (
+                          {/* AI/Image Search Posts */}
+                          {(influencer.isFromAISearch || influencer.isFromImageSearch) && (
                             <div className="mb-2 space-y-2">
                               {/* Matched Posts */}
                               {influencer.matchedPosts && influencer.matchedPosts.length > 0 && (
                                 <div>
                                   <div className="text-xs text-purple-600 font-medium mb-1 text-center">
-                                    AI Matched Posts ({influencer.matchedPosts.length})
+                                    {influencer.isFromImageSearch ? 'Image Matched Posts' : 'AI Matched Posts'} ({influencer.matchedPosts.length})
                                   </div>
                                   <div className="flex flex-wrap justify-center gap-1">
                                     {influencer.matchedPosts.slice(0, 3).map((post, postIndex) => (

@@ -457,6 +457,77 @@ export const searchModashUsers = async (req, res) => {
   }
 };
 
+// Search influencers using image-based AI via Modash API
+export const searchModashImage = async (req, res) => {
+  try {
+    const { baseUrl, accessToken } = getModashConfig();
+
+    if (!baseUrl || !accessToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Modash API configuration not found. Please set MODASH_BASE_URL and MODASH_ACCESS_TOKEN environment variables.',
+        statusCode: 400,
+      });
+    }
+
+    const requestBody = req.body;
+
+    const fullUrl = `${baseUrl}/ai/instagram/image-search`;
+
+    const response = await axios.post(fullUrl, requestBody, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      timeout: 60000, // Longer timeout for image processing
+      validateStatus: () => true, // Don't throw on any status code
+    });
+
+    // If it's a 400 error, let's also try without the Bearer prefix
+    if (response.status === 400) {
+      const responseWithoutBearer = await axios.post(fullUrl, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': accessToken, // Try without Bearer prefix
+        },
+        timeout: 60000,
+        validateStatus: () => true,
+      });
+
+      if (responseWithoutBearer.status < 400) {
+        return res.status(200).json({
+          success: true,
+          data: responseWithoutBearer.data,
+        });
+      }
+    }
+
+    if (response.status >= 200 && response.status < 300) {
+      return res.status(200).json({
+        success: true,
+        data: response.data,
+      });
+    } else {
+      return res.status(response.status).json({
+        success: false,
+        error: 'Failed to perform image search via Modash API',
+        statusCode: response.status,
+        message: response.data?.message || 'Unknown error',
+        details: response.data,
+      });
+    }
+  } catch (error) {
+    console.error('Modash image search error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to perform image search via Modash API',
+      statusCode: 500,
+      message: error.message,
+      details: error.response?.data,
+    });
+  }
+};
+
 // Search users via Rocket API (global search)
 export const searchRocketUsers = async (req, res) => {
   try {
