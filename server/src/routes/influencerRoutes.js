@@ -10,6 +10,7 @@ import {
   getFollowing,
   searchRocketUsers,
   searchModashInfluencers,
+  searchModashUsers,
   getLocations,
   getLanguages,
   getInterests,
@@ -52,6 +53,7 @@ router.get('/followers', protect, getFollowers);
 router.get('/following', protect, getFollowing);
 router.get('/search-users', protect, searchRocketUsers);
 router.post('/instagram/search', protect, searchModashInfluencers);
+router.get('/instagram/users', protect, searchModashUsers);
 router.get('/locations', protect, getLocations);
 router.get('/languages', protect, getLanguages);
 router.get('/interests', protect, getInterests);

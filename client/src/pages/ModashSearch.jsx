@@ -27,6 +27,8 @@ const ModashSearch = () => {
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [isAISearch, setIsAISearch] = useState(false);
   const [aiQuery, setAiQuery] = useState('');
+  const [isUserSearch, setIsUserSearch] = useState(false);
+  const [userQuery, setUserQuery] = useState('');
   const resultsRef = useRef(null);
   const [searchParams, setSearchParams] = useState({
     calculationMethod: 'median',
@@ -434,10 +436,85 @@ const ModashSearch = () => {
     }
   };
 
+  const performUserSearch = async (page = 0, appendResults = false) => {
+    if (appendResults) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+      setSearchResults([]);
+      setCurrentPage(0);
+      setTotalResults(0);
+      setHasMoreResults(false);
+    }
+
+    try {
+      const limit = 100; // Show up to 100 users
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/influencers/instagram/users`, {
+        params: { query: userQuery.trim(), limit },
+        withCredentials: true,
+      });
+
+      if (response.data.success && response.data.data) {
+        const userData = response.data.data;
+
+        // Transform user search results to match expected influencer format
+        const results = userData.users.map(user => ({
+          id: user.userId,
+          username: user.username,
+          name: user.fullname || user.username,
+          profilePicture: user.picture,
+          followersCount: user.followers,
+          isVerified: user.isVerified,
+          isFromUserSearch: true, // Flag to identify user search results
+        }));
+
+        if (appendResults) {
+          setSearchResults(prev => [...prev, ...results]);
+          setCurrentPage(page);
+        } else {
+          setSearchResults(results);
+          setCurrentPage(0);
+          setTotalResults(results.length);
+        }
+
+        setHasMoreResults(false); // User search doesn't support pagination in this implementation
+
+        if (!appendResults) {
+          if (results.length > 0) {
+            toast.success(`Found ${results.length} users matching "${userQuery}"`);
+            // Scroll to results after a delay to allow UI to update
+            setTimeout(() => scrollToResults(), 300);
+          } else {
+            toast.success('No users found matching your search');
+          }
+        }
+      } else {
+        console.error('User search API Error:', response.data);
+        toast.error(response.data.error || "User search failed");
+        setSearchResults([]);
+        setHasMoreResults(false);
+      }
+    } catch (error) {
+      console.error("User search error:", error);
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "User search failed";
+      toast.error(errorMessage);
+      setSearchResults([]);
+      setHasMoreResults(false);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
   const performSearch = async (page = 0, appendResults = false) => {
     // Use AI search if enabled and query is provided
     if (isAISearch && aiQuery.trim()) {
       return performAISearch(page);
+    }
+
+    // Use user search if enabled and query is provided
+    if (isUserSearch && userQuery.trim()) {
+      return performUserSearch(page);
     }
 
     const isLoadingMore = appendResults;
@@ -553,10 +630,16 @@ const ModashSearch = () => {
         return;
       }
       performAISearch(0);
+    } else if (isUserSearch) {
+      if (!userQuery.trim() || userQuery.trim().length < 2) {
+        toast.error('Please enter at least 2 characters for user search');
+        return;
+      }
+      performUserSearch(0);
     } else {
       // Traditional search validation - require at least follower range
       const hasFollowers = searchParams.filter.influencer.followers.min ||
-                          searchParams.filter.influencer.followers.max;
+                            searchParams.filter.influencer.followers.max;
 
       if (!hasFollowers) {
         toast.error('Please enter at least a follower range (min or max followers)');
@@ -571,6 +654,8 @@ const ModashSearch = () => {
     const nextPage = currentPage + 1;
     if (isAISearch) {
       performAISearch(nextPage, true);
+    } else if (isUserSearch) {
+      performUserSearch(nextPage, true);
     } else {
       performSearch(nextPage, true);
     }
@@ -597,10 +682,11 @@ const ModashSearch = () => {
 
           {/* Search Filters */}
           <div className="card mb-6">
-            {/* AI Search Toggle */}
-            <div className="mb-4">
-              <div className="flex items-center space-x-3 mb-4">
-                <label className="text-sm font-medium text-gray-700">AI Search</label>
+            {/* AI Search Toggle - Only show when user search is not active */}
+            {!isUserSearch && (
+              <div className="mb-4">
+                <div className="flex items-center space-x-3 mb-4">
+                  <label className="text-sm font-medium text-gray-700">AI Search</label>
                 <button
                   onClick={() => setIsAISearch(!isAISearch)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -637,14 +723,59 @@ const ModashSearch = () => {
               )}
 
             </div>
+            )}
 
-            <hr className="mb-4 border-gray-300" />
+            {/* HR line - Only show when user search is not active */}
+            {!isUserSearch && <hr className="mb-4 border-gray-300" />}
 
+            {/* Traditional Filters Toggle */}
             <div className="mb-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-4">Use Traditional Filters</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-gray-700">
+                  {isUserSearch ? 'Search Users by Name or Username' : 'Use Traditional Filters'}
+                </h3>
+                {/* User Search Toggle - Only show when AI search is not active */}
+                {!isAISearch && (
+                  <div className="flex items-center space-x-3">
+                    <label className="text-sm font-medium text-gray-700">Search By Name</label>
+                  <button
+                    onClick={() => setIsUserSearch(!isUserSearch)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      isUserSearch ? 'bg-green-600' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        isUserSearch ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+                )}
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* User Search input - Show when user search is enabled */}
+            {isUserSearch && (
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={userQuery}
+                  onChange={(e) => setUserQuery(e.target.value)}
+                  className="input-field w-full"
+                  placeholder="Enter username or full name (e.g., therock, Cristiano Ronaldo)"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Search for influencers by their username or full name. Minimum 2 characters required.
+                </p>
+              </div>
+            )}
+
+            {/* Traditional Filters - Only show when not in user search mode */}
+            {!isUserSearch && (
+              <>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Basic Filters */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Min Followers</label>
@@ -925,15 +1056,30 @@ const ModashSearch = () => {
 
             </div>
 
-            <div className="flex items-center space-x-4 mt-6">
-              <button
-                onClick={handleSearch}
-                disabled={loading}
-                className="btn-primary"
-              >
-                {loading ? (isAISearch ? "AI Searching..." : "Searching...") : (isAISearch ? "AI Search Influencers" : "Search Influencers")}
-              </button>
-            </div>
+                <div className="flex items-center space-x-4 mt-6">
+                  <button
+                    onClick={handleSearch}
+                    disabled={loading}
+                    className="btn-primary"
+                  >
+                    {loading ? (isUserSearch ? "User Searching..." : isAISearch ? "AI Searching..." : "Searching...") : (isUserSearch ? "Search Users" : isAISearch ? "AI Search Influencers" : "Search Influencers")}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* User Search - Show search button when in user search mode */}
+            {isUserSearch && (
+              <div className="flex items-center space-x-4 mt-6">
+                <button
+                  onClick={handleSearch}
+                  disabled={loading || userQuery.trim().length < 2}
+                  className="btn-primary"
+                >
+                  {loading ? "User Searching..." : "Search Users"}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Results */}

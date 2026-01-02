@@ -382,6 +382,81 @@ export const aiTextSearch = async (req, res) => {
   }
 };
 
+// Search users via Modash API
+export const searchModashUsers = async (req, res) => {
+  try {
+    const { baseUrl, accessToken } = getModashConfig();
+
+    if (!baseUrl || !accessToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'Modash API configuration not found. Please set MODASH_BASE_URL and MODASH_ACCESS_TOKEN environment variables.',
+        statusCode: 400,
+      });
+    }
+
+    const { query, limit = 100 } = req.query;
+
+    const params = new URLSearchParams();
+    if (query) params.append('query', query);
+    params.append('limit', limit.toString());
+
+    const fullUrl = `${baseUrl}/instagram/users?${params.toString()}`;
+
+    const response = await axios.get(fullUrl, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      timeout: 30000,
+      validateStatus: () => true, // Don't throw on any status code
+    });
+
+    // If it's a 400 error, let's also try without the Bearer prefix
+    if (response.status === 400) {
+      const responseWithoutBearer = await axios.get(fullUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': accessToken, // Try without Bearer prefix
+        },
+        timeout: 30000,
+        validateStatus: () => true,
+      });
+
+      if (responseWithoutBearer.status < 400) {
+        return res.status(200).json({
+          success: true,
+          data: responseWithoutBearer.data,
+        });
+      }
+    }
+
+    if (response.status >= 200 && response.status < 300) {
+      return res.status(200).json({
+        success: true,
+        data: response.data,
+      });
+    } else {
+      return res.status(response.status).json({
+        success: false,
+        error: 'Failed to search users via Modash API',
+        statusCode: response.status,
+        message: response.data?.message || 'Unknown error',
+        details: response.data,
+      });
+    }
+  } catch (error) {
+    console.error('Modash users search error:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to search users via Modash API',
+      statusCode: 500,
+      message: error.message,
+      details: error.response?.data,
+    });
+  }
+};
+
 // Search users via Rocket API (global search)
 export const searchRocketUsers = async (req, res) => {
   try {
