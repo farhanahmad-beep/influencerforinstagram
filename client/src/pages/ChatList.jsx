@@ -696,6 +696,7 @@ Let me know if you want help getting started! 😊`;
                 campaignUsers.push({
                   userId: user.userId,
                   name: user.name || chat.name,
+                  username: user.username,
                   chatId: chat.id,
                   chatName: chat.name,
                   messagingId: user.providerMessagingId,
@@ -715,6 +716,7 @@ Let me know if you want help getting started! 😊`;
               campaignUsers.push({
                 userId: user.userId,
                 name: user.name || chat.name,
+                username: user.username,
                 chatId: chat.id,
                 chatName: chat.name,
                 messagingId: user.providerMessagingId,
@@ -1051,9 +1053,9 @@ Let me know if you want help getting started! 😊`;
                                 <h4 className="text-sm font-semibold text-gray-900 truncate">
                                   {user.name || "Unknown"}
                                 </h4>
-                                {user.messagingId && usersList.find(u => u.providerMessagingId === user.messagingId)?.username && (
+                                {user.username && (
                                   <p className="text-xs text-gray-500 truncate">
-                                    @{usersList.find(u => u.providerMessagingId === user.messagingId).username}
+                                    @{user.username}
                                   </p>
                                 )}
                                 <p className="text-xs text-gray-500 truncate">

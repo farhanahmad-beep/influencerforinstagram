@@ -221,7 +221,7 @@ const ChatMessages = () => {
                 href={part.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-900 hover:text-gray-800 underline break-all"
+                className="text-white hover:text-gray-200 underline break-all"
               >
                 {part.content}
               </a>
