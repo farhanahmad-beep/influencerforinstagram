@@ -889,6 +889,117 @@ const ModashSearch = () => {
     }
   };
 
+  const handleDownloadCSV = () => {
+    if (searchResults.length === 0) {
+      toast.error("No data to download");
+      return;
+    }
+
+    try {
+      // Define comprehensive CSV headers for all possible fields
+      const headers = [
+        'ID',
+        'Username',
+        'Name',
+        'Profile Picture URL',
+        'Followers Count',
+        'Following Count',
+        'Engagement Rate (%)',
+        'Engagements',
+        'Bio/Account Category',
+        'Is Verified',
+        'Is Private',
+        'URL',
+        'Search Type',
+        'Matched Posts Count',
+        'Recent Posts Count',
+        'Match Score (%)',
+        'Provider',
+        'Provider ID',
+        'Provider Messaging ID'
+      ];
+
+      // Convert data to CSV rows with comprehensive field mapping
+      const csvRows = searchResults.map(user => {
+        // Determine search type
+        let searchType = 'Traditional';
+        if (user.isFromAISearch) searchType = 'AI Search';
+        else if (user.isFromImageSearch) searchType = 'Image Search';
+        else if (user.isFromUserSearch) searchType = 'User Search';
+
+        // Handle engagement rate (convert from decimal to percentage)
+        const engagementRate = user.engagementRate !== undefined
+          ? (user.engagementRate * 100).toFixed(2)
+          : '';
+
+        return [
+          user.id || '',
+          user.username || '',
+          user.name || '',
+          user.profilePicture || user.avatar || '',
+          user.followersCount || 0,
+          user.followingCount || 0,
+          engagementRate,
+          user.engagements || '',
+          user.bio || user.accountCategory || '',
+          user.isVerified ? 'Yes' : 'No',
+          user.isPrivate ? 'Yes' : 'No',
+          user.url || '',
+          searchType,
+          user.matchedPosts ? user.matchedPosts.length : 0,
+          user.recentPosts ? user.recentPosts.length : 0,
+          user.matchScore !== undefined ? (user.matchScore * 100).toFixed(1) : '',
+          user.provider || 'Instagram',
+          user.id || '', // Use frontend ID as Provider ID
+          user.providerMessagingId || ''
+        ];
+      });
+
+      // Create CSV content
+      const csvContent = [
+        headers.join(','),
+        ...csvRows.map(row =>
+          row.map(cell => {
+            // Escape quotes and wrap in quotes if contains comma, quote, or newline
+            const cellStr = String(cell);
+            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+              return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+          }).join(',')
+        )
+      ].join('\n');
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+
+        // Generate filename with search type and timestamp
+        let searchType = 'traditional';
+        if (searchResults[0]?.isFromAISearch) searchType = 'ai';
+        else if (searchResults[0]?.isFromImageSearch) searchType = 'image';
+        else if (searchResults[0]?.isFromUserSearch) searchType = 'user';
+
+        link.setAttribute('download', `modash_${searchType}_search_results_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      toast.success(`Downloaded ${searchResults.length} results to CSV`);
+
+    } catch (error) {
+      console.error('Failed to download CSV:', error);
+      toast.error('Failed to download CSV');
+    }
+  };
+
   const scrollToResults = () => {
     if (resultsRef.current) {
       resultsRef.current.scrollIntoView({
@@ -1391,18 +1502,31 @@ const ModashSearch = () => {
                 <div>
                   <p className="text-sm text-gray-600">
                     Showing <span className="font-semibold">{Array.isArray(searchResults) ? searchResults.length : 0}</span> of <span className="font-semibold">{totalResults || 'many'}</span> influencers
-                    {searchResults.length > 0 && searchResults[0]?.isFromAISearch && (
+                    {searchResults.length > 0 && (
                       <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
-                        AI Search Results
+                        {searchResults[0]?.isFromAISearch ? 'AI Search Results' :
+                         searchResults[0]?.isFromImageSearch ? 'Image Search Results' :
+                         searchResults[0]?.isFromUserSearch ? 'User Search Results' : 'Traditional Search Results'}
                       </span>
                     )}
                   </p>
                 </div>
-                {hasMoreResults && (
-                  <p className="text-xs text-purple-600">
-                    {((totalResults || 0) - (searchResults?.length || 0))} more available
-                  </p>
-                )}
+                <div className="flex items-center space-x-3">
+                  {hasMoreResults && (
+                    <p className="text-xs text-purple-600">
+                      {((totalResults || 0) - (searchResults?.length || 0))} more available
+                    </p>
+                  )}
+                  <button
+                    onClick={handleDownloadCSV}
+                    className="btn-secondary flex items-center space-x-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Download CSV</span>
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
