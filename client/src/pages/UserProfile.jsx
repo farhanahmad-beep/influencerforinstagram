@@ -34,6 +34,7 @@ Let me know if you want help getting started! 😊`;
   // Get account_id from location state or query params
   const accountId = location.state?.accountId || new URLSearchParams(location.search).get("account_id");
   const fromPage = location.state?.from || null;
+  const influencerData = location.state?.influencerData || null;
 
   useEffect(() => {
     if (userId && accountId) {
@@ -115,17 +116,21 @@ Let me know if you want help getting started! 😊`;
 
         // Update user status to contacted
         try {
+          // Use influencer data from Modash search if available, otherwise use profile data
+          const userData = influencerData || {};
+          const profileData = profile || {};
+
           await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/contacted`, {
             userId: userId,
-            username: profile?.username,
-            name: profile?.fullName || profile?.name,
-            profilePicture: profile?.profilePictureUrl,
-            followersCount: profile?.followersCount,
-            followingCount: profile?.followingCount,
+            username: userData.username || profileData.username || profileData.handle,
+            name: userData.name || profileData.fullName || profileData.name,
+            profilePicture: userData.profilePicture || profileData.profilePictureUrl || profileData.avatar,
+            followersCount: userData.followersCount || profileData.followersCount,
+            followingCount: userData.followingCount || profileData.followingCount,
             provider: 'INSTAGRAM',
-            providerId: profile?.providerId,
-            providerMessagingId: profile?.providerMessagingId,
-            source: fromPage === 'followers' ? 'followers' : fromPage === 'following' ? 'following' : 'global_search',
+            providerId: userData.id || profileData.providerId || userId,
+            providerMessagingId: userData.providerMessagingId || profileData.providerMessagingId,
+            source: fromPage === 'modash-search' ? 'modash_search' : fromPage === 'followers' ? 'followers' : fromPage === 'following' ? 'following' : 'global_search',
           }, { withCredentials: true });
         } catch (statusError) {
           console.error('Failed to update user status:', statusError);

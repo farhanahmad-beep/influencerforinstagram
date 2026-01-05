@@ -202,7 +202,19 @@ const ModashSearch = () => {
       navigate(`/user-profile/${influencer.id}?account_id=${accountId}`, {
         state: {
           accountId: accountId,
-          from: 'modash-search'
+          from: 'modash-search',
+          influencerData: {
+            username: influencer.username,
+            name: influencer.name,
+            profilePicture: influencer.profilePicture,
+            followersCount: influencer.followersCount,
+            followingCount: influencer.followingCount,
+            isVerified: influencer.isVerified,
+            isPrivate: influencer.isPrivate,
+            bio: influencer.bio,
+            providerMessagingId: influencer.providerMessagingId,
+            url: influencer.url
+          }
         }
       });
     } else {

@@ -182,7 +182,7 @@ const userStatusSchema = new mongoose.Schema(
     },
     source: {
       type: String,
-      enum: ['global_search', 'followers', 'following', 'direct'],
+      enum: ['global_search', 'followers', 'following', 'direct', 'modash_search'],
       default: 'direct',
     },
   },

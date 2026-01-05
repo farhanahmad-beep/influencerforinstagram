@@ -508,6 +508,7 @@ const ChatList = () => {
                   userFollowersCount: userStatus.followersCount,
                   userFollowingCount: userStatus.followingCount,
                   userStatus: userStatus.status,
+                  username: userStatus.username,
                 };
               }
             } catch (userError) {
@@ -1050,6 +1051,11 @@ Let me know if you want help getting started! 😊`;
                                 <h4 className="text-sm font-semibold text-gray-900 truncate">
                                   {user.name || "Unknown"}
                                 </h4>
+                                {user.messagingId && usersList.find(u => u.providerMessagingId === user.messagingId)?.username && (
+                                  <p className="text-xs text-gray-500 truncate">
+                                    @{usersList.find(u => u.providerMessagingId === user.messagingId).username}
+                                  </p>
+                                )}
                                 <p className="text-xs text-gray-500 truncate">
                                   {formatDate(user.lastMessageTime)}
                                 </p>
@@ -1179,6 +1185,11 @@ Let me know if you want help getting started! 😊`;
                             </span>
                           )}
                         </div>
+                        {chat.username && (
+                          <p className="text-sm text-gray-500 truncate">
+                            @{chat.username}
+                          </p>
+                        )}
                         <div className="flex items-center space-x-4 text-xs text-gray-500">
                           <span>ID: {chat.id}</span>
                           {chat.providerId && (
