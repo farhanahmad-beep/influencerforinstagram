@@ -564,7 +564,7 @@ const Onboard = () => {
     // Add campaign to sending state
     setSendingCampaigns(prev => new Set([...prev, campaignId]));
 
-    const campaignMessage = `✨ Hey! Hope you're doing well!
+    const getCampaignMessage = (username) => `✨ Hey! Hope you're doing well!
 
 I wanted to share something super useful for creators — Dynamite Influencer Store just launched! 🚀
 
@@ -572,7 +572,7 @@ It's a platform made specifically for influencers to create their own store, add
 
 You can check it out here
 
-🔗 https://dynamiteinfluencerstore.icod.ai/
+🔗 https://dynamiteinfluencerstore.icod.ai/register?${username}
 
 If you've ever wanted to launch your own store, earn more, and manage everything in one place, this is the perfect tool for you.
 
@@ -624,10 +624,14 @@ Let me know if you want help getting started! 😊`;
         }
 
         try {
+          // Get personalized message for this user
+          const username = user.username || 'user';
+          const personalizedMessage = getCampaignMessage(username);
+
           // Send message to existing chat
           const messageResponse = await axios.post(
             `${import.meta.env.VITE_API_URL}/influencers/chats/${existingChat.id}/messages`,
-            `account_id=${encodeURIComponent(selectedAccountId)}&text=${encodeURIComponent(campaignMessage)}`,
+            `account_id=${encodeURIComponent(selectedAccountId)}&text=${encodeURIComponent(personalizedMessage)}`,
             {
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

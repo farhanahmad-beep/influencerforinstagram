@@ -11,7 +11,7 @@ const Followers = () => {
   const navigate = useNavigate();
 
   // Predefined message template
-  const PREDEFINED_MESSAGE = `✨ Hey! Hope you're doing well!
+  const getPredefinedMessage = (username) => `✨ Hey! Hope you're doing well!
 
 I wanted to share something super useful for creators — Dynamite Influencer Store just launched! 🚀
 
@@ -19,7 +19,7 @@ It's a platform made specifically for influencers to create their own store, add
 
 You can check it out here
 
-🔗 https://dynamiteinfluencerstore.icod.ai/
+🔗 https://dynamiteinfluencerstore.icod.ai/register?${username}
 
 If you've ever wanted to launch your own store, earn more, and manage everything in one place, this is the perfect tool for you.
 
@@ -427,7 +427,16 @@ Let me know if you want help getting started! 😊`;
       toast("Select users with messaging IDs to send message to", { duration: 3000 });
     } else {
       // Open modal if users are selected and pre-populate with message
-      setMessageText(PREDEFINED_MESSAGE);
+      // For single user selection, use personalized message
+      if (selectedUsers.size === 1) {
+        const userId = Array.from(selectedUsers)[0];
+        const user = filteredData.find((item) => item.id === userId);
+        const username = user?.username || 'user';
+        setMessageText(getPredefinedMessage(username));
+      } else {
+        // For multiple users, show generic message
+        setMessageText(getPredefinedMessage('user'));
+      }
       setShowSendModal(true);
     }
   };
@@ -476,11 +485,16 @@ Let me know if you want help getting started! 😊`;
     // Send messages sequentially to avoid overwhelming the API
     for (const user of usersToSend) {
       try {
+        // Get personalized message for this user
+        const userData = filteredData.find((item) => item.id === user.id);
+        const username = userData?.username || 'user';
+        const personalizedMessage = getPredefinedMessage(username);
+
         const response = await axios.post(
           `${import.meta.env.VITE_API_URL}/influencers/start-chat`,
           {
             account_id: filters.account_id,
-            text: messageText.trim(),
+            text: personalizedMessage,
             attendees_ids: [user.messagingId],
           },
           {

@@ -17,19 +17,21 @@ const UserProfile = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   
   // Predefined message template
-  const PREDEFINED_MESSAGE = `✨ Hey! Hope you're doing well!
+  const getPredefinedMessage = (username) => `✨ Hey! Hope you're doing well!
 
 I wanted to share something super useful for creators — Dynamite Influencer Store just launched! 🚀
 
 It's a platform made specifically for influencers to create their own store, add products, and start selling directly to their audience — all in a few clicks.
 
-You can check it out here 
+You can check it out here
 
-🔗 https://dynamiteinfluencerstore.icod.ai/
+🔗 https://dynamiteinfluencerstore.icod.ai/register?${username}
 
 If you've ever wanted to launch your own store, earn more, and manage everything in one place, this is the perfect tool for you.
 
 Let me know if you want help getting started! 😊`;
+
+  const PREDEFINED_MESSAGE = getPredefinedMessage(profile?.publicIdentifier || profile?.username || profile?.handle || 'user');
 
   // Get account_id from location state or query params
   const accountId = location.state?.accountId || new URLSearchParams(location.search).get("account_id");
