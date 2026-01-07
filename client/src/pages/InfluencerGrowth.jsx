@@ -16,6 +16,8 @@ const InfluencerGrowth = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [dateRange, setDateRange] = useState({ start: null, end: null });
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [topFilter, setTopFilter] = useState("all"); // "all", "3", "5", "10"
 
   useEffect(() => {
     fetchInfluencerGrowth();
@@ -75,15 +77,12 @@ const InfluencerGrowth = () => {
     return sortedHistory.map((point, index) => {
       const previousPoint = sortedHistory[index - 1];
       const followersDiff = calculateDifference(point.followersCount, previousPoint?.followersCount);
-      const followingDiff = calculateDifference(point.followingCount, previousPoint?.followingCount);
       const timeDiff = calculateTimeDifference(point.timestamp, previousPoint?.timestamp);
 
       return {
         date: formatDate(point.timestamp),
         followers: point.followersCount,
-        following: point.followingCount,
         followersDiff,
-        followingDiff,
         timeDiff,
         index,
       };
@@ -174,17 +173,6 @@ const InfluencerGrowth = () => {
                 {data.followersDiff !== null && (
                   <span className={`ml-1 text-xs ${data.followersDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     ({data.followersDiff >= 0 ? '+' : ''}{data.followersDiff})
-                  </span>
-                )}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-blue-600 font-medium">Following:</span>
-              <span className="ml-2">
-                {data.following.toLocaleString()}
-                {data.followingDiff !== null && (
-                  <span className={`ml-1 text-xs ${data.followingDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    ({data.followingDiff >= 0 ? '+' : ''}{data.followingDiff})
                   </span>
                 )}
               </span>
@@ -402,6 +390,85 @@ const InfluencerGrowth = () => {
                 </div>
               )}
             </div>
+
+            {/* Filters Section */}
+            {!loading && influencers.length > 0 && (
+              <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6">
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                  {/* Search Input */}
+                  <div className="flex-1 max-w-md">
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Search influencers by name..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Top Performer Filter */}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium text-gray-700">Show:</span>
+                    <div className="flex space-x-1">
+                      {[
+                        { value: "all", label: "All" },
+                        { value: "10", label: "Top 10" },
+                        { value: "5", label: "Top 5" },
+                        { value: "3", label: "Top 3" }
+                      ].map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => setTopFilter(option.value)}
+                          className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                            topFilter === option.value
+                              ? 'bg-purple-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Active Filters Display */}
+                {(searchTerm || topFilter !== "all") && (
+                  <div className="mt-3 flex items-center space-x-2 text-sm text-gray-600">
+                    <span>Active filters:</span>
+                    {searchTerm && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                        Name: "{searchTerm}"
+                        <button
+                          onClick={() => setSearchTerm("")}
+                          className="ml-1 text-blue-600 hover:text-blue-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                    {topFilter !== "all" && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-800">
+                        Top {topFilter}
+                        <button
+                          onClick={() => setTopFilter("all")}
+                          className="ml-1 text-green-600 hover:text-green-800"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -438,7 +505,30 @@ const InfluencerGrowth = () => {
             <div className="space-y-6">
               {/* Influencers List */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {influencers.map((influencer, index) => (
+                {(() => {
+                  // First sort by growth
+                  const sortedInfluencers = influencers.sort((a, b) => {
+                    const aGrowth = a.latestGrowth?.followersGrowth || 0;
+                    const bGrowth = b.latestGrowth?.followersGrowth || 0;
+                    return bGrowth - aGrowth; // Sort by growth descending
+                  });
+
+                  // Apply top filter
+                  let filteredInfluencers = sortedInfluencers;
+                  if (topFilter !== "all") {
+                    const limit = parseInt(topFilter);
+                    filteredInfluencers = sortedInfluencers.slice(0, limit);
+                  }
+
+                  // Apply search filter
+                  if (searchTerm) {
+                    filteredInfluencers = filteredInfluencers.filter(influencer =>
+                      influencer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      influencer.username?.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+                  }
+
+                  return filteredInfluencers.map((influencer, index) => (
                   <motion.div
                     key={influencer.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -449,6 +539,23 @@ const InfluencerGrowth = () => {
                     }`}
                     onClick={() => !isDeleteMode && setSelectedInfluencer(influencer)}
                   >
+                    {/* Ranking Badge - Only show for top 10 */}
+                    {index < 10 && (
+                      <div className="absolute top-4 right-16 z-10">
+                        <div className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center space-x-1 ${
+                          index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white' :
+                          index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-500 text-white' :
+                          index === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-600 text-white' :
+                          'bg-gray-200 text-gray-700'
+                        }`}>
+                          {index === 0 && <span>🏆</span>}
+                          {index === 1 && <span>🥈</span>}
+                          {index === 2 && <span>🥉</span>}
+                          <span>#{index + 1}</span>
+                        </div>
+                      </div>
+                    )}
+
                     {isDeleteMode && (
                       <div
                         className="absolute top-4 left-4 z-10"
@@ -532,17 +639,11 @@ const InfluencerGrowth = () => {
                           ID: {influencer.id}
                         </p>
 
-                        <div className="grid grid-cols-2 gap-4 mb-3">
+                        <div className="mb-3">
                           <div>
                             <p className="text-sm text-gray-500">Followers</p>
                             <p className="text-lg font-semibold text-purple-600">
                               {influencer.followersCount.toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-500">Following</p>
-                            <p className="text-lg font-semibold text-purple-600">
-                              {influencer.followingCount.toLocaleString()}
                             </p>
                           </div>
                         </div>
@@ -550,12 +651,9 @@ const InfluencerGrowth = () => {
                         {influencer.latestGrowth && (
                           <div className="mb-3 p-2 bg-gray-50 rounded-lg">
                             <p className="text-xs text-gray-500 mb-1">Total Growth (since first contact)</p>
-                            <div className="flex justify-between text-xs">
+                            <div className="text-xs">
                               <span className={influencer.latestGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}>
                                 Followers: {influencer.latestGrowth.followersGrowth >= 0 ? '+' : ''}{influencer.latestGrowth.followersGrowth.toLocaleString()}
-                              </span>
-                              <span className={influencer.latestGrowth.followingGrowth >= 0 ? 'text-green-600' : 'text-red-600'}>
-                                Following: {influencer.latestGrowth.followingGrowth >= 0 ? '+' : ''}{influencer.latestGrowth.followingGrowth.toLocaleString()}
                               </span>
                             </div>
                           </div>
@@ -587,7 +685,8 @@ const InfluencerGrowth = () => {
                       </div>
                     </div>
                   </motion.div>
-                ))}
+                  ));
+                })()}
               </div>
             </div>
           )}
@@ -734,7 +833,7 @@ const InfluencerGrowth = () => {
 
                     return (
                       <>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-purple-600">
                               {isFiltered && filteredHistory.length > 0 ?
@@ -746,20 +845,10 @@ const InfluencerGrowth = () => {
                             </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-purple-600">
-                              {isFiltered && filteredHistory.length > 0 ?
-                                filteredHistory[filteredHistory.length - 1].followingCount.toLocaleString() :
-                                selectedInfluencer.followingCount.toLocaleString()}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {isFiltered ? 'Following (Filtered)' : 'Current Following'}
-                            </p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-sm text-gray-500">Data Points</p>
-                            <p className="text-2xl font-bold text-purple-600">{filteredHistory.length || selectedInfluencer.growthHistory?.length || 0}</p>
-                          </div>
-                        </div>
+                      <p className="text-sm text-gray-500">Data Points</p>
+                      <p className="text-2xl font-bold text-purple-600">{filteredHistory.length || selectedInfluencer.growthHistory?.length || 0}</p>
+                    </div>
+                  </div>
 
                         {/* Period Growth Metrics */}
                         {periodGrowth && dateRange.start && dateRange.end && (
@@ -767,21 +856,12 @@ const InfluencerGrowth = () => {
                             <h4 className="text-lg font-semibold text-gray-900 mb-3">
                               Growth in Selected Period ({formatDate(periodGrowth.startDate)} - {formatDate(periodGrowth.endDate)})
                             </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                                <p className="text-sm text-gray-500 mb-1">Followers Growth</p>
-                                <p className={`text-2xl font-bold ${periodGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                  {periodGrowth.followersGrowth >= 0 ? '+' : ''}{periodGrowth.followersGrowth.toLocaleString()}
-                                </p>
-                                <p className="text-xs text-gray-400 mt-1">Over {periodGrowth.dataPoints} data points</p>
-                              </div>
-                              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                                <p className="text-sm text-gray-500 mb-1">Following Growth</p>
-                                <p className={`text-2xl font-bold ${periodGrowth.followingGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                  {periodGrowth.followingGrowth >= 0 ? '+' : ''}{periodGrowth.followingGrowth.toLocaleString()}
-                                </p>
-                                <p className="text-xs text-gray-400 mt-1">Over {periodGrowth.dataPoints} data points</p>
-                              </div>
+                            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                              <p className="text-sm text-gray-500 mb-1">Followers Growth</p>
+                              <p className={`text-2xl font-bold ${periodGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {periodGrowth.followersGrowth >= 0 ? '+' : ''}{periodGrowth.followersGrowth.toLocaleString()}
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">Over {periodGrowth.dataPoints} data points</p>
                             </div>
                           </div>
                         )}
@@ -792,21 +872,12 @@ const InfluencerGrowth = () => {
                   {selectedInfluencer.latestGrowth && (
                     <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
                       <h4 className="text-lg font-semibold text-gray-900 mb-3">Total Growth Metrics</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                          <p className="text-sm text-gray-500 mb-1">Followers Growth</p>
-                          <p className={`text-2xl font-bold ${selectedInfluencer.latestGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {selectedInfluencer.latestGrowth.followersGrowth >= 0 ? '+' : ''}{selectedInfluencer.latestGrowth.followersGrowth.toLocaleString()}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">Since first contact</p>
-                        </div>
-                        <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                          <p className="text-sm text-gray-500 mb-1">Following Growth</p>
-                          <p className={`text-2xl font-bold ${selectedInfluencer.latestGrowth.followingGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {selectedInfluencer.latestGrowth.followingGrowth >= 0 ? '+' : ''}{selectedInfluencer.latestGrowth.followingGrowth.toLocaleString()}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">Since first contact</p>
-                        </div>
+                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                        <p className="text-sm text-gray-500 mb-1">Followers Growth</p>
+                        <p className={`text-2xl font-bold ${selectedInfluencer.latestGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {selectedInfluencer.latestGrowth.followersGrowth >= 0 ? '+' : ''}{selectedInfluencer.latestGrowth.followersGrowth.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">Since first contact</p>
                       </div>
                     </div>
                   )}
@@ -836,13 +907,6 @@ const InfluencerGrowth = () => {
                                 strokeWidth={2}
                                 name="Followers"
                               />
-                              <Line
-                                type="monotone"
-                                dataKey="following"
-                                stroke="#06b6d4"
-                                strokeWidth={2}
-                                name="Following"
-                              />
                             </LineChart>
                           </ResponsiveContainer>
                         </div>
@@ -864,7 +928,6 @@ const InfluencerGrowth = () => {
                             filteredHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map((point, index, array) => {
                               const nextPoint = array[index + 1]; // Next item is chronologically previous
                               const followersDiff = calculateDifference(point.followersCount, nextPoint?.followersCount);
-                              const followingDiff = calculateDifference(point.followingCount, nextPoint?.followingCount);
                               const timeDiff = calculateTimeDifference(point.timestamp, nextPoint?.timestamp);
 
                               return (
@@ -878,7 +941,7 @@ const InfluencerGrowth = () => {
                                     )}
                                   </div>
                                   <div className="flex items-center justify-between">
-                                    <div className="flex space-x-6">
+                                    <div className="flex">
                                       <span className="text-sm">
                                         <span className="font-medium text-purple-600">{point.followersCount.toLocaleString()}</span>
                                         {followersDiff !== null && (
@@ -887,15 +950,6 @@ const InfluencerGrowth = () => {
                                           </span>
                                         )}
                                         <span className="text-gray-500 ml-1">followers</span>
-                                      </span>
-                                      <span className="text-sm">
-                                        <span className="font-medium text-blue-600">{point.followingCount.toLocaleString()}</span>
-                                        {followingDiff !== null && (
-                                          <span className={`ml-1 text-xs ${followingDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                            ({followingDiff >= 0 ? '+' : ''}{followingDiff})
-                                          </span>
-                                        )}
-                                        <span className="text-gray-500 ml-1">following</span>
                                       </span>
                                     </div>
                                   </div>

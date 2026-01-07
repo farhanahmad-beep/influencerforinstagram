@@ -566,19 +566,7 @@ const Onboard = () => {
     // Add campaign to sending state
     setSendingCampaigns(prev => new Set([...prev, campaignId]));
 
-    const getCampaignMessage = (username) => `✨ Hey! Hope you're doing well!
-
-I wanted to share something super useful for creators — Dynamite Influencer Store just launched! 🚀
-
-It's a platform made specifically for influencers to create their own store, add products, and start selling directly to their audience — all in a few clicks.
-
-You can check it out here
-
-🔗 https://dynamiteinfluencerstore.icod.ai/register?${username}
-
-If you've ever wanted to launch your own store, earn more, and manage everything in one place, this is the perfect tool for you.
-
-Let me know if you want help getting started! 😊`;
+    const getCampaignMessage = (username) => `Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register?${username}`;
 
     try {
       toast(`Starting campaign "${campaign.name}" - sending messages...`, { duration: 3000 });

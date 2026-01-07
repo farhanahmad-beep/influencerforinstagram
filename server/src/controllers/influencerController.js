@@ -1195,48 +1195,91 @@ export const getStats = async (req, res) => {
 // Get registrations that arrived via trackingId (username passed as query param)
 export const getTrackingRegistrations = async (req, res) => {
   try {
-    const registrations = await User.find({
-      trackingId: { $exists: true, $ne: '' },
-    })
-      .sort({ createdAt: -1 })
-      .select('name username email trackingId role isActive createdAt');
-
-    const trackingUsernames = registrations
-      .map((u) => u.trackingId)
-      .filter(Boolean);
-
-    // Match trackingId (username param sent) with user statuses for richer context
-    const statuses = await UserStatus.find({
-      username: { $in: trackingUsernames },
-    }).select(
-      'username status provider providerId providerMessagingId followersCount followingCount name profilePicture profilePictureData'
-    );
-
-    const statusMap = new Map(
-      statuses.map((s) => [s.username, s.toObject()])
-    );
-
-    const enriched = registrations.map((reg) => {
-      const matchedStatus = statusMap.get(reg.trackingId);
-      return {
-        id: reg._id,
-        name: reg.name,
-        username: reg.username,
-        email: reg.email,
-        trackingId: reg.trackingId,
-        role: reg.role,
-        isActive: reg.isActive,
-        createdAt: reg.createdAt,
-        status: matchedStatus?.status || 'unknown',
-        statusInfo: matchedStatus || null,
-      };
-    });
+    const registrations = await User.aggregate([
+      // Match users with trackingId
+      {
+        $match: {
+          trackingId: { $exists: true, $ne: null, $ne: '' }
+        }
+      },
+      // Sort by creation date (newest first)
+      {
+        $sort: { createdAt: -1 }
+      },
+      // Lookup influencers collection using userId
+      {
+        $lookup: {
+          from: 'influencers',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'influencerInfo'
+        }
+      },
+      // Unwind influencer array (optional, since we expect 0 or 1)
+      {
+        $unwind: {
+          path: '$influencerInfo',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      // Lookup stores collection using influencer _id
+      {
+        $lookup: {
+          from: 'stores',
+          localField: 'influencerInfo._id',
+          foreignField: 'influencerId',
+          as: 'storeInfo'
+        }
+      },
+      // Unwind store array (optional)
+      {
+        $unwind: {
+          path: '$storeInfo',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      // Lookup user statuses for additional context
+      {
+        $lookup: {
+          from: 'userstatuses',
+          localField: 'trackingId',
+          foreignField: 'username',
+          as: 'statusInfo'
+        }
+      },
+      // Unwind status array
+      {
+        $unwind: {
+          path: '$statusInfo',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      // Project final fields
+      {
+        $project: {
+          id: '$_id',
+          name: 1,
+          username: 1,
+          email: 1,
+          trackingId: 1,
+          role: 1,
+          isActive: 1,
+          createdAt: 1,
+          // Influencer information
+          influencerData: '$influencerInfo',
+          // Store information
+          storeData: '$storeInfo',
+          // Status information
+          statusInfo: '$statusInfo'
+        }
+      }
+    ]);
 
     return res.status(200).json({
       success: true,
       data: {
         totalRegistrations: registrations.length,
-        registrations: enriched,
+        registrations: registrations,
       },
     });
   } catch (error) {

@@ -627,19 +627,7 @@ const ChatList = () => {
     if (!selectedAccountId) return;
 
     const messagesMap = new Map();
-    const campaignMessage = `✨ Hey! Hope you're doing well!
-
-I wanted to share something super useful for creators — Dynamite Influencer Store just launched! 🚀
-
-It's a platform made specifically for influencers to create their own store, add products, and start selling directly to their audience — all in a few clicks.
-
-You can check it out here
-
-🔗 https://dynamiteinfluencerstore.icod.ai/
-
-If you've ever wanted to launch your own store, earn more, and manage everything in one place, this is the perfect tool for you.
-
-Let me know if you want help getting started! 😊`;
+    const campaignMessage = `Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register?user`;
 
     // Fetch all chats first
     try {
