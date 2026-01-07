@@ -1033,62 +1033,11 @@ const ModashSearch = () => {
 
           {/* Search Filters */}
           <div className="card mb-6">
-            {/* AI Search Toggle - Only show when user search is not active */}
-            {!isUserSearch && (
-            <div className="mb-4">
-              <div className="flex items-center space-x-3 mb-4">
-                <label className="text-sm font-medium text-gray-700">AI Mode</label>
-                <button
-                  onClick={() => setIsAISearch(!isAISearch)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    isAISearch ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      isAISearch ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-              </div>
-
-              {/* AI input */}
-              {isAISearch && (
-                <>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Enter your query to discover matching influencers
-                    </label>
-                    <textarea
-                      value={aiQuery}
-                      onChange={(e) => setAiQuery(e.target.value)}
-                      className="input-field w-full"
-                      placeholder="Describe the influencer you're looking for (e.g., 'woman with curly hair lifting weights', 'fitness model in Los Angeles', 'tech entrepreneur with blue hair')"
-                      rows="3"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Use natural language to describe the influencer. Max 1024 characters.
-                    </p>
-                  </div>
-                </>
-              )}
-
-            </div>
-            )}
-
-            {/* HR line - Only show when user search is not active */}
-            {!isUserSearch && <hr className="mb-4 border-gray-300" />}
-
-            {/* Traditional Filters Toggle */}
-            <div className="mb-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-gray-700">
-                  {isUserSearch ? 'Search Users by Name or Username' : 'Use Traditional Filters'}
-                </h3>
-                {/* User Search Toggle - Only show when AI search is not active */}
-                {!isAISearch && (
-                  <div className="flex items-center space-x-3">
-                    <label className="text-sm font-medium text-gray-700">Search By Name</label>
+            {/* User Search Toggle - Show when AI search is not active */}
+            {!isAISearch && (
+              <div className="mb-4">
+                <div className="flex items-center space-x-3">
+                  <label className="text-sm font-medium text-gray-700">Search By Name</label>
                   <button
                     onClick={() => setIsUserSearch(!isUserSearch)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -1102,9 +1051,65 @@ const ModashSearch = () => {
                     />
                   </button>
                 </div>
-                )}
               </div>
-            </div>
+            )}
+
+            {/* HR line - Show when both AI and user search are not active */}
+            {!isAISearch && !isUserSearch && <hr className="mb-4 border-gray-300" />}
+
+            {/* AI Search Toggle and Input - Show when user search is not active */}
+            {!isUserSearch && (
+              <div className="mb-4">
+                <div className="flex items-center space-x-3 mb-4">
+                  <label className="text-sm font-medium text-gray-700">AI Mode</label>
+                  <button
+                    onClick={() => setIsAISearch(!isAISearch)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      isAISearch ? 'bg-blue-600' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        isAISearch ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* AI input */}
+                {isAISearch && (
+                  <>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Enter your query to discover matching influencers
+                      </label>
+                      <textarea
+                        value={aiQuery}
+                        onChange={(e) => setAiQuery(e.target.value)}
+                        className="input-field w-full"
+                        placeholder="Describe the influencer you're looking for (e.g., 'woman with curly hair lifting weights', 'fitness model in Los Angeles', 'tech entrepreneur with blue hair')"
+                        rows="3"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Use natural language to describe the influencer. Max 1024 characters.
+                      </p>
+                    </div>
+                  </>
+                )}
+
+              </div>
+            )}
+
+            {/* Traditional Filters Toggle */}
+            {!isAISearch && !isUserSearch && (
+              <div className="mb-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-700">
+                    Use Traditional Filters
+                  </h3>
+                </div>
+              </div>
+            )}
 
             {/* User Search input - Show when user search is enabled */}
             {isUserSearch && (
