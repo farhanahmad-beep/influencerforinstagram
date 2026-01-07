@@ -361,10 +361,10 @@ const StatusTracking = () => {
                 className="input-field"
               >
                 <option value="">All Sources</option>
-                <option value="global_search">Global Search</option>
-                <option value="followers">Followers</option>
-                <option value="following">Following</option>
-                <option value="direct">Direct</option>
+                <option value="instagram">Instagram</option>
+                <option value="facebook">Facebook</option>
+                <option value="tiktok">TikTok</option>
+                <option value="youtube">YouTube</option>
               </select>
             </div>
             <div>
@@ -490,7 +490,7 @@ const StatusTracking = () => {
                       )}
 
                       <div className="text-xs text-gray-500 space-y-1">
-                        <p>Source: <span className="capitalize">{user.source?.replace('_', ' ') || 'Unknown'}</span></p>
+                        <p>Source: <span className="capitalize">{user.provider || user.source?.replace('_', ' ') || 'Unknown'}</span></p>
                         <p>Last contacted: {formatDate(user.lastContacted)}</p>
                         <p>Messages sent: {user.messageCount || 0}</p>
                         {user.campaignIds && user.campaignIds.length > 0 && (
