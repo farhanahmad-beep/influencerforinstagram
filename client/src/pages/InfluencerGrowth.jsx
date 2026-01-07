@@ -536,7 +536,7 @@ const InfluencerGrowth = () => {
                     transition={{ delay: index * 0.1 }}
                     className={`card hover:shadow-lg transition-shadow relative ${
                       isDeleteMode ? 'cursor-default' : 'cursor-pointer'
-                    }`}
+                    } ${index === 0 ? 'border-2 border-yellow-400' : ''}`}
                     onClick={() => !isDeleteMode && setSelectedInfluencer(influencer)}
                   >
                     {/* Ranking Badge - Only show for top 10 */}

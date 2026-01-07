@@ -913,7 +913,6 @@ const ModashSearch = () => {
         'ID',
         'Username',
         'Name',
-        'Profile Picture URL',
         'Followers Count',
         'Following Count',
         'Engagement Rate (%)',
@@ -923,9 +922,6 @@ const ModashSearch = () => {
         'Is Private',
         'URL',
         'Search Type',
-        'Matched Posts Count',
-        'Recent Posts Count',
-        'Match Score (%)',
         'Provider',
         'Provider ID',
         'Provider Messaging ID'
@@ -948,7 +944,6 @@ const ModashSearch = () => {
           user.id || '',
           user.username || '',
           user.name || '',
-          user.profilePicture || user.avatar || '',
           user.followersCount || 0,
           user.followingCount || 0,
           engagementRate,
@@ -958,9 +953,6 @@ const ModashSearch = () => {
           user.isPrivate ? 'Yes' : 'No',
           user.url || '',
           searchType,
-          user.matchedPosts ? user.matchedPosts.length : 0,
-          user.recentPosts ? user.recentPosts.length : 0,
-          user.matchScore !== undefined ? (user.matchScore * 100).toFixed(1) : '',
           user.provider || 'Instagram',
           user.id || '', // Use frontend ID as Provider ID
           user.providerMessagingId || ''
