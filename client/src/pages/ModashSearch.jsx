@@ -1037,7 +1037,7 @@ const ModashSearch = () => {
             {!isUserSearch && (
             <div className="mb-4">
               <div className="flex items-center space-x-3 mb-4">
-                <label className="text-sm font-medium text-gray-700">AI Search</label>
+                <label className="text-sm font-medium text-gray-700">AI Mode</label>
                 <button
                   onClick={() => setIsAISearch(!isAISearch)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
