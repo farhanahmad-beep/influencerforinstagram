@@ -40,6 +40,7 @@ import {
   getInfluencerGrowthById,
   refreshInfluencerData,
   deleteInfluencerGrowth,
+  getTrackingRegistrations,
 } from '../controllers/influencerController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -65,6 +66,7 @@ router.get('/chats', protect, getChats);
 router.get('/chats/:chatId/messages', protect, getChatMessages);
 router.post('/chats/:chatId/messages', protect, sendChatMessage);
 router.get('/stats', protect, getStats);
+router.get('/tracking/registrations', protect, getTrackingRegistrations);
 router.post('/onboard', protect, onboardUser);
 router.get('/onboarded-users', protect, getOnboardedUsers);
 router.delete('/onboarded-users/:userId', protect, deleteOnboardedUser);

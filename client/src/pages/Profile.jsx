@@ -142,7 +142,7 @@ const Profile = () => {
           <div className="card">
             <h2 className="text-xl font-semibold mb-4">Linked Accounts</h2>
             <p className="text-gray-600 mb-4">
-              Manage your connected social media accounts from Unipile
+              Manage your connected social media accounts
             </p>
 
             {loadingAccounts ? (
@@ -172,7 +172,7 @@ const Profile = () => {
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No Linked Accounts</h3>
                 <p className="text-gray-500">
-                  You don't have any accounts linked to Unipile yet.
+                  You don't have any accounts linked
                 </p>
               </motion.div>
             ) : (
@@ -360,8 +360,8 @@ const Profile = () => {
                       About Linked Accounts
                     </h3>
                     <p className="mt-1 text-sm text-purple-700">
-                      These are your social media accounts connected through Unipile.
-                      You can manage and monitor these accounts from your Unipile dashboard.
+                      These are your social media accounts connected.
+                      You can manage and monitor these accounts from your dashboard.
                     </p>
                   </div>
                 </div>

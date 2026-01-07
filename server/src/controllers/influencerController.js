@@ -2,6 +2,7 @@ import Influencer from '../models/Influencer.js';
 import axios from 'axios';
 import { OnboardedUser, Campaign, UserStatus, InfluencerGrowth } from '../models/OnboardedUser.js';
 import MessageStats from '../models/MessageStats.js';
+import User from '../models/User.js';
 import { Buffer } from 'buffer';
 
 // Helper function to get Unipile API configuration (read from env at runtime)
@@ -1160,6 +1161,16 @@ export const getStats = async (req, res) => {
       console.error('Failed to fetch message stats:', dbError.message);
     }
 
+    // Fetch registrations with trackingId (campaign signups)
+    let trackingRegistrations = 0;
+    try {
+      trackingRegistrations = await User.countDocuments({
+        trackingId: { $exists: true, $ne: '' },
+      });
+    } catch (dbError) {
+      console.error('Failed to fetch tracking registrations count:', dbError.message);
+    }
+
     return res.status(200).json({
       success: true,
       data: {
@@ -1168,6 +1179,7 @@ export const getStats = async (req, res) => {
         onboardedUsers: onboardedUsersCount,
         activeCampaigns: activeCampaignsCount,
         completedCampaigns: completedCampaignsCount,
+        trackingRegistrations,
       },
     });
   } catch (error) {
@@ -1176,6 +1188,64 @@ export const getStats = async (req, res) => {
       success: false,
       error: 'Failed to fetch stats',
       statusCode: 500,
+    });
+  }
+};
+
+// Get registrations that arrived via trackingId (username passed as query param)
+export const getTrackingRegistrations = async (req, res) => {
+  try {
+    const registrations = await User.find({
+      trackingId: { $exists: true, $ne: '' },
+    })
+      .sort({ createdAt: -1 })
+      .select('name username email trackingId role isActive createdAt');
+
+    const trackingUsernames = registrations
+      .map((u) => u.trackingId)
+      .filter(Boolean);
+
+    // Match trackingId (username param sent) with user statuses for richer context
+    const statuses = await UserStatus.find({
+      username: { $in: trackingUsernames },
+    }).select(
+      'username status provider providerId providerMessagingId followersCount followingCount name profilePicture profilePictureData'
+    );
+
+    const statusMap = new Map(
+      statuses.map((s) => [s.username, s.toObject()])
+    );
+
+    const enriched = registrations.map((reg) => {
+      const matchedStatus = statusMap.get(reg.trackingId);
+      return {
+        id: reg._id,
+        name: reg.name,
+        username: reg.username,
+        email: reg.email,
+        trackingId: reg.trackingId,
+        role: reg.role,
+        isActive: reg.isActive,
+        createdAt: reg.createdAt,
+        status: matchedStatus?.status || 'unknown',
+        statusInfo: matchedStatus || null,
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalRegistrations: registrations.length,
+        registrations: enriched,
+      },
+    });
+  } catch (error) {
+    console.error('Failed to fetch tracking registrations:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch tracking registrations',
+      statusCode: 500,
+      message: error.message,
     });
   }
 };

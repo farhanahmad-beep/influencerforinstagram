@@ -648,7 +648,6 @@ Let me know if you want help getting started! 😊`;
               <button type="submit" className="btn-primary" disabled={loading}>
                 {loading ? "Searching..." : "Search Users"}
               </button>
-              {/* <p className="text-sm text-gray-500">Powered by Rocket API</p> */}
             </div>
           </form>
         </div>

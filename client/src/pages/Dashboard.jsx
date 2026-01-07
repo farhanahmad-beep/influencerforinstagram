@@ -1,5 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar.jsx";
 import toast from "react-hot-toast";
@@ -22,12 +23,14 @@ import {
 } from "recharts";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     linkedAccounts: 0,
     messagesSent: 0,
     onboardedUsers: 0,
     activeCampaigns: 0,
     completedCampaigns: 0,
+    trackingRegistrations: 0,
   });
   const [loading, setLoading] = useState(true);
   const [historicalData, setHistoricalData] = useState([]);
@@ -86,6 +89,7 @@ const Dashboard = () => {
           { name: 'Onboarded Users', value: newStats.onboardedUsers, color: '#10b981' },
           { name: 'Active Campaigns', value: newStats.activeCampaigns, color: '#f59e0b' },
           { name: 'Completed Campaigns', value: newStats.completedCampaigns, color: '#ef4444' },
+          { name: 'Dynamite Registrations', value: newStats.trackingRegistrations, color: '#7c3aed' },
         ]);
       } else {
         toast.error(response.data.error || "Failed to fetch stats");
@@ -115,15 +119,6 @@ const Dashboard = () => {
           <p className="text-gray-600">
             Real-time stats for your account activity
           </p>
-          <div className="mt-2 flex items-center space-x-2">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-            </span>
-            <span className="text-sm text-green-600 font-medium">
-              Live data via Unipile API
-            </span>
-          </div>
         </div>
 
         {loading ? (
@@ -132,7 +127,10 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-            <div className="card flex items-center justify-between">
+            <div
+              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate('/profile')}
+            >
               <div className="flex-1">
                 <p className="text-sm text-gray-500">Total Linked Accounts</p>
                 <p className="text-3xl font-bold text-purple-700 mt-2">{stats.linkedAccounts}</p>
@@ -153,7 +151,10 @@ const Dashboard = () => {
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="card flex items-center justify-between">
+            <div
+              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate('/chat-list')}
+            >
               <div className="flex-1">
                 <p className="text-sm text-gray-500">Messages Sent</p>
                 <p className="text-3xl font-bold text-purple-700 mt-2">{stats.messagesSent}</p>
@@ -190,9 +191,10 @@ const Dashboard = () => {
             </div>
             <div className="card flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm text-gray-500">Onboarded Users</p>
+                {/* onboarded user details */}
+                <p className="text-sm text-gray-500">User who show interest</p>
                 <p className="text-3xl font-bold text-purple-700 mt-2">{stats.onboardedUsers}</p>
-                <p className="text-xs text-gray-400 mt-1">Total users onboarded</p>
+                <p className="text-xs text-gray-400 mt-1">Total users who show interest</p>
               </div>
               <div className="w-20 h-12 ml-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -209,7 +211,10 @@ const Dashboard = () => {
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="card flex items-center justify-between">
+            <div
+              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate('/onboard?tab=campaigns')}
+            >
               <div className="flex-1">
                 <p className="text-sm text-gray-500">Active Campaigns</p>
                 <p className="text-3xl font-bold text-purple-700 mt-2">{stats.activeCampaigns}</p>
@@ -230,7 +235,10 @@ const Dashboard = () => {
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="card flex items-center justify-between">
+            <div
+              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate('/onboard?tab=campaigns')}
+            >
               <div className="flex-1">
                 <p className="text-sm text-gray-500">Completed Campaigns</p>
                 <p className="text-3xl font-bold text-green-600 mt-2">{stats.completedCampaigns}</p>
@@ -251,29 +259,28 @@ const Dashboard = () => {
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="card flex items-center justify-between">
+            <div
+              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate('/registration-details')}
+            >
               <div className="flex-1">
-                <p className="text-sm text-gray-500">API Status</p>
-                <p className="text-lg font-semibold text-green-600 mt-2">Healthy</p>
-                <p className="text-xs text-gray-400 mt-1">Based on latest stats fetch</p>
+                <p className="text-sm text-gray-500">Total Registrations on Dynamite</p>
+                <p className="text-3xl font-bold text-purple-700 mt-2">{stats.trackingRegistrations || 0}</p>
+                <p className="text-xs text-gray-400 mt-1">Users who Register Through Campaign</p>
               </div>
-              <div className="w-20 h-12 ml-4 flex items-center justify-center">
-                <div className="flex flex-col items-center space-y-1">
-                  <div className="relative">
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-                    </div>
-                    <div className="absolute -top-1 -right-1">
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-xs text-green-600 font-medium">Live</div>
-                </div>
+              <div className="w-20 h-12 ml-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={generateMiniChartData(stats.trackingRegistrations || 0)}>
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke="#7c3aed"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </div>

@@ -1,17 +1,19 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar.jsx";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 
 const Onboard = () => {
+  const [searchParams] = useSearchParams();
   const [onboardedUsers, setOnboardedUsers] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingCampaigns, setLoadingCampaigns] = useState(false);
   const [deletingUserId, setDeletingUserId] = useState(null);
-  const [activeTab, setActiveTab] = useState('users'); // 'users' or 'campaigns'
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') === 'campaigns' ? 'campaigns' : 'users'); // 'users' or 'campaigns'
   const [showCreateCampaignModal, setShowCreateCampaignModal] = useState(false);
   const [campaignForm, setCampaignForm] = useState({
     name: '',

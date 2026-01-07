@@ -877,7 +877,7 @@ const ModashSearch = () => {
     } else {
       // Traditional search validation - require at least follower range
       const hasFollowers = searchParams.filter.influencer.followers.min ||
-                            searchParams.filter.influencer.followers.max;
+                          searchParams.filter.influencer.followers.max;
 
       if (!hasFollowers) {
         toast.error('Please enter at least a follower range (min or max followers)');
@@ -1035,9 +1035,9 @@ const ModashSearch = () => {
           <div className="card mb-6">
             {/* AI Search Toggle - Only show when user search is not active */}
             {!isUserSearch && (
-              <div className="mb-4">
-                <div className="flex items-center space-x-3 mb-4">
-                  <label className="text-sm font-medium text-gray-700">AI Search</label>
+            <div className="mb-4">
+              <div className="flex items-center space-x-3 mb-4">
+                <label className="text-sm font-medium text-gray-700">AI Search</label>
                 <button
                   onClick={() => setIsAISearch(!isAISearch)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -1176,9 +1176,9 @@ const ModashSearch = () => {
                   <p className="text-xs text-gray-500 mt-1">
                     Upload an image to find influencers who post similar content. Max 5MB, JPEG/PNG/WebP only.
                   </p>
-                </div>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Basic Filters */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Min Followers</label>
@@ -1459,12 +1459,12 @@ const ModashSearch = () => {
 
             </div>
 
-                <div className="flex items-center space-x-4 mt-6">
-                  <button
-                    onClick={handleSearch}
-                    disabled={loading}
-                    className="btn-primary"
-                  >
+            <div className="flex items-center space-x-4 mt-6">
+              <button
+                onClick={handleSearch}
+                disabled={loading}
+                className="btn-primary"
+              >
                     {loading ? (
                       selectedImage ? "Image Searching..." :
                       isUserSearch ? "User Searching..." :
@@ -1474,8 +1474,8 @@ const ModashSearch = () => {
                       isUserSearch ? "Search Users" :
                       isAISearch ? "AI Search Influencers" : "Search Influencers"
                     )}
-                  </button>
-                </div>
+              </button>
+            </div>
               </>
             )}
 
@@ -1524,11 +1524,11 @@ const ModashSearch = () => {
                   </p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  {hasMoreResults && (
-                    <p className="text-xs text-purple-600">
-                      {((totalResults || 0) - (searchResults?.length || 0))} more available
-                    </p>
-                  )}
+                {hasMoreResults && (
+                  <p className="text-xs text-purple-600">
+                    {((totalResults || 0) - (searchResults?.length || 0))} more available
+                  </p>
+                )}
                   <button
                     onClick={handleDownloadCSV}
                     className="btn-secondary flex items-center space-x-2"

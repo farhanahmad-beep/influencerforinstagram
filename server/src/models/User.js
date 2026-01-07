@@ -8,6 +8,11 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Name is required'],
       trim: true,
     },
+    username: {
+      type: String,
+      trim: true,
+      index: true,
+    },
     email: {
       type: String,
       required: [true, 'Email is required'],
@@ -24,9 +29,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    trackingId: {
+      type: String,
+      trim: true,
+      index: true,
+    },
     role: {
       type: String,
-      enum: ['user', 'admin'],
+      enum: ['user', 'admin', 'Influencer', 'influencer'],
       default: 'user',
     },
     isAdmin: {
