@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar.jsx";
+import LinkedAccountsModal from "../components/LinkedAccountsModal.jsx";
+import ChatListModal from "../components/ChatListModal.jsx";
+import OnboardedUsersModal from "../components/OnboardedUsersModal.jsx";
+import CampaignsModal from "../components/CampaignsModal.jsx";
 import toast from "react-hot-toast";
 import {
   LineChart,
@@ -35,6 +39,19 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [historicalData, setHistoricalData] = useState([]);
   const [chartData, setChartData] = useState([]);
+
+  // Linked Accounts Modal state
+  const [showLinkedAccountsModal, setShowLinkedAccountsModal] = useState(false);
+
+  // Chat List Modal state
+  const [showChatListModal, setShowChatListModal] = useState(false);
+
+  // Onboarded Users Modal state
+  const [showOnboardedUsersModal, setShowOnboardedUsersModal] = useState(false);
+
+  // Campaigns Modal state
+  const [showCampaignsModal, setShowCampaignsModal] = useState(false);
+  const [campaignsModalTab, setCampaignsModalTab] = useState('active'); // 'active' or 'completed'
 
   // Generate mini chart data based on current stats
   const generateMiniChartData = (currentValue, maxPoints = 8) => {
@@ -101,6 +118,10 @@ const Dashboard = () => {
     }
   };
 
+  const handleLinkedAccountsClick = () => {
+    setShowLinkedAccountsModal(true);
+  };
+
   useEffect(() => {
     fetchStats();
     const interval = setInterval(fetchStats, 1800000); // refresh every 30 minutes
@@ -129,7 +150,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             <div
               className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/profile')}
+              onClick={handleLinkedAccountsClick}
             >
               <div className="flex-1">
                 <p className="text-sm text-gray-500">Total Linked Accounts</p>
@@ -153,7 +174,7 @@ const Dashboard = () => {
             </div>
             <div
               className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/chat-list')}
+              onClick={() => setShowChatListModal(true)}
             >
               <div className="flex-1">
                 <p className="text-sm text-gray-500">Messages Sent</p>
@@ -189,7 +210,10 @@ const Dashboard = () => {
                 </ResponsiveContainer>
               </div>
             </div>
-            <div className="card flex items-center justify-between">
+            <div
+              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => setShowOnboardedUsersModal(true)}
+            >
               <div className="flex-1">
                 {/* onboarded user details */}
                 <p className="text-sm text-gray-500">User who show interest</p>
@@ -213,7 +237,10 @@ const Dashboard = () => {
             </div>
             <div
               className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/onboard?tab=campaigns')}
+              onClick={() => {
+                setCampaignsModalTab('active');
+                setShowCampaignsModal(true);
+              }}
             >
               <div className="flex-1">
                 <p className="text-sm text-gray-500">Active Campaigns</p>
@@ -237,7 +264,10 @@ const Dashboard = () => {
             </div>
             <div
               className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate('/onboard?tab=campaigns')}
+              onClick={() => {
+                setCampaignsModalTab('completed');
+                setShowCampaignsModal(true);
+              }}
             >
               <div className="flex-1">
                 <p className="text-sm text-gray-500">Completed Campaigns</p>
@@ -509,6 +539,31 @@ const Dashboard = () => {
         </div>
       </div>
       </div>
+
+      {/* Linked Accounts Modal */}
+      <LinkedAccountsModal
+        isOpen={showLinkedAccountsModal}
+        onClose={() => setShowLinkedAccountsModal(false)}
+      />
+
+      {/* Chat List Modal */}
+      <ChatListModal
+        isOpen={showChatListModal}
+        onClose={() => setShowChatListModal(false)}
+      />
+
+      {/* Onboarded Users Modal */}
+      <OnboardedUsersModal
+        isOpen={showOnboardedUsersModal}
+        onClose={() => setShowOnboardedUsersModal(false)}
+      />
+
+      {/* Campaigns Modal */}
+      <CampaignsModal
+        isOpen={showCampaignsModal}
+        onClose={() => setShowCampaignsModal(false)}
+        initialTab={campaignsModalTab}
+      />
     </div>
   );
 };
