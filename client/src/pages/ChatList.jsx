@@ -38,9 +38,22 @@ const ChatList = () => {
   const [chatPreviews, setChatPreviews] = useState(new Map()); // chatId -> last message preview
   const [loadingPreviews, setLoadingPreviews] = useState(new Set()); // Track loading state for previews
   const [onboardingStatus, setOnboardingStatus] = useState(new Map()); // chatId -> 'idle' | 'loading' | 'success' | 'error'
+  const [searchQuery, setSearchQuery] = useState(''); // Search query for filtering chats
 
   // Calculate total unread messages
   const totalUnreadMessages = chats.reduce((total, chat) => total + (chat.unreadCount || 0), 0);
+
+  // Filter chats based on search query (name and ID)
+  const filteredChats = chats.filter((chat) => {
+    if (!searchQuery.trim()) return true;
+
+    const query = searchQuery.toLowerCase();
+    const name = (chat.name || '').toLowerCase();
+    const id = (chat.id || '').toLowerCase();
+    const username = (chat.username || '').toLowerCase();
+
+    return name.includes(query) || id.includes(query) || username.includes(query);
+  });
 
   const handleChatClick = (chatId, chatName, e) => {
     // Prevent navigation if clicking on checkbox or in selection mode
@@ -100,10 +113,10 @@ const ChatList = () => {
   };
 
   const handleSelectAll = () => {
-    if (selectedChats.size === chats.length) {
+    if (selectedChats.size === filteredChats.length) {
       setSelectedChats(new Set());
     } else {
-      setSelectedChats(new Set(chats.map((chat) => chat.id)));
+      setSelectedChats(new Set(filteredChats.map((chat) => chat.id)));
     }
   };
 
@@ -300,10 +313,10 @@ const ChatList = () => {
   };
 
   const handleSelectAllForOnboarding = () => {
-    if (selectedForOnboarding.size === chats.length) {
+    if (selectedForOnboarding.size === filteredChats.length) {
       setSelectedForOnboarding(new Set());
     } else {
-      setSelectedForOnboarding(new Set(chats.map((chat) => chat.id)));
+      setSelectedForOnboarding(new Set(filteredChats.map((chat) => chat.id)));
     }
   };
 
@@ -811,7 +824,7 @@ const ChatList = () => {
                         onClick={handleSelectAll}
                         className="btn-secondary text-sm"
                       >
-                        {selectedChats.size === chats.length ? "Deselect All" : "Select All"}
+                        {selectedChats.size === filteredChats.length ? "Deselect All" : "Select All"}
                       </button>
                       <button
                         onClick={handleCancelSelection}
@@ -830,7 +843,7 @@ const ChatList = () => {
                         onClick={handleSelectAllForOnboarding}
                         className="btn-secondary text-sm"
                       >
-                        {selectedForOnboarding.size === chats.length ? "Deselect All" : "Select All"}
+                        {selectedForOnboarding.size === filteredChats.length ? "Deselect All" : "Select All"}
                       </button>
                       <button
                         onClick={handleCancelOnboardingSelection}
@@ -907,6 +920,43 @@ const ChatList = () => {
             </div>
           </div>
         </div>
+
+        {/* Search Filter */}
+        {!showCampaignMessages && chats.length > 0 && (
+          <div className="card mb-6">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search chats by name, username, or ID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input-field pl-10 pr-4 py-3 w-full"
+              />
+              {searchQuery && (
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+            {searchQuery && (
+              <div className="mt-2 text-sm text-gray-600">
+                Found <span className="font-semibold">{filteredChats.length}</span> of <span className="font-semibold">{chats.length}</span> chats
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Results */}
         {showCampaignMessages ? (
@@ -1101,13 +1151,13 @@ const ChatList = () => {
           <>
             <div className="mb-4 flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                Showing <span className="font-semibold">{chats.length}</span> chat{chats.length !== 1 ? 's' : ''}
+                Showing <span className="font-semibold">{filteredChats.length}</span> of <span className="font-semibold">{chats.length}</span> chat{chats.length !== 1 ? 's' : ''}
                 {pagination.hasMore && " (more available)"}
               </p>
             </div>
 
             <div className="space-y-3 mb-6">
-              {chats.map((chat, index) => (
+              {filteredChats.map((chat, index) => (
                 <motion.div
                   key={chat.id || index}
                   initial={{ opacity: 0, y: 20 }}
@@ -1289,7 +1339,7 @@ const ChatList = () => {
             </div>
 
             {/* Load More Button */}
-            {pagination.hasMore && (
+            {pagination.hasMore && !searchQuery.trim() && (
               <div className="text-center">
                 <button
                   onClick={loadMore}
