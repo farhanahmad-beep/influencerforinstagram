@@ -126,6 +126,27 @@ const UserProfile = () => {
           console.error('Failed to update user status:', statusError);
         }
 
+        // Save influencer data for growth tracking
+        try {
+          const userData = influencerData || {};
+          const profileData = profile || {};
+
+          await axios.post(`${import.meta.env.VITE_API_URL}/influencers/influencer-growth`, {
+            id: userData.id || profileData.providerId || userId,
+            username: userData.username || profileData.username || profileData.handle,
+            name: userData.name || profileData.fullName || profileData.name,
+            profilePicture: userData.profilePicture || profileData.profilePictureUrl || profileData.avatar,
+            profilePictureData: userData.profilePictureData || profileData.profilePictureData,
+            isPrivate: userData.isPrivate || profileData.isPrivate || false,
+            isVerified: userData.isVerified || profileData.isVerified || false,
+            followersCount: userData.followersCount || profileData.followersCount || 0,
+            followingCount: userData.followingCount || profileData.followingCount || 0,
+            providerMessagingId: userData.providerMessagingId || profileData.providerMessagingId,
+          }, { withCredentials: true });
+        } catch (growthError) {
+          console.error('Failed to save influencer growth data:', growthError);
+        }
+
         setMessageText(PREDEFINED_MESSAGE);
         setShowMessageModal(false);
       } else {

@@ -22,6 +22,7 @@ import {
   sendChatMessage,
   getStats,
   onboardUser,
+  offboardUser,
   getOnboardedUsers,
   deleteOnboardedUser,
   getCampaigns,
@@ -68,6 +69,7 @@ router.post('/chats/:chatId/messages', protect, sendChatMessage);
 router.get('/stats', protect, getStats);
 router.get('/tracking/registrations', protect, getTrackingRegistrations);
 router.post('/onboard', protect, onboardUser);
+router.post('/offboard', protect, offboardUser);
 router.get('/onboarded-users', protect, getOnboardedUsers);
 router.delete('/onboarded-users/:userId', protect, deleteOnboardedUser);
 

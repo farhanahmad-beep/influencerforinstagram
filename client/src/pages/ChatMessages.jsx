@@ -12,6 +12,9 @@ const ChatMessages = () => {
   const location = useLocation();
   const chatName = location.state?.chatName || "Chat";
   const accountId = location.state?.accountId || "";
+  const attendeeProviderId = location.state?.attendeeProviderId;
+  const providerId = location.state?.providerId;
+  const chatData = location.state?.chatData;
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,14 +27,41 @@ const ChatMessages = () => {
     count: 0,
     limit: 10,
   });
+  const [isVerificationCompleted, setIsVerificationCompleted] = useState(false);
+  const [onboardingStatus, setOnboardingStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
+  const [offboardingStatus, setOffboardingStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
 
   useEffect(() => {
     if (chatId) {
       fetchMessages();
+      checkUserStatus();
     } else {
       toast.error("Chat ID is required");
       navigate("/chat-list");
     }
+  }, [chatId]);
+
+  // Re-check user status when window gains focus or becomes visible (user comes back to this chat)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && chatId) {
+        checkUserStatus();
+      }
+    };
+
+    const handleFocus = () => {
+      if (chatId) {
+        checkUserStatus();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [chatId]);
 
   const fetchMessages = async (cursor = null) => {
@@ -103,9 +133,10 @@ const ChatMessages = () => {
     }
   };
 
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    
+
     if (!accountId) {
       toast.error("Account ID is required to send message");
       return;
@@ -147,6 +178,159 @@ const ChatMessages = () => {
       console.error("Failed to send message:", error);
     } finally {
       setSendingMessage(false);
+    }
+  };
+
+  const [userStatusData, setUserStatusData] = useState(null);
+
+  const checkUserStatus = async () => {
+    // Try multiple possible IDs to find user status
+    const searchIds = [
+      attendeeProviderId, // First priority - attendee provider ID
+      providerId,         // Second priority - provider ID
+      chatId              // Fallback - chat ID
+    ].filter(Boolean); // Remove undefined/null values
+
+    for (const searchId of searchIds) {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/influencers/user-statuses`,
+          {
+            params: {
+              search: searchId,
+              limit: 1,
+            },
+            withCredentials: true,
+          }
+        );
+
+        if (response.data.success && response.data.data.length > 0) {
+          const userStatus = response.data.data[0];
+          setUserStatusData(userStatus); // Store the found user data
+
+          if (userStatus.status === 'onboarded') {
+            setIsVerificationCompleted(true);
+            setOnboardingStatus('success');
+            setOffboardingStatus('idle');
+          } else if (userStatus.status === 'offboarded') {
+            // Offboarded users can be re-onboarded
+            setIsVerificationCompleted(false);
+            setOnboardingStatus('idle');
+            setOffboardingStatus('idle');
+          } else {
+            // Default to contacted state for any other status
+            setIsVerificationCompleted(false);
+            setOnboardingStatus('idle');
+            setOffboardingStatus('idle');
+          }
+          return; // Found user status, exit the loop
+        }
+      } catch (error) {
+        console.debug(`Error checking user status for ID ${searchId}:`, error);
+        // Continue to next ID
+      }
+    }
+
+    // No user status found with any ID - treat as contacted (not onboarded)
+    console.debug(`No user status found for chat ${chatId} with any ID`);
+    setUserStatusData(null);
+    setIsVerificationCompleted(false);
+    setOnboardingStatus('idle');
+    setOffboardingStatus('idle');
+  };
+
+  const handleOnboard = async () => {
+    if (!isVerificationCompleted) {
+      toast.error("Please complete verification first");
+      return;
+    }
+
+    setOnboardingStatus('loading');
+
+    try {
+      const onboardingData = {
+        name: userStatusData?.name || chatName,
+        userId: userStatusData?.userId || chatId,
+        chatId: chatId,
+        providerId: userStatusData?.providerId || chatId,
+        providerMessagingId: userStatusData?.providerMessagingId || chatId,
+        // Include additional enriched data from user status
+        username: userStatusData?.username,
+        profilePicture: userStatusData?.profilePicture,
+        profilePictureData: userStatusData?.profilePictureData,
+        followersCount: userStatusData?.followersCount,
+        followingCount: userStatusData?.followingCount,
+        source: userStatusData?.source,
+      };
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/influencers/onboard`,
+        onboardingData,
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message || "User onboarded successfully!");
+
+        // Update user status to onboarded
+        try {
+          await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/onboarded`, {
+            userId: userStatusData?.userId || chatId,
+            chatName: chatName,
+          }, { withCredentials: true });
+
+          // Refresh user status data
+          await checkUserStatus();
+        } catch (statusError) {
+          console.error('Failed to update user status:', statusError);
+        }
+
+        setOnboardingStatus('success');
+      } else {
+        toast.error(response.data.error || "Failed to onboard user");
+        setOnboardingStatus('error');
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || error.message || "Failed to onboard user";
+      toast.error(errorMessage);
+      setOnboardingStatus('error');
+      console.error("Failed to onboard user:", error);
+    }
+  };
+
+  const handleOffboard = async () => {
+    setOffboardingStatus('loading');
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/influencers/offboard`,
+        { userId: userStatusData?.userId || chatId },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message || "User offboarded successfully!");
+
+        // Update local state
+        setIsVerificationCompleted(false);
+        setOnboardingStatus('idle');
+        setOffboardingStatus('success');
+
+        // Refresh user status data
+        await checkUserStatus();
+      } else {
+        toast.error(response.data.error || "Failed to offboard user");
+        setOffboardingStatus('error');
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || error.message || "Failed to offboard user";
+      toast.error(errorMessage);
+      setOffboardingStatus('error');
+      console.error("Failed to offboard user:", error);
     }
   };
 
@@ -248,7 +432,63 @@ const ChatMessages = () => {
           <div className="flex items-center justify-between mb-1">
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-1">{chatName}</h1>
-              <p className="text-gray-600">Chat ID: {chatId}</p>
+              <div className="flex items-center space-x-4">
+                <p className="text-gray-600">Chat ID: {chatId}</p>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isVerificationCompleted}
+                    onChange={(e) => setIsVerificationCompleted(e.target.checked)}
+                    disabled={onboardingStatus === 'success'}
+                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Verification Completed</span>
+                </label>
+                {isVerificationCompleted && (
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={handleOnboard}
+                      disabled={onboardingStatus === 'loading' || onboardingStatus === 'success'}
+                      className={`px-3 py-1 rounded-lg font-medium text-xs transition-colors ${
+                        onboardingStatus === 'success'
+                          ? 'bg-green-600 text-white cursor-not-allowed'
+                          : onboardingStatus === 'loading'
+                          ? 'bg-gray-500 text-white cursor-not-allowed'
+                          : 'bg-purple-600 text-white hover:bg-purple-700'
+                      }`}
+                    >
+                      {onboardingStatus === 'loading' && (
+                        <span className="flex items-center">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                          Onboarding...
+                        </span>
+                      )}
+                      {onboardingStatus === 'success' && 'Onboarded'}
+                      {onboardingStatus === 'idle' && 'Onboard'}
+                      {onboardingStatus === 'error' && 'Retry'}
+                    </button>
+                    {onboardingStatus === 'success' && (
+                      <button
+                        onClick={handleOffboard}
+                        disabled={offboardingStatus === 'loading'}
+                        className={`px-3 py-1 rounded-lg font-medium text-xs transition-colors ${
+                          offboardingStatus === 'loading'
+                            ? 'bg-gray-500 text-white cursor-not-allowed'
+                            : 'bg-red-600 text-white hover:bg-red-700'
+                        }`}
+                      >
+                        {offboardingStatus === 'loading' && (
+                          <span className="flex items-center">
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                            Offboarding...
+                          </span>
+                        )}
+                        {offboardingStatus !== 'loading' && 'Offboard'}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           {!accountId && (
@@ -257,6 +497,7 @@ const ChatMessages = () => {
             </p>
           )}
         </div>
+
 
         {loading && messages.length === 0 ? (
           <div className="flex justify-center items-center py-8">

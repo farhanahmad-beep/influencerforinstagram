@@ -2526,9 +2526,29 @@ export const onboardUser = async (req, res) => {
     // Check if user is already onboarded
     const existingUser = await OnboardedUser.findOne({ userId });
     if (existingUser) {
+      // Fetch user status data for enrichment
+      let enrichedData = { ...existingUser.toObject() };
+      try {
+        const userStatus = await UserStatus.findOne({ userId: userId.trim() });
+        if (userStatus) {
+          enrichedData = {
+            ...enrichedData,
+            username: userStatus.username,
+            profilePicture: userStatus.profilePicture,
+            profilePictureData: userStatus.profilePictureData,
+            followersCount: userStatus.followersCount,
+            followingCount: userStatus.followingCount,
+            source: userStatus.source,
+          };
+        }
+      } catch (enrichError) {
+        console.debug('Could not enrich existing onboarded user data:', enrichError);
+        // Continue without enrichment if it fails
+      }
+
       return res.status(200).json({
         success: true,
-        data: existingUser,
+        data: enrichedData,
         message: 'User already onboarded',
       });
     }
@@ -2550,9 +2570,29 @@ export const onboardUser = async (req, res) => {
       providerMessagingId: providerMessagingId?.trim() || '',
     });
 
+    // Fetch user status data for enrichment
+    let enrichedData = { ...onboardedUser.toObject() };
+    try {
+      const userStatus = await UserStatus.findOne({ userId: userId.trim() });
+      if (userStatus) {
+        enrichedData = {
+          ...enrichedData,
+          username: userStatus.username,
+          profilePicture: userStatus.profilePicture,
+          profilePictureData: userStatus.profilePictureData,
+          followersCount: userStatus.followersCount,
+          followingCount: userStatus.followingCount,
+          source: userStatus.source,
+        };
+      }
+    } catch (enrichError) {
+      console.debug('Could not enrich onboarded user data:', enrichError);
+      // Continue without enrichment if it fails
+    }
+
     return res.status(201).json({
       success: true,
-      data: onboardedUser,
+      data: enrichedData,
       message: 'User onboarded successfully',
     });
   } catch (error) {
@@ -2615,6 +2655,44 @@ export const getOnboardedUsers = async (req, res) => {
   }
 };
 
+// Offboard a user (update status to offboarded and remove from onboarded users)
+export const offboardUser = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'userId is required',
+        statusCode: 400,
+      });
+    }
+
+    // Update user status to offboarded
+    await UserStatus.findOneAndUpdate(
+      { userId: userId },
+      { status: 'offboarded' },
+      { upsert: true, new: true }
+    );
+
+    // Delete from onboarded users collection
+    await OnboardedUser.findOneAndDelete({ userId });
+
+    return res.status(200).json({
+      success: true,
+      message: 'User offboarded successfully',
+    });
+  } catch (error) {
+    console.error('Error offboarding user:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to offboard user',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
 // Delete an onboarded user
 export const deleteOnboardedUser = async (req, res) => {
   try {
@@ -2636,6 +2714,18 @@ export const deleteOnboardedUser = async (req, res) => {
         error: 'Onboarded user not found',
         statusCode: 404,
       });
+    }
+
+    // Update user status back to "contacted" when removed from onboarded users
+    try {
+      await UserStatus.findOneAndUpdate(
+        { userId: userId },
+        { status: 'contacted' },
+        { upsert: true, new: true }
+      );
+    } catch (statusError) {
+      console.error('Failed to update user status to contacted:', statusError);
+      // Don't fail the entire operation if status update fails
     }
 
     return res.status(200).json({

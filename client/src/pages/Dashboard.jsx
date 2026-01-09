@@ -315,8 +315,8 @@ const Dashboard = () => {
                     />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
-            </div>
+                    </div>
+                  </div>
             <div
               className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => setShowPlatformGrowthModal(true)}
@@ -328,7 +328,7 @@ const Dashboard = () => {
                   <p className="text-sm text-green-600">68% Growth</p>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">Highest engagement platform</p>
-              </div>
+                </div>
               <div className="w-20 h-12 ml-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={[

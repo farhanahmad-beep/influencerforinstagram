@@ -20,10 +20,6 @@ const ChatList = () => {
   const [messageText, setMessageText] = useState("");
   const [sendingMessages, setSendingMessages] = useState(false);
   const [sendProgress, setSendProgress] = useState({});
-  const [isOnboardingMode, setIsOnboardingMode] = useState(false);
-  const [selectedForOnboarding, setSelectedForOnboarding] = useState(new Set());
-  const [onboardingProgress, setOnboardingProgress] = useState({});
-  const [isOnboardingMultiple, setIsOnboardingMultiple] = useState(false);
   const [pagination, setPagination] = useState({
     cursor: null,
     hasMore: false,
@@ -37,7 +33,6 @@ const ChatList = () => {
   const [campaignMessages, setCampaignMessages] = useState(new Map()); // campaignId -> array of messages
   const [chatPreviews, setChatPreviews] = useState(new Map()); // chatId -> last message preview
   const [loadingPreviews, setLoadingPreviews] = useState(new Set()); // Track loading state for previews
-  const [onboardingStatus, setOnboardingStatus] = useState(new Map()); // chatId -> 'idle' | 'loading' | 'success' | 'error'
   const [searchQuery, setSearchQuery] = useState(''); // Search query for filtering chats
 
   // Calculate total unread messages
@@ -57,11 +52,27 @@ const ChatList = () => {
 
   const handleChatClick = (chatId, chatName, e) => {
     // Prevent navigation if clicking on checkbox or in selection mode
-    if (e?.target?.type === 'checkbox' || isSelectionMode || isOnboardingMode) {
+    if (e?.target?.type === 'checkbox' || isSelectionMode) {
       return;
     }
+
+    // Find the enriched chat data to pass more information
+    const chatData = chats.find(chat => chat.id === chatId);
+
     navigate(`/chat-messages/${chatId}`, {
-      state: { chatName, accountId: selectedAccountId },
+      state: {
+        chatName,
+        accountId: selectedAccountId,
+        chatData: chatData, // Pass the full enriched chat data
+        attendeeProviderId: chatData?.attendeeProviderId,
+        providerId: chatData?.providerId,
+        userStatus: chatData?.userStatus,
+        username: chatData?.username,
+        profilePicture: chatData?.profilePicture,
+        profilePictureData: chatData?.profilePictureData,
+        userFollowersCount: chatData?.userFollowersCount,
+        userFollowingCount: chatData?.userFollowingCount,
+      },
     });
   };
 
@@ -121,10 +132,6 @@ const ChatList = () => {
   };
 
   const handleSendMessageClick = () => {
-    if (isOnboardingMode) {
-      toast.error("Exit onboarding mode first");
-      return;
-    }
     if (selectedChats.size === 0) {
       // Enable selection mode if no chats are selected
       setIsSelectionMode(true);
@@ -241,194 +248,6 @@ const ChatList = () => {
     setSelectedChats(new Set());
   };
 
-  const handleOnboard = async (chatId, chatName, providerId, attendeeProviderId) => {
-    if (!chatId || !chatName) {
-      toast.error("Chat ID and name are required");
-      return;
-    }
-
-    // Set loading state
-    setOnboardingStatus(prev => new Map(prev).set(chatId, 'loading'));
-
-    try {
-      const onboardingData = {
-        name: chatName,
-        userId: attendeeProviderId || chatId, // Use attendeeProviderId as userId if available
-        chatId: chatId, // Store the chat ID separately
-        providerId: providerId || attendeeProviderId || '',
-        providerMessagingId: attendeeProviderId || '',
-      };
-
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/influencers/onboard`,
-        onboardingData,
-        {
-          withCredentials: true,
-        }
-      );
-
-      if (response.data.success) {
-        toast.success(response.data.message || "User onboarded successfully!");
-
-        // Set success state
-        setOnboardingStatus(prev => new Map(prev).set(chatId, 'success'));
-
-        // Update user status to onboarded
-        try {
-          await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/onboarded`, {
-            userId: attendeeProviderId || chatId, // Use attendeeProviderId if available, fallback to chatId
-            chatName: chatName, // Pass chat name for user matching
-          }, { withCredentials: true });
-        } catch (statusError) {
-          console.error('Failed to update user status:', statusError);
-        }
-      } else {
-        toast.error(response.data.error || "Failed to onboard user");
-        setOnboardingStatus(prev => new Map(prev).set(chatId, 'error'));
-      }
-    } catch (error) {
-      // Handle 409 Conflict (user already onboarded)
-      if (error.response?.status === 409) {
-        toast("User is already onboarded", { duration: 3000 });
-        setOnboardingStatus(prev => new Map(prev).set(chatId, 'success'));
-      } else {
-        const errorMessage = error.response?.data?.error || error.message || "Failed to onboard user";
-        toast.error(errorMessage);
-        setOnboardingStatus(prev => new Map(prev).set(chatId, 'error'));
-      }
-      console.error("Failed to onboard user:", error);
-    }
-  };
-
-  const handleOnboardSelect = (chatId) => {
-    setSelectedForOnboarding((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(chatId)) {
-        newSet.delete(chatId);
-      } else {
-        newSet.add(chatId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAllForOnboarding = () => {
-    if (selectedForOnboarding.size === filteredChats.length) {
-      setSelectedForOnboarding(new Set());
-    } else {
-      setSelectedForOnboarding(new Set(filteredChats.map((chat) => chat.id)));
-    }
-  };
-
-  const handleOnboardMultipleClick = () => {
-    if (isSelectionMode) {
-      toast.error("Exit message selection mode first");
-      return;
-    }
-    if (selectedForOnboarding.size === 0) {
-      // Enable selection mode if no users are selected
-      setIsOnboardingMode(true);
-      toast("Select users to onboard", { duration: 3000 });
-    } else {
-      // Onboard selected users
-      handleOnboardMultiple();
-    }
-  };
-
-  const handleOnboardMultiple = async () => {
-    if (selectedForOnboarding.size === 0) {
-      toast.error("Please select at least one user");
-      return;
-    }
-
-    setIsOnboardingMultiple(true);
-    const chatIds = Array.from(selectedForOnboarding);
-    const progress = {};
-    chatIds.forEach((id) => {
-      progress[id] = { status: "pending", message: "" };
-    });
-    setOnboardingProgress(progress);
-
-    let successCount = 0;
-    let failCount = 0;
-
-    // Onboard users sequentially to avoid overwhelming the API
-    for (const chatId of chatIds) {
-      try {
-        const chat = chats.find((c) => c.id === chatId);
-        if (!chat) continue;
-
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/influencers/onboard`,
-          {
-            name: chat.name,
-            userId: chat.attendeeProviderId || chat.id,
-            chatId: chat.id, // Store the chat ID separately
-            providerId: chat.providerId || chat.attendeeProviderId || '',
-            providerMessagingId: chat.attendeeProviderId || '',
-          },
-          {
-            withCredentials: true,
-          }
-        );
-
-        if (response.data.success) {
-          successCount++;
-          setOnboardingProgress((prev) => ({
-            ...prev,
-            [chatId]: { status: "success", message: "Onboarded successfully" },
-          }));
-        } else {
-          failCount++;
-          setOnboardingProgress((prev) => ({
-            ...prev,
-            [chatId]: {
-              status: "error",
-              message: response.data.error || "Failed to onboard",
-            },
-          }));
-        }
-      } catch (error) {
-        failCount++;
-        const errorMessage =
-          error.response?.status === 409
-            ? "Already onboarded"
-            : error.response?.data?.error || error.message || "Failed to onboard";
-        setOnboardingProgress((prev) => ({
-          ...prev,
-          [chatId]: { status: "error", message: errorMessage },
-        }));
-      }
-
-      // Small delay between onboardings to avoid rate limiting
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-
-    setIsOnboardingMultiple(false);
-
-    if (successCount > 0) {
-      toast.success(
-        `Onboarded ${successCount} user${successCount !== 1 ? "s" : ""} successfully`
-      );
-    }
-    if (failCount > 0) {
-      toast.error(
-        `Failed to onboard ${failCount} user${failCount !== 1 ? "s" : ""}`
-      );
-    }
-
-    // Reset after a delay to show progress
-    setTimeout(() => {
-      setSelectedForOnboarding(new Set());
-      setIsOnboardingMode(false);
-      setOnboardingProgress({});
-    }, 2000);
-  };
-
-  const handleCancelOnboardingSelection = () => {
-    setIsOnboardingMode(false);
-    setSelectedForOnboarding(new Set());
-  };
 
   useEffect(() => {
     fetchLinkedAccounts();
@@ -799,9 +618,7 @@ const ChatList = () => {
                   if (newValue) {
                     // Switching to campaign messages - clear selection modes
                     setIsSelectionMode(false);
-                    setIsOnboardingMode(false);
                     setSelectedChats(new Set());
-                    setSelectedForOnboarding(new Set());
                   } else {
                     // Switching back to regular chats - clear campaign data
                     setCampaignMessages(new Map());
@@ -837,37 +654,10 @@ const ChatList = () => {
                       </span>
                     </>
                   )}
-                  {isOnboardingMode && (
-                    <>
-                      <button
-                        onClick={handleSelectAllForOnboarding}
-                        className="btn-secondary text-sm"
-                      >
-                        {selectedForOnboarding.size === filteredChats.length ? "Deselect All" : "Select All"}
-                      </button>
-                      <button
-                        onClick={handleCancelOnboardingSelection}
-                        className="btn-secondary text-sm"
-                      >
-                        Cancel
-                      </button>
-                      <span className="text-sm text-gray-600">
-                        {selectedForOnboarding.size} selected
-                      </span>
-                    </>
-                  )}
-                  <button
-                    onClick={handleOnboardMultipleClick}
-                    className="btn-primary"
-                    disabled={!selectedAccountId || chats.length === 0 || isSelectionMode}
-                  >
-                    Onboard Multiple
-                    {selectedForOnboarding.size > 0 && ` (${selectedForOnboarding.size})`}
-                  </button>
                   <button
                     onClick={handleSendMessageClick}
                     className="btn-primary"
-                    disabled={!selectedAccountId || chats.length === 0 || isOnboardingMode}
+                    disabled={!selectedAccountId || chats.length === 0}
                   >
                     Send Message
                     {selectedChats.size > 0 && ` (${selectedChats.size})`}
@@ -1164,9 +954,9 @@ const ChatList = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className={`card hover:shadow-lg transition-shadow ${
-                    isSelectionMode || isOnboardingMode ? "cursor-default" : "cursor-pointer"
+                    isSelectionMode ? "cursor-default" : "cursor-pointer"
                   } ${
-                    selectedChats.has(chat.id) || selectedForOnboarding.has(chat.id)
+                    selectedChats.has(chat.id)
                       ? "border-2 border-purple-500 bg-purple-50"
                       : chat.unreadCount > 0
                       ? "border-l-4 border-l-red-500 bg-red-50/30"
@@ -1176,11 +966,11 @@ const ChatList = () => {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4 flex-1 min-w-0">
-                      {(isSelectionMode || isOnboardingMode) && (
+                      {isSelectionMode && (
                         <input
                           type="checkbox"
-                          checked={isSelectionMode ? selectedChats.has(chat.id) : selectedForOnboarding.has(chat.id)}
-                          onChange={() => isSelectionMode ? handleChatSelect(chat.id) : handleOnboardSelect(chat.id)}
+                          checked={selectedChats.has(chat.id)}
+                          onChange={() => handleChatSelect(chat.id)}
                           onClick={(e) => e.stopPropagation()}
                           className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
                         />
@@ -1263,55 +1053,20 @@ const ChatList = () => {
                       </div>
                     </div>
                     <div className="flex flex-col items-end space-y-1 flex-shrink-0 ml-4">
-                      {!isSelectionMode && !isOnboardingMode && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOnboard(chat.id, chat.name, chat.providerId, chat.attendeeProviderId);
-                          }}
-                          className={`text-xs px-2 py-1 mb-2 rounded transition-colors ${
-                            onboardingStatus.get(chat.id) === 'success'
-                              ? 'bg-green-600 text-white hover:bg-green-700'
-                              : onboardingStatus.get(chat.id) === 'loading'
-                              ? 'bg-gray-500 text-white cursor-not-allowed'
-                              : 'bg-purple-600 text-white hover:bg-purple-700'
-                          }`}
-                          disabled={onboardingStatus.get(chat.id) === 'loading'}
-                          title={
-                            onboardingStatus.get(chat.id) === 'success'
-                              ? 'User onboarded'
-                              : onboardingStatus.get(chat.id) === 'loading'
-                              ? 'Onboarding in progress...'
-                              : 'Onboard this user'
-                          }
-                        >
-                          {onboardingStatus.get(chat.id) === 'loading' && (
-                            <span className="flex items-center">
-                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                              Onboarding...
-                            </span>
-                          )}
-                          {onboardingStatus.get(chat.id) === 'success' && 'Onboarded'}
-                          {!onboardingStatus.get(chat.id) && 'Onboard'}
-                        </button>
-                      )}
-                      {isOnboardingMode && onboardingProgress[chat.id] && (
-                        <div className="text-xs px-2 py-1 mb-2">
-                          <span
-                            className={`${
-                              onboardingProgress[chat.id].status === "success"
-                                ? "text-green-600"
-                                : onboardingProgress[chat.id].status === "error"
-                                ? "text-red-600"
-                                : "text-gray-500"
-                            }`}
-                          >
-                            {onboardingProgress[chat.id].status === "pending" && "⏳ Onboarding..."}
-                            {onboardingProgress[chat.id].status === "success" && "✓ Onboarded"}
-                            {onboardingProgress[chat.id].status === "error" && `✗ ${onboardingProgress[chat.id].message}`}
-                          </span>
-                        </div>
-                      )}
+                      {/* Status indicator - colored badges */}
+                      <div className={`text-xs px-2 py-1 mb-2 rounded-full font-medium ${
+                        chat.userStatus === 'onboarded'
+                          ? 'bg-green-100 text-green-800'
+                          : chat.userStatus === 'offboarded'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {chat.userStatus === 'onboarded'
+                          ? 'Onboarded'
+                          : chat.userStatus === 'offboarded'
+                          ? 'Offboarded'
+                          : 'Contacted'}
+                      </div>
                       <span className="text-xs text-gray-500">
                         {formatDate(chat.timestamp)}
                       </span>
