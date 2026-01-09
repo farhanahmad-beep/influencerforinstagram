@@ -310,10 +310,6 @@ const RegistrationDetails = () => {
                 <h4 className="text-md font-medium text-gray-900 border-b pb-2">User Information</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-600">Name:</span>
-                    <span className="text-sm text-gray-900">{selectedUser.name || '—'}</span>
-                  </div>
-                  <div className="flex justify-between">
                     <span className="text-sm font-medium text-gray-600">Username:</span>
                     <span className="text-sm text-gray-900">@{selectedUser.username || '—'}</span>
                   </div>
