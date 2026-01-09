@@ -161,6 +161,9 @@ const RegistrationDetails = () => {
                         Earnings
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Orders
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -242,11 +245,26 @@ const RegistrationDetails = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            ${item.influencerData?.totalEarnings || 0}
+                            ${item.influencerData?.totalEarnings * 100 || 0}
                           </div>
                           {item.influencerData?.pendingPayouts > 0 && (
                             <div className="text-xs text-orange-600">
-                              Pending: ${item.influencerData.pendingPayouts}
+                              Pending: ${item.influencerData.pendingPayouts * 100}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {item.storeData?.orders?.length || 0} orders
+                          </div>
+                          {item.storeData?.orders?.length > 0 && (
+                            <div className="text-xs text-green-600">
+                              ${item.storeData.orders.reduce((sum, order) => sum + (order.total || 0), 0).toFixed(2)} revenue
+                            </div>
+                          )}
+                          {item.storeData?.orders?.length > 0 && (
+                            <div className="text-xs text-blue-600">
+                              {item.storeData.orders.filter(order => order.status === 'delivered').length} delivered
                             </div>
                           )}
                         </td>
@@ -359,11 +377,11 @@ const RegistrationDetails = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm font-medium text-gray-600">Total Earnings:</span>
-                      <span className="text-sm text-green-600">${selectedUser.influencerData.totalEarnings || 0}</span>
+                      <span className="text-sm text-green-600">${selectedUser.influencerData.totalEarnings * 100 || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm font-medium text-gray-600">Pending Payouts:</span>
-                      <span className="text-sm text-orange-600">${selectedUser.influencerData.pendingPayouts || 0}</span>
+                      <span className="text-sm text-orange-600">${selectedUser.influencerData.pendingPayouts * 100 || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm font-medium text-gray-600">Store Active:</span>
@@ -388,8 +406,12 @@ const RegistrationDetails = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm font-medium text-gray-600">Products:</span>
+                        <span className="text-sm font-medium text-gray-600">Total Products:</span>
                         <span className="text-sm text-gray-900">{selectedUser.storeData.products?.length || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Active Products:</span>
+                        <span className="text-sm text-green-600">{selectedUser.storeData.products?.filter(p => p.isActive).length || 0}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm font-medium text-gray-600">Collections:</span>
@@ -399,13 +421,158 @@ const RegistrationDetails = () => {
                         <span className="text-sm font-medium text-gray-600">Campaigns:</span>
                         <span className="text-sm text-gray-900">{selectedUser.storeData.campaigns?.length || 0}</span>
                       </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Total Orders:</span>
+                        <span className="text-sm text-blue-600">{selectedUser.storeData.orders?.length || 0}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Delivered Orders:</span>
+                        <span className="text-sm text-green-600">
+                          {selectedUser.storeData.orders?.filter(order => order.status === 'delivered').length || 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Total Revenue:</span>
+                        <span className="text-sm text-green-600">
+                          ${selectedUser.storeData.orders?.reduce((sum, order) => sum + (order.total || 0), 0).toFixed(2) || '0.00'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Avg Order Value:</span>
+                        <span className="text-sm text-purple-600">
+                          ${selectedUser.storeData.orders?.length > 0
+                            ? (selectedUser.storeData.orders.reduce((sum, order) => sum + (order.total || 0), 0) / selectedUser.storeData.orders.length).toFixed(2)
+                            : '0.00'
+                          }
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Total Shipping Cost:</span>
+                        <span className="text-sm text-blue-600">
+                          ${selectedUser.storeData.orders?.reduce((sum, order) => sum + (order.shippingCost || 0), 0).toFixed(2) || '0.00'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <h5 className="text-sm font-medium text-gray-700">Recent Orders:</h5>
+                      {selectedUser.storeData.orders?.length > 0 ? (
+                        <div className="space-y-3">
+                          <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                            Total Orders: <span className="font-medium">{selectedUser.storeData.orders.length}</span> |
+                            Total Revenue: <span className="font-medium text-green-600">${selectedUser.storeData.orders.reduce((sum, order) => sum + (order.total || 0), 0).toFixed(2)}</span> |
+                            Total Shipping: <span className="font-medium text-blue-600">${selectedUser.storeData.orders.reduce((sum, order) => sum + (order.shippingCost || 0), 0).toFixed(2)}</span>
+                          </div>
+                          <div className="max-h-64 overflow-y-auto space-y-3">
+                            {selectedUser.storeData.orders.slice(0, 5).map((order, idx) => (
+                              <div key={idx} className="border border-gray-200 rounded-lg p-3 bg-white">
+                                <div className="flex justify-between items-start mb-2">
+                                  <div className="flex-1">
+                                    <div className="text-sm font-medium text-gray-900">{order.orderNumber}</div>
+                                    <div className="text-xs text-gray-600">{order.product?.name || 'Unknown Product'}</div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-sm font-semibold text-green-600">${order.total?.toFixed(2) || '0.00'}</div>
+                                    <div className={`text-xs px-2 py-1 rounded-full ${
+                                      order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                      order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                                      order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-gray-100 text-gray-800'
+                                    }`}>
+                                      {order.status || 'unknown'}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                                  <div>
+                                    <span className="text-gray-500">Price:</span>
+                                    <span className="ml-1">${order.product?.price?.toFixed(2) || '0.00'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500">Size:</span>
+                                    <span className="ml-1">{order.product?.selectedSize || 'N/A'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500">Color:</span>
+                                    <span className="ml-1">{order.product?.selectedColor || 'N/A'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500">Tax:</span>
+                                    <span className="ml-1">${order.tax?.toFixed(2) || '0.00'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500">Shipping:</span>
+                                    <span className="ml-1">${order.shippingCost?.toFixed(2) || '0.00'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500">Subtotal:</span>
+                                    <span className="ml-1">${order.subtotal?.toFixed(2) || '0.00'}</span>
+                                  </div>
+                                </div>
+
+                                {order.product?.images?.[0]?.url && (
+                                  <div className="mb-2">
+                                    <img
+                                      src={order.product.images[0].url}
+                                      alt={order.product.name}
+                                      className="w-12 h-12 object-cover rounded border"
+                                    />
+                                  </div>
+                                )}
+
+                                <div className="text-xs border-t pt-2">
+                                  <div className="flex justify-between">
+                                    <div>
+                                      <span className="text-gray-500">Customer:</span>
+                                      <span className="ml-1">{order.customer?.firstName} {order.customer?.lastName}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Payment:</span>
+                                      <span className={`ml-1 px-2 py-1 rounded-full text-xs ${
+                                        order.payment?.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                        order.payment?.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-red-100 text-red-800'
+                                      }`}>
+                                        {order.payment?.status || 'unknown'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="mt-1">
+                                    <span className="text-gray-500">Email:</span>
+                                    <span className="ml-1">{order.customer?.email || 'N/A'}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            {selectedUser.storeData.orders.length > 5 && (
+                              <div className="text-center text-xs text-gray-500 py-2">
+                                ... and {selectedUser.storeData.orders.length - 5} more orders
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500">No orders yet</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <h5 className="text-sm font-medium text-gray-700">Active Products:</h5>
                       {selectedUser.storeData.products?.filter(p => p.isActive).length > 0 ? (
                         <ul className="text-xs text-gray-600 space-y-1">
                           {selectedUser.storeData.products.filter(p => p.isActive).slice(0, 3).map((product, idx) => (
-                            <li key={idx}>• Product {product.productId?.slice(-6) || idx + 1}</li>
+                            <li key={idx}>
+                              <a
+                                href={`https://dynamiteinfluencerstore.icod.ai/product/${product.productId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-purple-600 hover:text-purple-800 hover:underline"
+                              >
+                                • {product.productDetails?.name || `Product ${product.productId?.slice(-6) || idx + 1}`}
+                              </a>
+                              {product.productDetails?.price && (
+                                <span className="text-green-600 ml-1">(${product.productDetails.price})</span>
+                              )}
+                            </li>
                           ))}
                           {selectedUser.storeData.products.filter(p => p.isActive).length > 3 && (
                             <li className="text-gray-500">... and {selectedUser.storeData.products.filter(p => p.isActive).length - 3} more</li>

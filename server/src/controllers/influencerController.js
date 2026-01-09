@@ -1238,6 +1238,96 @@ export const getTrackingRegistrations = async (req, res) => {
           preserveNullAndEmptyArrays: true
         }
       },
+      // Unwind products array to lookup each product
+      {
+        $unwind: {
+          path: '$storeInfo.products',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      // Lookup products collection for product details
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'storeInfo.products.productId',
+          foreignField: '_id',
+          as: 'storeInfo.products.productDetails'
+        }
+      },
+      // Unwind product details (optional)
+      {
+        $unwind: {
+          path: '$storeInfo.products.productDetails',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      // Group back by user to reconstruct the products array
+      {
+        $group: {
+          _id: '$_id',
+          name: { $first: '$name' },
+          username: { $first: '$username' },
+          email: { $first: '$email' },
+          trackingId: { $first: '$trackingId' },
+          role: { $first: '$role' },
+          isActive: { $first: '$isActive' },
+          createdAt: { $first: '$createdAt' },
+          influencerInfo: { $first: '$influencerInfo' },
+          statusInfo: { $first: '$statusInfo' },
+          storeInfo: {
+            $first: {
+              _id: '$storeInfo._id',
+              influencerId: '$storeInfo.influencerId',
+              collections: '$storeInfo.collections',
+              campaigns: '$storeInfo.campaigns',
+              createdAt: '$storeInfo.createdAt',
+              updatedAt: '$storeInfo.updatedAt'
+            }
+          },
+          products: {
+            $push: {
+              $cond: {
+                if: { $and: ['$storeInfo.products', '$storeInfo.products.productDetails'] },
+                then: {
+                  productId: '$storeInfo.products.productId',
+                  isActive: '$storeInfo.products.isActive',
+                  addedAt: '$storeInfo.products.addedAt',
+                  _id: '$storeInfo.products._id',
+                  productDetails: '$storeInfo.products.productDetails'
+                },
+                else: null
+              }
+            }
+          }
+        }
+      },
+      // Clean up the products array (remove nulls)
+      {
+        $addFields: {
+          'storeInfo.products': {
+            $filter: {
+              input: '$products',
+              as: 'product',
+              cond: { $ne: ['$$product', null] }
+            }
+          }
+        }
+      },
+      // Remove the temporary products field
+      {
+        $project: {
+          products: 0
+        }
+      },
+      // Lookup orders collection using storeId
+      {
+        $lookup: {
+          from: 'orders',
+          localField: 'storeInfo._id',
+          foreignField: 'storeId',
+          as: 'storeInfo.orders'
+        }
+      },
       // Lookup user statuses for additional context
       {
         $lookup: {
