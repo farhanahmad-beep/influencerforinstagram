@@ -7,6 +7,7 @@ import LinkedAccountsModal from "../components/LinkedAccountsModal.jsx";
 import ChatListModal from "../components/ChatListModal.jsx";
 import OnboardedUsersModal from "../components/OnboardedUsersModal.jsx";
 import CampaignsModal from "../components/CampaignsModal.jsx";
+import PlatformGrowthModal from "../components/PlatformGrowthModal.jsx";
 import toast from "react-hot-toast";
 import {
   LineChart,
@@ -52,6 +53,9 @@ const Dashboard = () => {
   // Campaigns Modal state
   const [showCampaignsModal, setShowCampaignsModal] = useState(false);
   const [campaignsModalTab, setCampaignsModalTab] = useState('active'); // 'active' or 'completed'
+
+  // Platform Growth Modal state
+  const [showPlatformGrowthModal, setShowPlatformGrowthModal] = useState(false);
 
   // Generate mini chart data based on current stats
   const generateMiniChartData = (currentValue, maxPoints = 8) => {
@@ -313,6 +317,34 @@ const Dashboard = () => {
                 </ResponsiveContainer>
               </div>
             </div>
+            <div
+              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => setShowPlatformGrowthModal(true)}
+            >
+              <div className="flex-1">
+                <p className="text-sm text-gray-500">Top Performing Platform</p>
+                <div className="mt-2">
+                  <p className="text-xl font-bold text-gray-900">Instagram</p>
+                  <p className="text-sm text-green-600">68% Growth</p>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Highest engagement platform</p>
+              </div>
+              <div className="w-20 h-12 ml-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={[
+                    { name: 'IG', value: 68 },
+                    { name: 'YT', value: 42 },
+                    { name: 'TT', value: 35 }
+                  ]}>
+                    <Bar dataKey="value" radius={[2, 2, 0, 0]}>
+                      <Cell fill="#E4405F" />
+                      <Cell fill="#FF0000" />
+                      <Cell fill="#000000" />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
         )}
 
@@ -563,6 +595,12 @@ const Dashboard = () => {
         isOpen={showCampaignsModal}
         onClose={() => setShowCampaignsModal(false)}
         initialTab={campaignsModalTab}
+      />
+
+      {/* Platform Growth Modal */}
+      <PlatformGrowthModal
+        isOpen={showPlatformGrowthModal}
+        onClose={() => setShowPlatformGrowthModal(false)}
       />
     </div>
   );
