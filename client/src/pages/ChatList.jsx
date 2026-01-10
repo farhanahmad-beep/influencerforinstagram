@@ -668,85 +668,97 @@ const ChatList = () => {
           </div>
         </div>
 
-        {/* Account Selection */}
-        <div className="card mb-6">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Select Account
-              </label>
-              {loadingAccounts ? (
-                <div className="input-field flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
-                  <span className="text-sm text-gray-500">Loading accounts...</span>
+        {/* Account Selection and Search Filter */}
+        <div className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Account Selection */}
+            <div className="card">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Account
+                  </label>
+                  {loadingAccounts ? (
+                    <div className="input-field flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
+                      <span className="text-sm text-gray-500">Loading accounts...</span>
+                    </div>
+                  ) : linkedAccounts.length > 0 ? (
+                    <select
+                      value={selectedAccountId}
+                      onChange={(e) => {
+                        setSelectedAccountId(e.target.value);
+                        setChats([]);
+                        setCampaignMessages(new Map());
+                        setPagination({
+                          cursor: null,
+                          hasMore: false,
+                          count: 0,
+                          limit: 10,
+                        });
+                      }}
+                      className="input-field"
+                    >
+                      {linkedAccounts.map((account) => (
+                        <option key={account.id} value={account.id}>
+                          @{account.username} - {account.id}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      No linked accounts found. Please add a linked account first.
+                    </p>
+                  )}
                 </div>
-              ) : linkedAccounts.length > 0 ? (
-                <select
-                  value={selectedAccountId}
-                  onChange={(e) => {
-                    setSelectedAccountId(e.target.value);
-                    setChats([]);
-                    setCampaignMessages(new Map());
-                    setPagination({
-                      cursor: null,
-                      hasMore: false,
-                      count: 0,
-                      limit: 10,
-                    });
-                  }}
-                  className="input-field"
-                >
-                  {linkedAccounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      @{account.username} - {account.id}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <p className="text-sm text-gray-500">
-                  No linked accounts found. Please add a linked account first.
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Search Filter */}
-        {!showCampaignMessages && chats.length > 0 && (
-          <div className="card mb-6">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
               </div>
-              <input
-                type="text"
-                placeholder="Search chats by name, username, or ID..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="input-field pl-10 pr-4 py-3 w-full"
-              />
-              {searchQuery && (
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              )}
             </div>
-            {searchQuery && (
-              <div className="mt-2 text-sm text-gray-600">
-                Found <span className="font-semibold">{filteredChats.length}</span> of <span className="font-semibold">{chats.length}</span> chats
+
+            {/* Search Filter */}
+            {!showCampaignMessages && (
+              <div className="card">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Search Chats
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Search chats by name, username, or ID..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="input-field pl-10 pr-4 w-full"
+                      />
+                      {searchQuery && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                          <button
+                            onClick={() => setSearchQuery('')}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    {searchQuery && (
+                      <div className="mt-2 text-sm text-gray-600">
+                        Found <span className="font-semibold">{filteredChats.length}</span> of <span className="font-semibold">{chats.length}</span> chats
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>
-        )}
+        </div>
 
         {/* Results */}
         {showCampaignMessages ? (
