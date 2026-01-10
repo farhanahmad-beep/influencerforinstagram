@@ -459,7 +459,7 @@ const ChatList = () => {
     if (!selectedAccountId) return;
 
     const messagesMap = new Map();
-    const campaignMessage = `Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register?user`;
+    const campaignMessage = `Hey! Check this out: https://poc_influencerstore.icod.ai/register?user`;
 
     // Fetch all chats first
     try {

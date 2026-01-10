@@ -566,7 +566,7 @@ const Onboard = () => {
     // Add campaign to sending state
     setSendingCampaigns(prev => new Set([...prev, campaignId]));
 
-    const getCampaignMessage = (username) => `Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register?${username}`;
+    const getCampaignMessage = (username) => `Hey! Check this out: https://poc_influencerstore.icod.ai/register?${username}`;
 
     try {
       toast(`Starting campaign "${campaign.name}" - sending messages...`, { duration: 3000 });
