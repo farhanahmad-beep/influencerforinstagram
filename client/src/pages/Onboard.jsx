@@ -1464,29 +1464,56 @@ const Onboard = () => {
                     Add Users to Campaign
                   </label>
                   <div className="space-y-3">
-                    {/* User Selection Dropdown */}
-                    <select
-                      value=""
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          handleUserSelect(e.target.value);
-                          e.target.value = ""; // Reset dropdown
-                        }
-                      }}
-                      className="input-field"
-                    >
-                      <option value="">Select a user to add...</option>
-                      {onboardedUsers
-                        .filter(user => !selectedUsers.has(user.userId))
-                        .map((user) => {
-                          const userCampaigns = usersInCampaigns.get(user.userId) || [];
-                          return (
-                            <option key={user.userId} value={user.userId}>
-                              {user.username || user.userId} {userCampaigns.length > 0 ? `(In ${userCampaigns.length} campaigns)` : ''}
-                            </option>
-                          );
-                        })}
-                    </select>
+                    {/* User Selection Grid */}
+                    <div className="max-h-48 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {onboardedUsers
+                          .filter(user => !selectedUsers.has(user.userId))
+                          .map((user) => {
+                            const userCampaigns = usersInCampaigns.get(user.userId) || [];
+                            return (
+                              <button
+                                key={user.userId}
+                                type="button"
+                                onClick={() => handleUserSelect(user.userId)}
+                                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white hover:shadow-sm transition-all text-left"
+                              >
+                                <div className="flex-shrink-0">
+                                  {(user.profilePictureData || user.profilePicture) ? (
+                                    <img
+                                      src={user.profilePictureData || user.profilePicture}
+                                      alt={user.username || user.name || 'User'}
+                                      className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                                      onError={(e) => {
+                                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || user.name || 'User')}&background=random&color=fff&size=40`;
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-400 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                                      {(user.username || user.name || 'U').charAt(0).toUpperCase()}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-medium text-gray-900 truncate">
+                                    {user.username || user.name || 'Unknown User'}
+                                  </div>
+                                  {userCampaigns.length > 0 && (
+                                    <div className="text-xs text-yellow-600">
+                                      In {userCampaigns.length} campaign{userCampaigns.length !== 1 ? 's' : ''}
+                                    </div>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                      </div>
+                      {onboardedUsers.filter(user => !selectedUsers.has(user.userId)).length === 0 && (
+                        <div className="text-center py-4 text-gray-500 text-sm">
+                          All users have been selected
+                        </div>
+                      )}
+                    </div>
 
                     {/* Available Users Count */}
                     <div className="text-sm text-gray-600">
@@ -1511,30 +1538,48 @@ const Onboard = () => {
                       </button>
                     )}
                   </div>
-                  <div className="max-h-40 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+                  <div className="max-h-48 overflow-y-auto border rounded-lg p-3 bg-gray-50">
                     {Array.from(selectedUsers).length === 0 ? (
                       <p className="text-sm text-gray-500">No users selected</p>
                     ) : (
-                      <div className="space-y-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {Array.from(selectedUsers).map((userId) => {
                           const user = onboardedUsers.find(u => u.userId === userId);
                           const userCampaigns = usersInCampaigns.get(userId) || [];
                           return (
-                            <div key={userId} className="flex items-center justify-between text-sm">
-                              <div className="flex items-center space-x-2">
-                                <span className="text-gray-700">
-                                  {user?.username || userId}
-                                </span>
-                                {userCampaigns.length > 0 && (
-                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                                    In {userCampaigns.length} campaign{userCampaigns.length !== 1 ? 's' : ''}
-                                  </span>
-                                )}
+                            <div key={userId} className="flex items-center justify-between p-2 bg-white rounded-lg border">
+                              <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                <div className="flex-shrink-0">
+                                  {(user?.profilePictureData || user?.profilePicture) ? (
+                                    <img
+                                      src={user?.profilePictureData || user?.profilePicture}
+                                      alt={user?.username || user?.name || 'User'}
+                                      className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                                      onError={(e) => {
+                                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.username || user?.name || 'User')}&background=random&color=fff&size=32`;
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-purple-600 flex items-center justify-center text-white font-semibold text-xs">
+                                      {(user?.username || user?.name || 'U').charAt(0).toUpperCase()}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-medium text-gray-900 truncate">
+                                    {user?.username || user?.name || 'Unknown User'}
+                                  </div>
+                                  {userCampaigns.length > 0 && (
+                                    <div className="text-xs text-yellow-600">
+                                      In {userCampaigns.length} campaign{userCampaigns.length !== 1 ? 's' : ''}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => handleUserSelect(userId)}
-                                className="text-red-500 hover:text-red-700"
+                                className="text-red-500 hover:text-red-700 ml-2 flex-shrink-0"
                               >
                                 ×
                               </button>
