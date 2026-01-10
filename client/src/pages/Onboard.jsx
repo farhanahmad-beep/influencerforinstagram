@@ -1408,7 +1408,7 @@ const Onboard = () => {
                                   <span>Sending...</span>
                                 </div>
                               ) : (
-                                'Send Message'
+                                'Start Campaign'
                               )}
                             </button>
                           )}
@@ -1442,7 +1442,7 @@ const Onboard = () => {
                                   }}
                                   className="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
                                 >
-                                  Send Again
+                                  Restart Campaign
                                 </button>
                               )}
                             </div>
@@ -1496,7 +1496,7 @@ const Onboard = () => {
                                   <span>Sending...</span>
                                 </div>
                               ) : (
-                                'Send Again'
+                                'Start Campaign Again'
                               )}
                             </button>
                           )}
