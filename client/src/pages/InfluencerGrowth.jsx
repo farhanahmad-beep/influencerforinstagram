@@ -843,12 +843,12 @@ const InfluencerGrowth = () => {
                       <p className="text-sm text-gray-500">
                               {isFiltered ? 'Followers (Filtered)' : 'Current Followers'}
                             </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-500">Data Points</p>
-                      <p className="text-2xl font-bold text-purple-600">{filteredHistory.length || selectedInfluencer.growthHistory?.length || 0}</p>
-                    </div>
-                  </div>
+                      </div>
+                          <div className="text-center">
+                            <p className="text-sm text-gray-500">Data Points</p>
+                            <p className="text-2xl font-bold text-purple-600">{filteredHistory.length || selectedInfluencer.growthHistory?.length || 0}</p>
+                          </div>
+                        </div>
 
                         {/* Period Growth Metrics */}
                         {periodGrowth && dateRange.start && dateRange.end && (
@@ -856,12 +856,12 @@ const InfluencerGrowth = () => {
                             <h4 className="text-lg font-semibold text-gray-900 mb-3">
                               Growth in Selected Period ({formatDate(periodGrowth.startDate)} - {formatDate(periodGrowth.endDate)})
                             </h4>
-                            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                              <p className="text-sm text-gray-500 mb-1">Followers Growth</p>
-                              <p className={`text-2xl font-bold ${periodGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {periodGrowth.followersGrowth >= 0 ? '+' : ''}{periodGrowth.followersGrowth.toLocaleString()}
-                              </p>
-                              <p className="text-xs text-gray-400 mt-1">Over {periodGrowth.dataPoints} data points</p>
+                              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                                <p className="text-sm text-gray-500 mb-1">Followers Growth</p>
+                                <p className={`text-2xl font-bold ${periodGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {periodGrowth.followersGrowth >= 0 ? '+' : ''}{periodGrowth.followersGrowth.toLocaleString()}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-1">Over {periodGrowth.dataPoints} data points</p>
                             </div>
                           </div>
                         )}
@@ -872,12 +872,12 @@ const InfluencerGrowth = () => {
                   {selectedInfluencer.latestGrowth && (
                     <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
                       <h4 className="text-lg font-semibold text-gray-900 mb-3">Total Growth Metrics</h4>
-                      <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                        <p className="text-sm text-gray-500 mb-1">Followers Growth</p>
-                        <p className={`text-2xl font-bold ${selectedInfluencer.latestGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {selectedInfluencer.latestGrowth.followersGrowth >= 0 ? '+' : ''}{selectedInfluencer.latestGrowth.followersGrowth.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">Since first contact</p>
+                        <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                          <p className="text-sm text-gray-500 mb-1">Followers Growth</p>
+                          <p className={`text-2xl font-bold ${selectedInfluencer.latestGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {selectedInfluencer.latestGrowth.followersGrowth >= 0 ? '+' : ''}{selectedInfluencer.latestGrowth.followersGrowth.toLocaleString()}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">Since first contact</p>
                       </div>
                     </div>
                   )}

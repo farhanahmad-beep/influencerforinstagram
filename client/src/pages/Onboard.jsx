@@ -34,6 +34,7 @@ const Onboard = () => {
   const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
   const [sendingCampaigns, setSendingCampaigns] = useState(new Set()); // Track campaigns currently sending messages
   const [sentCampaigns, setSentCampaigns] = useState(new Set()); // Track campaigns that have been sent at least once
+  const [campaignProgress, setCampaignProgress] = useState(new Map()); // Track sending progress for each campaign {campaignId: {currentUser, completedUsers: [], totalUsers}}
   const [showRenewModal, setShowRenewModal] = useState(false);
   const [renewingCampaign, setRenewingCampaign] = useState(null);
   const [newExpirationDate, setNewExpirationDate] = useState('');
@@ -270,6 +271,17 @@ const Onboard = () => {
     }
   };
 
+  // Update a single campaign's properties in local state without refetching all campaigns
+  const updateCampaign = (campaignId, updates) => {
+    setCampaigns(prevCampaigns =>
+      prevCampaigns.map(campaign =>
+        campaign._id === campaignId
+          ? { ...campaign, ...updates }
+          : campaign
+      )
+    );
+  };
+
   const handleCreateCampaign = async (e) => {
     e.preventDefault();
 
@@ -354,7 +366,7 @@ const Onboard = () => {
 
       if (response.data.success) {
         toast.success(`Campaign status updated to ${status}`);
-        fetchCampaigns();
+        updateCampaign(campaignId, { status });
       } else {
         toast.error(response.data.error || "Failed to update campaign status");
       }
@@ -378,7 +390,7 @@ const Onboard = () => {
 
       if (response.data.success) {
         toast.success("Campaign expiration date updated");
-        fetchCampaigns();
+        updateCampaign(campaignId, { expiresAt });
       } else {
         toast.error(response.data.error || "Failed to update campaign expiration");
       }
@@ -414,7 +426,7 @@ const Onboard = () => {
         setShowRenewModal(false);
         setRenewingCampaign(null);
         setNewExpirationDate('');
-        fetchCampaigns();
+        updateCampaign(campaignId, { expiresAt: expiresAt, status: 'draft' });
       } else {
         toast.error(response.data.error || "Failed to renew campaign");
       }
@@ -566,11 +578,16 @@ const Onboard = () => {
     // Add campaign to sending state
     setSendingCampaigns(prev => new Set([...prev, campaignId]));
 
+    // Initialize progress tracking
+    setCampaignProgress(prev => new Map(prev).set(campaignId, {
+      currentUser: null,
+      completedUsers: [],
+      totalUsers: campaign.userIds.length
+    }));
+
     const getCampaignMessage = (username) => `Hey! Check this out: https://poc_influencerstore.icod.ai/register?${username}`;
 
     try {
-      toast(`Starting campaign "${campaign.name}" - sending messages...`, { duration: 3000 });
-
       // First, fetch all existing chats for this account
       const chatsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/influencers/chats`, {
         params: {
@@ -600,6 +617,15 @@ const Onboard = () => {
           console.error(`User ${userId} not found or missing messaging ID`);
           continue;
         }
+
+        // Update progress: set current user being processed
+        setCampaignProgress(prev => {
+          const current = prev.get(campaignId) || { completedUsers: [], totalUsers: campaign.userIds.length };
+          return new Map(prev).set(campaignId, {
+            ...current,
+            currentUser: user.name || user.username || 'Unknown User'
+          });
+        });
 
         // Find existing chat with this user
         const existingChat = existingChats.find(chat =>
@@ -632,7 +658,16 @@ const Onboard = () => {
 
           if (messageResponse.data.success) {
             successCount++;
-            toast.success(`Message sent to ${user.name || userId} (${successCount}/${campaign.userIds.length - noChatCount})`);
+
+            // Update progress: add user to completed list
+            setCampaignProgress(prev => {
+              const current = prev.get(campaignId) || { completedUsers: [], totalUsers: campaign.userIds.length };
+              return new Map(prev).set(campaignId, {
+                ...current,
+                currentUser: null,
+                completedUsers: [...current.completedUsers, user.name || user.username || 'Unknown User']
+              });
+            });
 
             // Update user status to active (in campaign)
             try {
@@ -671,11 +706,19 @@ const Onboard = () => {
         // Mark campaign as sent
         setSentCampaigns(prev => new Set([...prev, campaignId]));
 
+        // Clear progress
+        setCampaignProgress(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(campaignId);
+          return newMap;
+        });
+
         toast.success(`Campaign "${campaign.name}" completed! Messages sent: ${successCount}/${campaign.userIds.length}`);
         if (noChatCount > 0) {
           toast.error(`${noChatCount} user${noChatCount !== 1 ? 's' : ''} skipped (no existing chat)`);
         }
-        fetchCampaigns();
+        // Update only this campaign's status instead of refetching all campaigns
+        updateCampaign(campaignId, { status: 'running' });
       } else {
         toast.error("Campaign completed but status update failed");
       }
@@ -695,6 +738,13 @@ const Onboard = () => {
         const newSet = new Set(prev);
         newSet.delete(campaignId);
         return newSet;
+      });
+
+      // Clear progress
+      setCampaignProgress(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(campaignId);
+        return newMap;
       });
     }
   };
@@ -1260,6 +1310,53 @@ const Onboard = () => {
                           <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                             {campaign.description}
                           </p>
+                        )}
+
+                        {/* Sending Progress */}
+                        {sendingCampaigns.has(campaign._id) && (
+                          (() => {
+                            const progress = campaignProgress.get(campaign._id);
+                            if (progress && progress.currentUser) {
+                              const currentUser = onboardedUsers.find(u => u.name === progress.currentUser || u.username === progress.currentUser);
+                              const completedCount = progress.completedUsers.length;
+                              const totalCount = progress.totalUsers;
+
+                              return (
+                                <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                      {currentUser?.profilePictureData || currentUser?.profilePicture ? (
+                                        <img
+                                          src={currentUser.profilePictureData || currentUser.profilePicture}
+                                          alt={progress.currentUser}
+                                          className="w-8 h-8 rounded-full object-cover border-2 border-orange-300"
+                                          onError={(e) => {
+                                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(progress.currentUser)}&background=fb923c&color=fff&size=32`;
+                                          }}
+                                        />
+                                      ) : (
+                                        <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-semibold text-sm">
+                                          {(progress.currentUser || 'U').charAt(0).toUpperCase()}
+                                        </div>
+                                      )}
+                                      <div>
+                                        <div className="text-sm font-medium text-gray-900">
+                                          Sending to {progress.currentUser}
+                                        </div>
+                                        <div className="text-xs text-gray-600">
+                                          {completedCount + 1} of {totalCount}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()
                         )}
 
                         {/* Campaign Details */}
