@@ -1019,15 +1019,10 @@ const ModashSearch = () => {
       <div className="flex-1 lg:ml-0 overflow-y-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Influencer Search</h1>
-            <p className="text-gray-600">Search for influencers globally using advanced filters</p>
-          </div>
-
-          {/* Search Filters */}
-          <div className="card mb-6">
-            {/* User Search Toggle - Show when AI search is not active */}
-            {!isAISearch && (
-              <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-3xl font-bold text-gray-900">Influencer Search</h1>
+              {/* User Search Toggle - Show when AI search is not active */}
+              {!isAISearch && (
                 <div className="flex items-center space-x-3">
                   <label className="text-sm font-medium text-gray-700">Search By Name</label>
                   <button
@@ -1043,11 +1038,16 @@ const ModashSearch = () => {
                     />
                   </button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+            <p className="text-gray-600">Search for influencers globally using advanced filters</p>
+          </div>
+
+          {/* Search Filters */}
+          <div className="card mb-6">
 
             {/* HR line - Show when both AI and user search are not active */}
-            {!isAISearch && !isUserSearch && <hr className="mb-4 border-gray-300" />}
+            {/* {!isAISearch && !isUserSearch && <hr className="mb-4 border-gray-300" />} */}
 
             {/* AI Search Toggle and Input - Show when user search is not active */}
             {!isUserSearch && (
@@ -1106,12 +1106,15 @@ const ModashSearch = () => {
             {/* User Search input - Show when user search is enabled */}
             {isUserSearch && (
               <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Enter username or full name
+                </label>
                 <input
                   type="text"
                   value={userQuery}
                   onChange={(e) => setUserQuery(e.target.value)}
                   className="input-field w-full"
-                  placeholder="Enter username or full name (e.g., therock, Cristiano Ronaldo)"
+                  placeholder="therock, Cristiano Ronaldo"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Search for influencers by their username or full name. Minimum 2 characters required.
