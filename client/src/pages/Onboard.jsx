@@ -410,10 +410,11 @@ const Onboard = () => {
 
     try {
       // Update the expiration date
+      const expiresAt = new Date(newExpirationDate).toISOString();
       const response = await axios.put(
         `${import.meta.env.VITE_API_URL}/influencers/campaigns/${campaignId}`,
         {
-          expiresAt: new Date(newExpirationDate).toISOString(),
+          expiresAt: expiresAt,
           status: 'draft' // Reset to draft status when renewing
         },
         {
