@@ -673,7 +673,7 @@ const Onboard = () => {
 
         toast.success(`Campaign "${campaign.name}" completed! Messages sent: ${successCount}/${campaign.userIds.length}`);
         if (noChatCount > 0) {
-          toast.warning(`${noChatCount} user${noChatCount !== 1 ? 's' : ''} skipped (no existing chat)`);
+          toast.error(`${noChatCount} user${noChatCount !== 1 ? 's' : ''} skipped (no existing chat)`);
         }
         fetchCampaigns();
       } else {
@@ -681,7 +681,7 @@ const Onboard = () => {
       }
 
       if (failCount > 0) {
-        toast.warning(`Failed to send to ${failCount} user${failCount !== 1 ? 's' : ''}`);
+        toast.error(`Failed to send to ${failCount} user${failCount !== 1 ? 's' : ''}`);
       }
 
     } catch (error) {
