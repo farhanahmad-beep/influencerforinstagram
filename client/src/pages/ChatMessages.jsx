@@ -610,14 +610,14 @@ const ChatMessages = () => {
                       )}
 
                       {/* Debug Info (only in development) */}
-                      {process.env.NODE_ENV === 'development' && (
+                      {/* {process.env.NODE_ENV === 'development' && (
                         <div className={`mt-1 text-xs text-gray-400 ${
                           message.isSender === 1 ? 'text-right' : 'text-left'
                         }`}>
                           {message.id && <span>ID: {message.id}</span>}
                           {message.senderId && <span> • Sender: {message.senderId}</span>}
                         </div>
-                      )}
+                      )} */}
                     </div>
                   </motion.div>
                 ))}
