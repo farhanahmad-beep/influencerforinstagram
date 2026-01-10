@@ -320,7 +320,7 @@ const StatusTracking = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Status Breakdown</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {stats.statusBreakdown.map((status) => (
-                <div key={status._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div key={status._id} className="flex items-center p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl">{getStatusIcon(status._id)}</span>
                     <div>
@@ -328,9 +328,6 @@ const StatusTracking = () => {
                       <p className="text-sm text-gray-500">{status.count} users</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(status._id)}`}>
-                    {status._id}
-                  </span>
                 </div>
               ))}
             </div>
