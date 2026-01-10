@@ -148,8 +148,13 @@ const Navbar = () => {
         <div className="flex flex-col h-screen">
           {/* Logo */}
           <div className="flex items-center justify-center h-16 px-4">
-            <Link to="/dashboard" className="flex items-center" onClick={closeSidebar}>
-              <span className="text-3xl font-bold text-gray-900">InfluencerHub</span>
+            <Link to="/dashboard" className="flex flex-col items-start" onClick={closeSidebar}>
+              <div className="flex flex-col">
+                <span className="text-3xl font-bold text-gray-900 mt-6">InfluencerHub</span>
+                <div className="flex justify-end">
+                  <span className="text-sm text-purple-600 font-medium">Dynamite</span>
+                </div>
+              </div>
             </Link>
           </div>
 
