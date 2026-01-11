@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar.jsx";
+import CampaignMessageModal from "../components/CampaignMessageModal.jsx";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 
@@ -38,6 +39,8 @@ const Onboard = () => {
   const [showRenewModal, setShowRenewModal] = useState(false);
   const [renewingCampaign, setRenewingCampaign] = useState(null);
   const [newExpirationDate, setNewExpirationDate] = useState('');
+  const [showCampaignMessageModal, setShowCampaignMessageModal] = useState(false);
+  const [selectedCampaignForMessage, setSelectedCampaignForMessage] = useState(null);
 
   useEffect(() => {
     fetchOnboardedUsers();
@@ -443,6 +446,11 @@ const Onboard = () => {
     setRenewingCampaign(campaign);
     setNewExpirationDate('');
     setShowRenewModal(true);
+  };
+
+  const handleCampaignMessageClick = (campaign) => {
+    setSelectedCampaignForMessage(campaign);
+    setShowCampaignMessageModal(true);
   };
 
   const handleDeleteCampaign = async (campaignId, campaignName) => {
@@ -1258,16 +1266,27 @@ const Onboard = () => {
                       transition={{ delay: (index % 20) * 0.05 }}
                       className="relative bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200 hover:border-gray-300"
                     >
-                      {/* Delete Icon - Top Right Corner */}
-                      <button
-                        onClick={() => handleDeleteCampaign(campaign._id, campaign.name)}
-                        className="absolute top-3 right-3 p-1.5 bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 rounded-full transition-colors z-10"
-                        title="Delete campaign"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                      {/* Action Buttons - Top Right Corner */}
+                      <div className="absolute top-3 right-3 flex space-x-2 z-10">
+                        <button
+                          onClick={() => handleCampaignMessageClick(campaign)}
+                          className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-500 hover:text-blue-700 rounded-full transition-colors"
+                          title="View campaign message"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCampaign(campaign._id, campaign.name)}
+                          className="p-1.5 bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 rounded-full transition-colors"
+                          title="Delete campaign"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
 
                       <div className="p-6">
                         {/* Header with Title and Status */}
@@ -1519,6 +1538,20 @@ const Onboard = () => {
             )}
           </>
         )}
+
+        {/* Campaign Message Modal */}
+        <CampaignMessageModal
+          isOpen={showCampaignMessageModal}
+          onClose={() => {
+            setShowCampaignMessageModal(false);
+            setSelectedCampaignForMessage(null);
+          }}
+          campaign={selectedCampaignForMessage}
+          users={selectedCampaignForMessage ? onboardedUsers.filter(user =>
+            selectedCampaignForMessage.userIds?.includes(user.userId)
+          ) : []}
+          selectedAccountId={selectedAccountId}
+        />
 
         {/* Create Campaign Modal */}
         {showCreateCampaignModal && (
