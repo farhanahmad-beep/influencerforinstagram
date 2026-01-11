@@ -42,6 +42,7 @@ import {
   refreshInfluencerData,
   deleteInfluencerGrowth,
   getTrackingRegistrations,
+  markNotInterested,
 } from '../controllers/influencerController.js';
 import { protect } from '../middleware/auth.js';
 
@@ -70,6 +71,7 @@ router.get('/stats', protect, getStats);
 router.get('/tracking/registrations', protect, getTrackingRegistrations);
 router.post('/onboard', protect, onboardUser);
 router.post('/offboard', protect, offboardUser);
+router.post('/mark-not-interested', protect, markNotInterested);
 router.get('/onboarded-users', protect, getOnboardedUsers);
 router.delete('/onboarded-users/:userId', protect, deleteOnboardedUser);
 

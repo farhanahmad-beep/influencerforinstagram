@@ -30,6 +30,9 @@ const ChatMessages = () => {
   const [isVerificationCompleted, setIsVerificationCompleted] = useState(false);
   const [onboardingStatus, setOnboardingStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
   const [offboardingStatus, setOffboardingStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
+  const [notInterestedStatus, setNotInterestedStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
+  const [reconsiderStatus, setReconsiderStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
+  const [isOffboarded, setIsOffboarded] = useState(false); // Track if user is offboarded
 
   useEffect(() => {
     if (chatId) {
@@ -136,7 +139,7 @@ const ChatMessages = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-
+    
     if (!accountId) {
       toast.error("Account ID is required to send message");
       return;
@@ -212,16 +215,29 @@ const ChatMessages = () => {
             setIsVerificationCompleted(true);
             setOnboardingStatus('success');
             setOffboardingStatus('idle');
+            setNotInterestedStatus('idle');
+            setIsOffboarded(false);
           } else if (userStatus.status === 'offboarded') {
             // Offboarded users can be re-onboarded
             setIsVerificationCompleted(false);
             setOnboardingStatus('idle');
             setOffboardingStatus('idle');
+            setNotInterestedStatus('idle');
+            setIsOffboarded(true);
+          } else if (userStatus.status === 'not_interested') {
+            // Not interested users stay marked as such
+            setIsVerificationCompleted(false);
+            setOnboardingStatus('idle');
+            setOffboardingStatus('idle');
+            setNotInterestedStatus('success');
+            setIsOffboarded(false);
           } else {
             // Default to contacted state for any other status
             setIsVerificationCompleted(false);
             setOnboardingStatus('idle');
             setOffboardingStatus('idle');
+            setNotInterestedStatus('idle');
+            setIsOffboarded(false);
           }
           return; // Found user status, exit the loop
         }
@@ -237,6 +253,7 @@ const ChatMessages = () => {
     setIsVerificationCompleted(false);
     setOnboardingStatus('idle');
     setOffboardingStatus('idle');
+    setNotInterestedStatus('idle');
   };
 
   const handleOnboard = async () => {
@@ -319,6 +336,7 @@ const ChatMessages = () => {
         setIsVerificationCompleted(false);
         setOnboardingStatus('idle');
         setOffboardingStatus('success');
+        setNotInterestedStatus('idle');
 
         // Refresh user status data
         await checkUserStatus();
@@ -331,6 +349,94 @@ const ChatMessages = () => {
       toast.error(errorMessage);
       setOffboardingStatus('error');
       console.error("Failed to offboard user:", error);
+    }
+  };
+
+  const handleMarkNotInterested = async () => {
+    setNotInterestedStatus('loading');
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/influencers/mark-not-interested`,
+        { userId: userStatusData?.userId || chatId },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message || "User marked as not interested");
+
+        // Update local state
+        setIsVerificationCompleted(false);
+        setOnboardingStatus('idle');
+        setOffboardingStatus('idle');
+        setNotInterestedStatus('success');
+
+        // Refresh user status data
+        await checkUserStatus();
+      } else {
+        toast.error(response.data.error || "Failed to mark user as not interested");
+        setNotInterestedStatus('error');
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || error.message || "Failed to mark user as not interested";
+      toast.error(errorMessage);
+      setNotInterestedStatus('error');
+      console.error("Failed to mark user as not interested:", error);
+    }
+  };
+
+  const handleReconsider = async () => {
+    setReconsiderStatus('loading');
+
+    try {
+      // Update user status back to "contacted"
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/influencers/user-status/contacted`,
+        {
+          userId: userStatusData?.userId || chatId,
+          username: userStatusData?.username,
+          name: userStatusData?.name,
+          profilePicture: userStatusData?.profilePicture,
+          profilePictureData: userStatusData?.profilePictureData,
+          followersCount: userStatusData?.followersCount,
+          followingCount: userStatusData?.followingCount,
+          provider: 'INSTAGRAM',
+          providerId: userStatusData?.providerId || chatId,
+          providerMessagingId: userStatusData?.providerMessagingId,
+          source: userStatusData?.source,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("User status updated to contacted");
+
+        // Reset all local states to allow onboarding/offboarding/not interested again
+        setIsVerificationCompleted(false);
+        setOnboardingStatus('idle');
+        setOffboardingStatus('idle');
+        setNotInterestedStatus('idle');
+        setReconsiderStatus('success');
+        setIsOffboarded(false);
+
+        // Refresh user status data
+        await checkUserStatus();
+      } else {
+        toast.error(response.data.error || "Failed to update user status");
+        setReconsiderStatus('error');
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || error.message || "Failed to update user status";
+      toast.error(errorMessage);
+      setReconsiderStatus('error');
+      console.error("Failed to reconsider user:", error);
+    } finally {
+      // Reset reconsider status after a short delay
+      setTimeout(() => setReconsiderStatus('idle'), 2000);
     }
   };
 
@@ -432,6 +538,15 @@ const ChatMessages = () => {
           <div className="flex items-center justify-between mb-1">
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-900 mb-1">{chatName}</h1>
+              {/* Offboarded User Indicator */}
+              {isOffboarded && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span className="text-sm text-red-700 font-medium">This user was previously offboarded</span>
+                </div>
+              )}
             </div>
           </div>
           {!accountId && (
@@ -450,6 +565,8 @@ const ChatMessages = () => {
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                   onboardingStatus === 'success'
                     ? 'bg-green-100 text-green-800'
+                    : notInterestedStatus === 'success'
+                    ? 'bg-red-100 text-red-800'
                     : isVerificationCompleted
                     ? 'bg-blue-100 text-blue-800'
                     : 'bg-gray-100 text-gray-800'
@@ -460,6 +577,13 @@ const ChatMessages = () => {
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                       Onboarded
+                    </>
+                  ) : notInterestedStatus === 'success' ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      Not Interested
                     </>
                   ) : isVerificationCompleted ? (
                     <>
@@ -481,7 +605,7 @@ const ChatMessages = () => {
 
               {/* Action Section */}
               <div className="space-y-3">
-                {onboardingStatus !== 'success' && (
+                {onboardingStatus !== 'success' && notInterestedStatus !== 'success' && (
                   <div className="flex items-center space-x-4">
                     <label className="flex items-center space-x-2 cursor-pointer">
                       <input
@@ -539,10 +663,59 @@ const ChatMessages = () => {
                     </button>
                   </div>
                 )}
+
+                {notInterestedStatus === 'success' && (
+                  <div className="flex items-center space-x-4">
+                    <div className="text-sm text-gray-600">
+                      This user has been marked as not interested.
+                    </div>
+                    <button
+                      onClick={handleReconsider}
+                      disabled={reconsiderStatus === 'loading'}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        reconsiderStatus === 'loading'
+                          ? 'bg-gray-500 text-white cursor-not-allowed'
+                          : 'bg-orange-600 text-white hover:bg-orange-700'
+                      }`}
+                    >
+                      {reconsiderStatus === 'loading' && (
+                        <span className="flex items-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Updating...
+                        </span>
+                      )}
+                      {reconsiderStatus !== 'loading' && 'Reconsider'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Quick Actions - Available when not onboarded and not marked as not interested */}
+                {onboardingStatus !== 'success' && notInterestedStatus !== 'success' && (
+                  <div className="flex items-center space-x-3 pt-2 border-t border-gray-100">
+                    <span className="text-sm text-gray-500">Quick Actions:</span>
+                    <button
+                      onClick={handleMarkNotInterested}
+                      disabled={notInterestedStatus === 'loading'}
+                      className={`px-3 py-1.5 rounded-lg font-medium text-xs transition-colors ${
+                        notInterestedStatus === 'loading'
+                          ? 'bg-gray-500 text-white cursor-not-allowed'
+                          : 'bg-orange-600 text-white hover:bg-orange-700'
+                      }`}
+                    >
+                      {notInterestedStatus === 'loading' && (
+                        <span className="flex items-center">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                          Processing...
+                        </span>
+                      )}
+                      {notInterestedStatus !== 'loading' && 'Not Interested'}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Error Messages */}
-              {(onboardingStatus === 'error' || offboardingStatus === 'error') && (
+              {(onboardingStatus === 'error' || offboardingStatus === 'error' || notInterestedStatus === 'error' || reconsiderStatus === 'error') && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                   <div className="flex items-center">
                     <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -551,7 +724,11 @@ const ChatMessages = () => {
                     <p className="text-sm text-red-600 font-medium">
                       {onboardingStatus === 'error'
                         ? 'Failed to onboard user. Please try again.'
-                        : 'Failed to offboard user. Please try again.'
+                        : offboardingStatus === 'error'
+                        ? 'Failed to offboard user. Please try again.'
+                        : notInterestedStatus === 'error'
+                        ? 'Failed to mark user as not interested. Please try again.'
+                        : 'Failed to reconsider user. Please try again.'
                       }
                     </p>
                   </div>

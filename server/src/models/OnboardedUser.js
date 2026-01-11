@@ -139,13 +139,13 @@ const userStatusSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['contacted', 'onboarded', 'active'],
+      enum: ['contacted', 'onboarded', 'active', 'offboarded', 'not_interested'],
       default: 'contacted',
     },
     statusHistory: [{
       status: {
         type: String,
-        enum: ['contacted', 'onboarded', 'active'],
+        enum: ['contacted', 'onboarded', 'active', 'offboarded', 'not_interested'],
         required: true,
       },
       timestamp: {

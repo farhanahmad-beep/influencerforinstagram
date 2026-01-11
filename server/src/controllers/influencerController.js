@@ -2655,6 +2655,41 @@ export const getOnboardedUsers = async (req, res) => {
   }
 };
 
+// Mark user as not interested
+export const markNotInterested = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'userId is required',
+        statusCode: 400,
+      });
+    }
+
+    // Update user status to not_interested
+    await UserStatus.findOneAndUpdate(
+      { userId: userId },
+      { status: 'not_interested' },
+      { upsert: true, new: true }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'User marked as not interested',
+    });
+  } catch (error) {
+    console.error('Error marking user as not interested:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to mark user as not interested',
+      statusCode: 500,
+      message: error.message,
+    });
+  }
+};
+
 // Offboard a user (update status to offboarded and remove from onboarded users)
 export const offboardUser = async (req, res) => {
   try {
@@ -3030,6 +3065,9 @@ export const updateUserStatus = async (req, res) => {
       if (providerId !== undefined) userStatus.providerId = providerId;
       if (providerMessagingId !== undefined) userStatus.providerMessagingId = providerMessagingId;
       if (source !== undefined) userStatus.source = source;
+
+      // Always set status to contacted when this endpoint is called
+      userStatus.status = 'contacted';
 
       userStatus.lastContacted = new Date();
       userStatus.lastMessageSent = new Date();

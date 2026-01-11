@@ -200,6 +200,13 @@ const StatusTracking = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M6 18L18 6M6 6l12 12" opacity="0.6" />
           </svg>
         );
+      case 'not_interested':
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="#f97316" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" fill="#f97316" fillOpacity="0.1" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" opacity="0.6" />
+          </svg>
+        );
       default:
         return (
           <svg className="w-5 h-5" fill="none" stroke="#6b7280" viewBox="0 0 24 24">
@@ -220,6 +227,8 @@ const StatusTracking = () => {
         return 'bg-purple-100 text-purple-800';
       case 'offboarded':
         return 'bg-red-100 text-red-800';
+      case 'not_interested':
+        return 'bg-orange-100 text-orange-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -333,7 +342,7 @@ const StatusTracking = () => {
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl">{getStatusIcon(status._id)}</span>
                     <div>
-                      <p className="font-medium text-gray-900 capitalize">{status._id}</p>
+                      <p className="font-medium text-gray-900 capitalize">{status._id.replace(/_/g, ' ')}</p>
                       <p className="text-sm text-gray-500">{status.count} users</p>
                     </div>
                   </div>
@@ -358,6 +367,7 @@ const StatusTracking = () => {
                 <option value="onboarded">Onboarded</option>
                 <option value="active">Active</option>
                 <option value="offboarded">Offboarded</option>
+                <option value="not_interested">Not Interested</option>
               </select>
             </div>
             <div>
@@ -469,15 +479,15 @@ const StatusTracking = () => {
                     </div>
 
                     <div className="w-full">
-                      <div className="flex items-center justify-center space-x-2 mb-1">
-                        <h3 className="text-sm font-semibold text-gray-900 truncate">
-                          {user.name || user.username || 'Unknown'}
-                        </h3>
+                      <h3 className="text-sm font-semibold text-gray-900 truncate mb-1">
+                        {user.name || user.username || 'Unknown'}
+                      </h3>
+                      <p className="text-xs text-gray-500 mb-2">@{user.username}</p>
+                      <div className="flex justify-center mb-2">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}>
-                          {user.status}
+                          {user.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500 mb-2">@{user.username}</p>
 
                       {(user.followersCount > 0 || user.followingCount > 0) && (
                         <div className="flex items-center justify-center space-x-4 mb-2 text-xs text-gray-600">

@@ -470,47 +470,47 @@ const ChatList = () => {
         {/* Account Selection and Search Filter */}
         <div className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Account Selection */}
+        {/* Account Selection */}
             <div className="card">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Select Account
-                  </label>
-                  {loadingAccounts ? (
-                    <div className="input-field flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
-                      <span className="text-sm text-gray-500">Loading accounts...</span>
-                    </div>
-                  ) : linkedAccounts.length > 0 ? (
-                    <select
-                      value={selectedAccountId}
-                      onChange={(e) => {
-                        setSelectedAccountId(e.target.value);
-                        setChats([]);
-                        setPagination({
-                          cursor: null,
-                          hasMore: false,
-                          count: 0,
-                          limit: 10,
-                        });
-                      }}
-                      className="input-field"
-                    >
-                      {linkedAccounts.map((account) => (
-                        <option key={account.id} value={account.id}>
-                          @{account.username} - {account.id}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <p className="text-sm text-gray-500">
-                      No linked accounts found. Please add a linked account first.
-                    </p>
-                  )}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Select Account
+              </label>
+              {loadingAccounts ? (
+                <div className="input-field flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
+                  <span className="text-sm text-gray-500">Loading accounts...</span>
                 </div>
-              </div>
+              ) : linkedAccounts.length > 0 ? (
+                <select
+                  value={selectedAccountId}
+                  onChange={(e) => {
+                    setSelectedAccountId(e.target.value);
+                    setChats([]);
+                    setPagination({
+                      cursor: null,
+                      hasMore: false,
+                      count: 0,
+                      limit: 10,
+                    });
+                  }}
+                  className="input-field"
+                >
+                  {linkedAccounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      @{account.username} - {account.id}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No linked accounts found. Please add a linked account first.
+                </p>
+              )}
             </div>
+          </div>
+        </div>
 
             {/* Search Filter */}
             {
@@ -525,7 +525,7 @@ const ChatList = () => {
                         <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                      </div>
+              </div>
                       <input
                         type="text"
                         placeholder="Search chats by name, username, or ID..."
@@ -541,22 +541,22 @@ const ChatList = () => {
                           >
                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                  </svg>
                           </button>
+                </div>
+                          )}
                         </div>
-                      )}
-                    </div>
                     {searchQuery && (
                       <div className="mt-2 text-sm text-gray-600">
                         Found <span className="font-semibold">{filteredChats.length}</span> of <span className="font-semibold">{chats.length}</span> chats
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+                                </div>
+                              </div>
             }
-          </div>
-        </div>
+                              </div>
+                        </div>
 
         {/* Results */}
         {loading && chats.length === 0 ? (
@@ -715,14 +715,18 @@ const ChatList = () => {
                           ? 'bg-green-100 text-green-800'
                           : chat.userStatus === 'offboarded'
                           ? 'bg-red-100 text-red-800'
+                          : chat.userStatus === 'not_interested'
+                          ? 'bg-orange-100 text-orange-800'
                           : 'bg-blue-100 text-blue-800'
                       }`}>
                         {chat.userStatus === 'onboarded'
                           ? 'Onboarded'
                           : chat.userStatus === 'offboarded'
                           ? 'Offboarded'
+                          : chat.userStatus === 'not_interested'
+                          ? 'Not Interested'
                           : 'Contacted'}
-                      </div>
+                        </div>
                       <span className="text-xs text-gray-500">
                         {formatDate(chat.timestamp)}
                       </span>
