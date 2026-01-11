@@ -1268,15 +1268,17 @@ const Onboard = () => {
                     >
                       {/* Action Buttons - Top Right Corner */}
                       <div className="absolute top-3 right-3 flex space-x-2 z-10">
-                        <button
-                          onClick={() => handleCampaignMessageClick(campaign)}
-                          className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-500 hover:text-blue-700 rounded-full transition-colors"
-                          title="View campaign message"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                          </svg>
-                        </button>
+                        {campaign.status !== 'draft' && (
+                          <button
+                            onClick={() => handleCampaignMessageClick(campaign)}
+                            className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-500 hover:text-blue-700 rounded-full transition-colors"
+                            title="View campaign message"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDeleteCampaign(campaign._id, campaign.name)}
                           className="p-1.5 bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 rounded-full transition-colors"
