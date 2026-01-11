@@ -418,7 +418,7 @@ const Onboard = () => {
         `${import.meta.env.VITE_API_URL}/influencers/campaigns/${campaignId}`,
         {
           expiresAt: expiresAt,
-          status: 'draft' // Reset to draft status when renewing
+          status: 'ready' // Reset to ready status when renewing
         },
         {
           withCredentials: true,
@@ -430,7 +430,7 @@ const Onboard = () => {
         setShowRenewModal(false);
         setRenewingCampaign(null);
         setNewExpirationDate('');
-        updateCampaign(campaignId, { expiresAt: expiresAt, status: 'draft' });
+        updateCampaign(campaignId, { expiresAt: expiresAt, status: 'ready' });
       } else {
         toast.error(response.data.error || "Failed to renew campaign");
       }
@@ -539,7 +539,7 @@ const Onboard = () => {
             <path d="M5 7V17" stroke="#10B981" strokeWidth="2" strokeLinecap="round"/>
           </svg>
         );
-      case 'draft':
+      case 'ready':
         return (
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
             <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V9L13 4H11Z" fill="#F59E0B" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1268,7 +1268,7 @@ const Onboard = () => {
                     >
                       {/* Action Buttons - Top Right Corner */}
                       <div className="absolute top-3 right-3 flex space-x-2 z-10">
-                        {campaign.status !== 'draft' && (
+                        {campaign.status !== 'ready' && (
                           <button
                             onClick={() => handleCampaignMessageClick(campaign)}
                             className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-500 hover:text-blue-700 rounded-full transition-colors"
@@ -1411,7 +1411,7 @@ const Onboard = () => {
 
                         {/* Action Buttons */}
                         <div className="flex flex-col space-y-2">
-                          {campaign.status === 'draft' && (
+                          {campaign.status === 'ready' && (
                             <button
                               onClick={() => {
                                 if (!selectedAccountId) {
@@ -1793,7 +1793,7 @@ const Onboard = () => {
             >
               <h2 className="text-xl font-bold text-gray-900 mb-4">Renew Campaign</h2>
               <p className="text-gray-600 mb-4">
-                Renew "{renewingCampaign.name}" by setting a new expiration date. The campaign will be reset to draft status.
+                Renew "{renewingCampaign.name}" by setting a new expiration date. The campaign will be reset to ready status.
               </p>
 
               <form onSubmit={(e) => {

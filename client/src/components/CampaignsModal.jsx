@@ -68,7 +68,7 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
         return 'bg-blue-100 text-blue-800';
       case 'expired':
         return 'bg-red-100 text-red-800';
-      case 'draft':
+      case 'ready':
         return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -83,7 +83,7 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
         return '✅';
       case 'expired':
         return '⏰';
-      case 'draft':
+      case 'ready':
         return '📝';
       default:
         return '❓';
@@ -103,7 +103,7 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
   // Filter campaigns based on active tab
   const filteredCampaigns = campaigns.filter(campaign => {
     if (activeTab === 'active') {
-      return campaign.status === 'running' || campaign.status === 'draft';
+      return campaign.status === 'running' || campaign.status === 'ready';
     } else {
       return campaign.status === 'completed' || campaign.status === 'expired';
     }
@@ -141,7 +141,7 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Active Campaigns ({campaigns.filter(c => c.status === 'running' || c.status === 'draft').length})
+              Active Campaigns ({campaigns.filter(c => c.status === 'running' || c.status === 'ready').length})
             </button>
             <button
               onClick={() => setActiveTab('completed')}
@@ -181,7 +181,7 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
               </h3>
               <p className="text-gray-500">
                 {activeTab === 'active'
-                  ? "No campaigns are currently running or in draft status."
+                  ? "No campaigns are currently running or in ready status."
                   : "No campaigns have been completed yet."}
               </p>
             </div>
