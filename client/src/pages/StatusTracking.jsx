@@ -193,6 +193,13 @@ const StatusTracking = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M13 10V3L4 14h7v7l9-11h-7z" opacity="0.6" />
           </svg>
         );
+      case 'offboarded':
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="#ef4444" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" fill="#ef4444" fillOpacity="0.1" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M6 18L18 6M6 6l12 12" opacity="0.6" />
+          </svg>
+        );
       default:
         return (
           <svg className="w-5 h-5" fill="none" stroke="#6b7280" viewBox="0 0 24 24">
@@ -211,6 +218,8 @@ const StatusTracking = () => {
         return 'bg-green-100 text-green-800';
       case 'active':
         return 'bg-purple-100 text-purple-800';
+      case 'offboarded':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -348,6 +357,7 @@ const StatusTracking = () => {
                 <option value="contacted">Contacted</option>
                 <option value="onboarded">Onboarded</option>
                 <option value="active">Active</option>
+                <option value="offboarded">Offboarded</option>
               </select>
             </div>
             <div>

@@ -430,65 +430,8 @@ const ChatMessages = () => {
             ← Back to Chat List
           </button>
           <div className="flex items-center justify-between mb-1">
-            <div>
+            <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-900 mb-1">{chatName}</h1>
-              <div className="flex items-center space-x-4">
-                <p className="text-gray-600">Chat ID: {chatId}</p>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isVerificationCompleted}
-                    onChange={(e) => setIsVerificationCompleted(e.target.checked)}
-                    disabled={onboardingStatus === 'success'}
-                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  />
-                  <span className="text-sm font-medium text-gray-700">Verification Completed</span>
-                </label>
-                {isVerificationCompleted && (
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={handleOnboard}
-                      disabled={onboardingStatus === 'loading' || onboardingStatus === 'success'}
-                      className={`px-3 py-1 rounded-lg font-medium text-xs transition-colors ${
-                        onboardingStatus === 'success'
-                          ? 'bg-green-600 text-white cursor-not-allowed'
-                          : onboardingStatus === 'loading'
-                          ? 'bg-gray-500 text-white cursor-not-allowed'
-                          : 'bg-purple-600 text-white hover:bg-purple-700'
-                      }`}
-                    >
-                      {onboardingStatus === 'loading' && (
-                        <span className="flex items-center">
-                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                          Onboarding...
-                        </span>
-                      )}
-                      {onboardingStatus === 'success' && 'Onboarded'}
-                      {onboardingStatus === 'idle' && 'Onboard'}
-                      {onboardingStatus === 'error' && 'Retry'}
-                    </button>
-                    {onboardingStatus === 'success' && (
-                      <button
-                        onClick={handleOffboard}
-                        disabled={offboardingStatus === 'loading'}
-                        className={`px-3 py-1 rounded-lg font-medium text-xs transition-colors ${
-                          offboardingStatus === 'loading'
-                            ? 'bg-gray-500 text-white cursor-not-allowed'
-                            : 'bg-red-600 text-white hover:bg-red-700'
-                        }`}
-                      >
-                        {offboardingStatus === 'loading' && (
-                          <span className="flex items-center">
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-                            Offboarding...
-                          </span>
-                        )}
-                        {offboardingStatus !== 'loading' && 'Offboard'}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
             </div>
           </div>
           {!accountId && (
@@ -498,6 +441,125 @@ const ChatMessages = () => {
           )}
         </div>
 
+        {/* User Status Management */}
+        <div className="card mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              {/* Status Indicator */}
+              <div className="flex items-center space-x-3 mb-4">
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  onboardingStatus === 'success'
+                    ? 'bg-green-100 text-green-800'
+                    : isVerificationCompleted
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {onboardingStatus === 'success' ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Onboarded
+                    </>
+                  ) : isVerificationCompleted ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Verified
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      Not Verified
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Section */}
+              <div className="space-y-3">
+                {onboardingStatus !== 'success' && (
+                  <div className="flex items-center space-x-4">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isVerificationCompleted}
+                        onChange={(e) => setIsVerificationCompleted(e.target.checked)}
+                        className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-gray-700 font-medium">Mark user as verified</span>
+                    </label>
+
+                    {isVerificationCompleted && (
+                      <button
+                        onClick={handleOnboard}
+                        disabled={onboardingStatus === 'loading'}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                          onboardingStatus === 'loading'
+                            ? 'bg-gray-500 text-white cursor-not-allowed'
+                            : 'bg-purple-600 text-white hover:bg-purple-700'
+                        }`}
+                      >
+                        {onboardingStatus === 'loading' && (
+                          <span className="flex items-center">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Onboarding...
+                          </span>
+                        )}
+                        {onboardingStatus !== 'loading' && 'Onboard User'}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {onboardingStatus === 'success' && (
+                  <div className="flex items-center space-x-4">
+                    <div className="text-sm text-gray-600">
+                      This user has been successfully onboarded.
+                    </div>
+                    <button
+                      onClick={handleOffboard}
+                      disabled={offboardingStatus === 'loading'}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        offboardingStatus === 'loading'
+                          ? 'bg-gray-500 text-white cursor-not-allowed'
+                          : 'bg-red-600 text-white hover:bg-red-700'
+                      }`}
+                    >
+                      {offboardingStatus === 'loading' && (
+                        <span className="flex items-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Offboarding...
+                        </span>
+                      )}
+                      {offboardingStatus !== 'loading' && 'Offboard User'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Error Messages */}
+              {(onboardingStatus === 'error' || offboardingStatus === 'error') && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-sm text-red-600 font-medium">
+                      {onboardingStatus === 'error'
+                        ? 'Failed to onboard user. Please try again.'
+                        : 'Failed to offboard user. Please try again.'
+                      }
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         {loading && messages.length === 0 ? (
           <div className="flex justify-center items-center py-8">
@@ -539,7 +601,7 @@ const ChatMessages = () => {
             </div>
 
             {/* Chat Messages Container */}
-            <div className="bg-white rounded-lg border border-gray-200 min-h-[400px] max-h-[450px] overflow-y-auto p-4 mb-2">
+            <div className="bg-white rounded-lg border border-gray-200 min-h-[360px] max-h-[450px] overflow-y-auto p-4 mb-2">
               <div className="space-y-3">
                 {messages.map((message, index) => (
                   <motion.div
