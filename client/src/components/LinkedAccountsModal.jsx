@@ -88,7 +88,7 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Linked Accounts</h2>
+            <h2 className="text-2xl font-bold text-secondary-900">Linked Accounts</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
@@ -99,13 +99,13 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
             </button>
           </div>
 
-          <p className="text-gray-600 mb-6">
+          <p className="text-secondary-600 mb-6">
             Manage your connected social media accounts
           </p>
 
           {loadingAccounts ? (
             <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
             </div>
           ) : linkedAccounts.length === 0 ? (
             <div className="text-center py-8">
@@ -124,8 +124,8 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Linked Accounts</h3>
-              <p className="text-gray-500">
+              <h3 className="text-lg font-medium text-secondary-900 mb-2">No Linked Accounts</h3>
+              <p className="text-secondary-500">
                 You don't have any accounts linked
               </p>
             </div>
@@ -134,7 +134,7 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
               {linkedAccounts.map((account, index) => (
                 <div
                   key={account.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  className="border border-secondary-200 rounded-lg p-4 hover-lift"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center space-x-3">
@@ -163,7 +163,7 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
                           }}
                         />
                         <div
-                          className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center"
+                          className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center"
                           style={{
                             display: (
                               accountProfiles[account.id]?.profilePictureData ||
@@ -172,14 +172,14 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
                             ) ? 'none' : 'flex'
                           }}
                         >
-                          <span className="text-purple-600 font-bold text-sm">
+                            <span className="text-primary-600 font-bold text-sm">
                             {accountProfiles[account.id]?.fullName?.charAt(0)?.toUpperCase() || account.name?.charAt(0)?.toUpperCase() || "A"}
                           </span>
                         </div>
                       </div>
                       <div>
                         <div className="flex items-center space-x-1">
-                          <h4 className="text-base font-semibold text-gray-900">
+                          <h4 className="text-base font-semibold text-secondary-900">
                             {accountProfiles[account.id]?.fullName || account.name}
                           </h4>
                           {accountProfiles[account.id]?.isVerified && (
@@ -193,7 +193,7 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-secondary-500">
                           @{accountProfiles[account.id]?.publicIdentifier || account.username}
                         </p>
                       </div>
@@ -202,31 +202,31 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
 
                   {loadingProfiles[account.id] ? (
                     <div className="flex justify-center py-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
                     </div>
                   ) : accountProfiles[account.id] ? (
                     <>
                       {accountProfiles[account.id].biography && (
-                        <p className="text-sm text-gray-700 mb-3 line-clamp-2">
+                        <p className="text-sm text-secondary-700 mb-3 line-clamp-2">
                           {accountProfiles[account.id].biography}
                         </p>
                       )}
 
                       <div className="grid grid-cols-3 gap-2 mb-3">
                         <div className="text-center">
-                          <p className="text-sm font-semibold text-purple-600">
+                          <p className="text-sm font-semibold text-primary-600">
                             {formatNumber(accountProfiles[account.id].followersCount)}
                           </p>
                           <p className="text-xs text-gray-500">Followers</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-sm font-semibold text-purple-600">
+                          <p className="text-sm font-semibold text-primary-600">
                             {formatNumber(accountProfiles[account.id].followingCount)}
                           </p>
                           <p className="text-xs text-gray-500">Following</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-sm font-semibold text-purple-600">
+                          <p className="text-sm font-semibold text-primary-600">
                             {formatNumber(accountProfiles[account.id].postsCount)}
                           </p>
                           <p className="text-xs text-gray-500">Posts</p>
@@ -261,11 +261,11 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className="mt-6 pt-4 border-t border-secondary-200">
             <div className="flex justify-end">
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="btn-secondary"
               >
                 Close
               </button>

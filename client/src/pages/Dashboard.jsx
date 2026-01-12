@@ -133,33 +133,33 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-secondary-50 flex overflow-hidden">
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
+        <div className="content-container section-spacing lg:pt-4 pt-16">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-secondary-900 mb-2">
             Dashboard
           </h1>
-          <p className="text-gray-600">
+          <p className="text-secondary-600">
             Real-time stats for your account activity
           </p>
         </div>
 
         {loading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             <div
-              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              className="card flex items-center justify-between cursor-pointer hover-lift"
               onClick={handleLinkedAccountsClick}
             >
               <div className="flex-1">
-                <p className="text-sm text-gray-500">Total Linked Accounts</p>
-                <p className="text-3xl font-bold text-purple-700 mt-2">{stats.linkedAccounts}</p>
-                <p className="text-xs text-gray-400 mt-1">Updated every 30 minutes</p>
+                <p className="text-sm text-secondary-500">Total Linked Accounts</p>
+                <p className="text-3xl font-bold text-primary-700 mt-2">{stats.linkedAccounts}</p>
+                <p className="text-xs text-secondary-400 mt-1">Updated every 30 minutes</p>
               </div>
               <div className="w-20 h-12 ml-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -167,7 +167,7 @@ const Dashboard = () => {
                     <Line
                       type="monotone"
                       dataKey="value"
-                      stroke="#8b5cf6"
+                      stroke="#2563eb"
                       strokeWidth={2}
                       dot={false}
                       activeDot={{ r: 4 }}
@@ -177,13 +177,13 @@ const Dashboard = () => {
               </div>
             </div>
             <div
-              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              className="card flex items-center justify-between cursor-pointer hover-lift"
               onClick={() => setShowChatListModal(true)}
             >
               <div className="flex-1">
-                <p className="text-sm text-gray-500">Messages Sent</p>
-                <p className="text-3xl font-bold text-purple-700 mt-2">{stats.messagesSent}</p>
-                <p className="text-xs text-gray-400 mt-1">Total messages sent</p>
+                <p className="text-sm text-secondary-500">Messages Sent</p>
+                <p className="text-3xl font-bold text-primary-700 mt-2">{stats.messagesSent}</p>
+                <p className="text-xs text-secondary-400 mt-1">Total messages sent</p>
               </div>
               <div className="w-20 h-12 ml-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -215,14 +215,14 @@ const Dashboard = () => {
               </div>
             </div>
             <div
-              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              className="card flex items-center justify-between cursor-pointer hover-lift"
               onClick={() => setShowOnboardedUsersModal(true)}
             >
               <div className="flex-1">
                 {/* onboarded user details */}
-                <p className="text-sm text-gray-500">User who show interest</p>
-                <p className="text-3xl font-bold text-purple-700 mt-2">{stats.onboardedUsers}</p>
-                <p className="text-xs text-gray-400 mt-1">Total users who show interest</p>
+                <p className="text-sm text-secondary-500">User who show interest</p>
+                <p className="text-3xl font-bold text-primary-700 mt-2">{stats.onboardedUsers}</p>
+                <p className="text-xs text-secondary-400 mt-1">Total users who show interest</p>
               </div>
               <div className="w-20 h-12 ml-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -240,16 +240,16 @@ const Dashboard = () => {
               </div>
             </div>
             <div
-              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              className="card flex items-center justify-between cursor-pointer hover-lift"
               onClick={() => {
                 setCampaignsModalTab('active');
                 setShowCampaignsModal(true);
               }}
             >
               <div className="flex-1">
-                <p className="text-sm text-gray-500">Active Campaigns</p>
-                <p className="text-3xl font-bold text-purple-700 mt-2">{stats.activeCampaigns}</p>
-                <p className="text-xs text-gray-400 mt-1">Currently running</p>
+                <p className="text-sm text-secondary-500">Active Campaigns</p>
+                <p className="text-3xl font-bold text-primary-700 mt-2">{stats.activeCampaigns}</p>
+                <p className="text-xs text-secondary-400 mt-1">Currently running</p>
               </div>
               <div className="w-20 h-12 ml-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -267,16 +267,16 @@ const Dashboard = () => {
               </div>
             </div>
             <div
-              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              className="card flex items-center justify-between cursor-pointer hover-lift"
               onClick={() => {
                 setCampaignsModalTab('completed');
                 setShowCampaignsModal(true);
               }}
             >
               <div className="flex-1">
-                <p className="text-sm text-gray-500">Completed Campaigns</p>
-                <p className="text-3xl font-bold text-green-600 mt-2">{stats.completedCampaigns}</p>
-                <p className="text-xs text-gray-400 mt-1">Successfully completed</p>
+                <p className="text-sm text-secondary-500">Completed Campaigns</p>
+                <p className="text-3xl font-bold text-success-600 mt-2">{stats.completedCampaigns}</p>
+                <p className="text-xs text-secondary-400 mt-1">Successfully completed</p>
               </div>
               <div className="w-20 h-12 ml-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -294,13 +294,13 @@ const Dashboard = () => {
               </div>
             </div>
             <div
-              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              className="card flex items-center justify-between cursor-pointer hover-lift"
               onClick={() => navigate('/registration-details')}
             >
               <div className="flex-1">
-                <p className="text-sm text-gray-500">Total Registrations on Dynamite</p>
-                <p className="text-3xl font-bold text-purple-700 mt-2">{stats.trackingRegistrations || 0}</p>
-                <p className="text-xs text-gray-400 mt-1">Users who Register Through Campaign</p>
+                <p className="text-sm text-secondary-500">Total Registrations on Dynamite</p>
+                <p className="text-3xl font-bold text-primary-700 mt-2">{stats.trackingRegistrations || 0}</p>
+                <p className="text-xs text-secondary-400 mt-1">Users who Register Through Campaign</p>
               </div>
               <div className="w-20 h-12 ml-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -318,16 +318,16 @@ const Dashboard = () => {
                     </div>
                   </div>
             <div
-              className="card flex items-center justify-between cursor-pointer hover:shadow-lg transition-shadow"
+              className="card flex items-center justify-between cursor-pointer hover-lift"
               onClick={() => setShowPlatformGrowthModal(true)}
             >
               <div className="flex-1">
-                <p className="text-sm text-gray-500">Top Performing Platform</p>
+                <p className="text-sm text-secondary-500">Top Performing Platform</p>
                 <div className="mt-2">
                   <p className="text-xl font-bold text-gray-900">Instagram</p>
                   <p className="text-sm text-green-600">68% Growth</p>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">Highest engagement platform</p>
+                <p className="text-xs text-secondary-400 mt-1">Highest engagement platform</p>
                 </div>
               <div className="w-20 h-12 ml-4">
                 <ResponsiveContainer width="100%" height="100%">

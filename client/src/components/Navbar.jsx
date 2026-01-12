@@ -114,10 +114,10 @@ const Navbar = () => {
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={toggleSidebar}
-          className="bg-white p-2 rounded-md shadow-md hover:bg-gray-50 transition-colors"
+          className="bg-white p-2 rounded-md shadow-medium hover:bg-secondary-50 transition-colors focus-ring"
         >
           <svg
-            className="w-6 h-6 text-gray-700"
+            className="w-6 h-6 text-secondary-700"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -150,9 +150,9 @@ const Navbar = () => {
           <div className="flex items-center justify-center h-16 px-4">
             <Link to="/dashboard" className="flex flex-col items-start" onClick={closeSidebar}>
               <div className="flex flex-col">
-                <span className="text-3xl font-bold text-gray-900 mt-6">InfluencerHub</span>
+                <span className="text-3xl font-bold text-secondary-900 mt-6">InfluencerHub</span>
                 <div className="flex justify-end">
-                  <span className="text-sm text-purple-600 font-medium">Dynamite</span>
+                  <span className="text-sm text-primary-600 font-medium">Dynamite</span>
                 </div>
               </div>
             </Link>
@@ -166,10 +166,10 @@ const Navbar = () => {
                 to={item.path}
                 onClick={closeSidebar}
                 className={`
-                  flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors
+                  flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200
                   ${isActive(item.path)
-                    ? 'bg-purple-100 text-purple-700 border-r-4 border-purple-700'
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-purple-600'
+                    ? 'bg-primary-100 text-primary-700 border-r-4 border-primary-700 shadow-soft'
+                    : 'text-secondary-700 hover:bg-secondary-100 hover:text-primary-600'
                   }
                 `}
               >
@@ -180,18 +180,18 @@ const Navbar = () => {
           </nav>
 
           {/* User Info & Logout */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-secondary-200">
             <div className="flex items-center mb-4">
-              <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+              <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm hover-scale">
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
-              <span className="ml-3 text-sm font-medium text-gray-700 truncate">
+              <span className="ml-3 text-sm font-medium text-secondary-700 truncate">
                 {user?.name}
               </span>
             </div>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+              className="w-full btn-error flex items-center justify-center"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

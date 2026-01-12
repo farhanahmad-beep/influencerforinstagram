@@ -161,13 +161,13 @@ const InfluencerGrowth = () => {
       const data = payload[0].payload;
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-medium text-gray-900 mb-2">{label}</p>
+          <p className="font-medium text-secondary-900 mb-2">{label}</p>
           {data.timeDiff && (
-            <p className="text-xs text-gray-500 mb-2">Time since previous: +{data.timeDiff}</p>
+            <p className="text-xs text-secondary-500 mb-2">Time since previous: +{data.timeDiff}</p>
           )}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-purple-600 font-medium">Followers:</span>
+              <span className="text-primary-600 font-medium">Followers:</span>
               <span className="ml-2">
                 {data.followers.toLocaleString()}
                 {data.followersDiff !== null && (
@@ -325,24 +325,24 @@ const InfluencerGrowth = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-secondary-50 flex overflow-hidden">
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
+        <div className="content-container section-spacing lg:pt-4 pt-16">
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Influencer Growth Tracking</h1>
-                <p className="text-gray-600">
-                  Monitor follower and engagement growth for influencers you've contacted
-                </p>
-              </div>
+            <div>
+              <h1 className="text-3xl font-bold text-secondary-900 mb-2">Influencer Growth Tracking</h1>
+              <p className="text-secondary-600">
+                Monitor follower and engagement growth for influencers you've contacted
+              </p>
+            </div>
               {!loading && influencers.length > 0 && (
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={handleRefreshAllInfluencers}
                     disabled={isGlobalRefreshing}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                    className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                   >
                     {isGlobalRefreshing ? (
                       <>
@@ -364,25 +364,25 @@ const InfluencerGrowth = () => {
                   {isDeleteMode && (
                     <button
                       onClick={selectAllInfluencers}
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                      className="btn-secondary"
                     >
                       {selectedInfluencersForDelete.size === influencers.length ? 'Deselect All' : 'Select All'}
                     </button>
                   )}
                   <button
                     onClick={() => setIsDeleteMode(!isDeleteMode)}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
-                      isDeleteMode
-                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        : 'bg-red-600 text-white hover:bg-red-700'
-                    }`}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    isDeleteMode
+                      ? 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
+                      : 'bg-error-600 text-white hover:bg-error-700'
+                  }`}
                   >
                     {isDeleteMode ? 'Cancel Delete' : 'Delete Users'}
                   </button>
                   {isDeleteMode && selectedInfluencersForDelete.size > 0 && (
                     <button
                       onClick={() => setShowDeleteModal(true)}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      className="btn-error"
                     >
                       Delete Selected ({selectedInfluencersForDelete.size})
                     </button>
@@ -393,13 +393,13 @@ const InfluencerGrowth = () => {
 
             {/* Filters Section */}
             {!loading && influencers.length > 0 && (
-              <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6">
+              <div className="card mb-6">
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                   {/* Search Input */}
                   <div className="flex-1 max-w-md">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-5 w-5 text-secondary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                       </div>
@@ -408,14 +408,14 @@ const InfluencerGrowth = () => {
                         placeholder="Search influencers by name..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-sm"
+                        className="input-field pl-10 pr-3 py-2 text-sm"
                       />
                     </div>
                   </div>
 
                   {/* Top Performer Filter */}
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-700">Show:</span>
+                    <span className="text-sm font-medium text-secondary-700">Show:</span>
                     <div className="flex space-x-1">
                       {[
                         { value: "all", label: "All" },
@@ -428,8 +428,8 @@ const InfluencerGrowth = () => {
                           onClick={() => setTopFilter(option.value)}
                           className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                             topFilter === option.value
-                              ? 'bg-purple-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
                           }`}
                         >
                           {option.label}
@@ -441,25 +441,25 @@ const InfluencerGrowth = () => {
 
                 {/* Active Filters Display */}
                 {(searchTerm || topFilter !== "all") && (
-                  <div className="mt-3 flex items-center space-x-2 text-sm text-gray-600">
+                  <div className="mt-3 flex items-center space-x-2 text-sm text-secondary-600">
                     <span>Active filters:</span>
                     {searchTerm && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                      <span className="badge-info">
                         Name: "{searchTerm}"
                         <button
                           onClick={() => setSearchTerm("")}
-                          className="ml-1 text-blue-600 hover:text-blue-800"
+                          className="ml-1 text-primary-600 hover:text-primary-800"
                         >
                           ×
                         </button>
                       </span>
                     )}
                     {topFilter !== "all" && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-800">
+                      <span className="badge-success">
                         Top {topFilter}
                         <button
                           onClick={() => setTopFilter("all")}
-                          className="ml-1 text-green-600 hover:text-green-800"
+                          className="ml-1 text-success-600 hover:text-success-800"
                         >
                           ×
                         </button>
@@ -473,7 +473,7 @@ const InfluencerGrowth = () => {
 
           {loading ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
             </div>
           ) : influencers.length === 0 ? (
             <motion.div
@@ -496,8 +496,8 @@ const InfluencerGrowth = () => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Growth Data Yet</h3>
-              <p className="text-gray-500">
+              <h3 className="text-lg font-medium text-secondary-900 mb-2">No Growth Data Yet</h3>
+              <p className="text-secondary-500">
                 Start sending messages to influencers from Global Search to begin tracking their growth.
               </p>
             </motion.div>
@@ -534,23 +534,20 @@ const InfluencerGrowth = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className={`card hover:shadow-lg transition-shadow relative ${
+                    className={`card hover-lift relative ${
                       isDeleteMode ? 'cursor-default' : 'cursor-pointer'
-                    } ${index === 0 ? 'border-2 border-yellow-400' : ''}`}
+                    } ${index === 0 ? 'border-2 border-warning-400' : ''}`}
                     onClick={() => !isDeleteMode && setSelectedInfluencer(influencer)}
                   >
                     {/* Ranking Badge - Only show for top 10 */}
                     {index < 10 && (
                       <div className="absolute top-4 right-16 z-10">
                         <div className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center space-x-1 ${
-                          index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white' :
-                          index === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-500 text-white' :
-                          index === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-600 text-white' :
-                          'bg-gray-200 text-gray-700'
+                          index === 0 ? 'bg-gradient-to-r from-warning-400 to-warning-600 text-white' :
+                          index === 1 ? 'bg-gradient-to-r from-secondary-300 to-secondary-500 text-white' :
+                          index === 2 ? 'bg-gradient-to-r from-warning-400 to-warning-600 text-white' :
+                          'bg-secondary-200 text-secondary-700'
                         }`}>
-                          {index === 0 && <span>🏆</span>}
-                          {index === 1 && <span>🥈</span>}
-                          {index === 2 && <span>🥉</span>}
                           <span>#{index + 1}</span>
                         </div>
                       </div>
@@ -565,7 +562,7 @@ const InfluencerGrowth = () => {
                           type="checkbox"
                           checked={selectedInfluencersForDelete.has(influencer.id)}
                           onChange={() => toggleInfluencerSelection(influencer.id)}
-                          className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                          className="w-4 h-4 text-primary-600 bg-secondary-100 border-secondary-300 rounded focus:ring-primary-500"
                         />
                       </div>
                     )}
@@ -575,7 +572,7 @@ const InfluencerGrowth = () => {
                         handleRefreshInfluencer(influencer.id);
                       }}
                       disabled={refreshingInfluencers.has(influencer.id) || isDeleteMode || isGlobalRefreshing}
-                      className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-soft hover:shadow-hard transition-all hover:bg-secondary-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       title={isGlobalRefreshing ? "Global refresh in progress" : isDeleteMode ? "Disabled in delete mode" : "Refresh profile data"}
                     >
                       {refreshingInfluencers.has(influencer.id) ? (
@@ -605,14 +602,14 @@ const InfluencerGrowth = () => {
                             referrerPolicy="no-referrer"
                           />
                         ) : (
-                          <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                            <span className="text-purple-600 font-bold text-xl">
+                          <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
+                            <span className="text-primary-600 font-bold text-xl">
                               {influencer.name?.charAt(0)?.toUpperCase() || "I"}
                             </span>
                           </div>
                         )}
                         {influencer.isVerified && (
-                          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center">
                             <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                             </svg>
@@ -622,44 +619,44 @@ const InfluencerGrowth = () => {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900 truncate">
+                          <h3 className="text-lg font-semibold text-secondary-900 truncate">
                             {influencer.name}
                           </h3>
                           {influencer.isPrivate && (
-                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                            <span className="badge-neutral">
                               Private
                             </span>
                           )}
                         </div>
 
-                        <p className="text-sm text-gray-500 mb-1">
+                        <p className="text-sm text-secondary-500 mb-1">
                           @{influencer.username}
                         </p>
-                        <p className="text-xs text-gray-400 mb-3">
+                        <p className="text-xs text-secondary-400 mb-3">
                           ID: {influencer.id}
                         </p>
 
                         <div className="mb-3">
                           <div>
-                            <p className="text-sm text-gray-500">Followers</p>
-                            <p className="text-lg font-semibold text-purple-600">
+                            <p className="text-sm text-secondary-500">Followers</p>
+                            <p className="text-lg font-semibold text-primary-600">
                               {influencer.followersCount.toLocaleString()}
                             </p>
                           </div>
                         </div>
 
                         {influencer.latestGrowth && (
-                          <div className="mb-3 p-2 bg-gray-50 rounded-lg">
-                            <p className="text-xs text-gray-500 mb-1">Total Growth (since first contact)</p>
+                          <div className="mb-3 p-2 bg-secondary-50 rounded-lg">
+                            <p className="text-xs text-secondary-500 mb-1">Total Growth (since first contact)</p>
                             <div className="text-xs">
-                              <span className={influencer.latestGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}>
+                              <span className={influencer.latestGrowth.followersGrowth >= 0 ? 'text-success-600' : 'text-error-600'}>
                                 Followers: {influencer.latestGrowth.followersGrowth >= 0 ? '+' : ''}{influencer.latestGrowth.followersGrowth.toLocaleString()}
                               </span>
                             </div>
                           </div>
                         )}
 
-                        <div className="flex items-center justify-between text-xs text-gray-400">
+                        <div className="flex items-center justify-between text-xs text-secondary-400">
                           <span>Tracked: {formatDate(influencer.firstTrackedAt)}</span>
                           <span>Updated: {formatDate(influencer.lastUpdatedAt)}</span>
                         </div>
@@ -673,7 +670,7 @@ const InfluencerGrowth = () => {
                                   <Line
                                     type="monotone"
                                     dataKey="followers"
-                                    stroke="#8b5cf6"
+                                    stroke="#3b82f6"
                                     strokeWidth={2}
                                     dot={false}
                                   />
@@ -701,11 +698,11 @@ const InfluencerGrowth = () => {
               >
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">Growth Details</h2>
+                    <h2 className="text-2xl font-bold text-secondary-900">Growth Details</h2>
                     <div className="flex items-center space-x-3">
                       <button
                         onClick={() => setShowDatePicker(!showDatePicker)}
-                        className="px-3 py-2 bg-blue-50 text-purple-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                        className="px-3 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 transition-colors text-sm font-medium"
                       >
                         Filter by Date
                       </button>
@@ -722,11 +719,11 @@ const InfluencerGrowth = () => {
 
                   {/* Date Range Picker */}
                   {showDatePicker && selectedInfluencer.growthHistory && selectedInfluencer.growthHistory.length > 0 && (
-                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Filter Growth Data</h3>
+                    <div className="mb-6 p-4 bg-primary-50 border border-primary-200 rounded-lg">
+                            <h3 className="text-lg font-semibold text-secondary-900 mb-3">Filter Growth Data</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="form-label">
                             Start Date & Time
                           </label>
                           <input
@@ -739,7 +736,7 @@ const InfluencerGrowth = () => {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="form-label">
                             End Date & Time
                           </label>
                           <input
@@ -753,19 +750,19 @@ const InfluencerGrowth = () => {
                         </div>
                       </div>
                       <div className="flex items-center justify-between mt-4">
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-secondary-600">
                           Showing data from {getDateRangeBounds(selectedInfluencer.growthHistory).min ? formatDate(getDateRangeBounds(selectedInfluencer.growthHistory).min) : 'N/A'} to {getDateRangeBounds(selectedInfluencer.growthHistory).max ? formatDate(getDateRangeBounds(selectedInfluencer.growthHistory).max) : 'N/A'}
                         </div>
                         <div className="flex space-x-2">
                           <button
                             onClick={() => setDateRange({ start: null, end: null })}
-                            className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                            className="px-3 py-1 text-sm bg-secondary-200 text-secondary-700 rounded hover:bg-secondary-300 transition-colors"
                           >
                             Clear Filter
                           </button>
                           <button
                             onClick={() => setShowDatePicker(false)}
-                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                            className="px-3 py-1 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
                           >
                             Done
                           </button>
@@ -790,14 +787,14 @@ const InfluencerGrowth = () => {
                           referrerPolicy="no-referrer"
                         />
                       ) : (
-                        <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center">
-                          <span className="text-purple-600 font-bold text-2xl">
+                        <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center">
+                          <span className="text-primary-600 font-bold text-2xl">
                             {selectedInfluencer.name?.charAt(0)?.toUpperCase() || "I"}
                           </span>
                         </div>
                       )}
                       {selectedInfluencer.isVerified && (
-                        <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                        <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
                           <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
@@ -806,17 +803,17 @@ const InfluencerGrowth = () => {
                     </div>
 
                     <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-900">{selectedInfluencer.name}</h3>
-                      <p className="text-gray-500 mb-1">@{selectedInfluencer.username}</p>
-                      <p className="text-xs text-gray-400 mb-2">ID: {selectedInfluencer.id}</p>
+                      <h3 className="text-xl font-bold text-secondary-900">{selectedInfluencer.name}</h3>
+                      <p className="text-secondary-500 mb-1">@{selectedInfluencer.username}</p>
+                      <p className="text-xs text-secondary-400 mb-2">ID: {selectedInfluencer.id}</p>
                       <div className="flex items-center space-x-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          selectedInfluencer.isPrivate ? 'bg-gray-100 text-gray-600' : 'bg-green-100 text-green-600'
+                          selectedInfluencer.isPrivate ? 'bg-secondary-100 text-secondary-600' : 'bg-success-100 text-success-600'
                         }`}>
                           {selectedInfluencer.isPrivate ? 'Private' : 'Public'}
                         </span>
                         {selectedInfluencer.isVerified && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">
+                          <span className="badge-info">
                             Verified
                           </span>
                         )}
@@ -835,33 +832,33 @@ const InfluencerGrowth = () => {
                       <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-purple-600">
+                      <p className="text-2xl font-bold text-primary-600">
                               {isFiltered && filteredHistory.length > 0 ?
                                 filteredHistory[filteredHistory.length - 1].followersCount.toLocaleString() :
                                 selectedInfluencer.followersCount.toLocaleString()}
                             </p>
-                      <p className="text-sm text-gray-500">
+                            <p className="text-sm text-secondary-500">
                               {isFiltered ? 'Followers (Filtered)' : 'Current Followers'}
                             </p>
                       </div>
                           <div className="text-center">
                             <p className="text-sm text-gray-500">Data Points</p>
-                            <p className="text-2xl font-bold text-purple-600">{filteredHistory.length || selectedInfluencer.growthHistory?.length || 0}</p>
+                            <p className="text-2xl font-bold text-primary-600">{filteredHistory.length || selectedInfluencer.growthHistory?.length || 0}</p>
                           </div>
                         </div>
 
                         {/* Period Growth Metrics */}
                         {periodGrowth && dateRange.start && dateRange.end && (
-                          <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                          <div className="mb-6 p-4 bg-gradient-to-r from-success-50 to-primary-50 rounded-lg border border-success-200">
+                            <h4 className="text-lg font-semibold text-secondary-900 mb-3">
                               Growth in Selected Period ({formatDate(periodGrowth.startDate)} - {formatDate(periodGrowth.endDate)})
                             </h4>
                               <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                                <p className="text-sm text-gray-500 mb-1">Followers Growth</p>
-                                <p className={`text-2xl font-bold ${periodGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <p className="text-sm text-secondary-500 mb-1">Followers Growth</p>
+                                <p className={`text-2xl font-bold ${periodGrowth.followersGrowth >= 0 ? 'text-success-600' : 'text-error-600'}`}>
                                   {periodGrowth.followersGrowth >= 0 ? '+' : ''}{periodGrowth.followersGrowth.toLocaleString()}
                                 </p>
-                                <p className="text-xs text-gray-400 mt-1">Over {periodGrowth.dataPoints} data points</p>
+                                <p className="text-xs text-secondary-400 mt-1">Over {periodGrowth.dataPoints} data points</p>
                             </div>
                           </div>
                         )}
@@ -870,14 +867,14 @@ const InfluencerGrowth = () => {
                   })()}
 
                   {selectedInfluencer.latestGrowth && (
-                    <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
-                      <h4 className="text-lg font-semibold text-gray-900 mb-3">Total Growth Metrics</h4>
-                        <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                          <p className="text-sm text-gray-500 mb-1">Followers Growth</p>
-                          <p className={`text-2xl font-bold ${selectedInfluencer.latestGrowth.followersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className="mb-6 p-4 bg-gradient-to-r from-success-50 to-primary-50 rounded-lg border border-success-200">
+                      <h4 className="text-lg font-semibold text-secondary-900 mb-3">Total Growth Metrics</h4>
+                        <div className="text-center p-3 bg-white rounded-lg shadow-soft">
+                          <p className="text-sm text-secondary-500 mb-1">Followers Growth</p>
+                          <p className={`text-2xl font-bold ${selectedInfluencer.latestGrowth.followersGrowth >= 0 ? 'text-success-600' : 'text-error-600'}`}>
                             {selectedInfluencer.latestGrowth.followersGrowth >= 0 ? '+' : ''}{selectedInfluencer.latestGrowth.followersGrowth.toLocaleString()}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">Since first contact</p>
+                          <p className="text-xs text-secondary-400 mt-1">Since first contact</p>
                       </div>
                     </div>
                   )}
@@ -889,7 +886,7 @@ const InfluencerGrowth = () => {
 
                     return filteredHistory.length > 1 ? (
                       <div className="mb-6">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        <h4 className="text-lg font-semibold text-secondary-900 mb-4">
                           Growth Chart {dateRange.start && dateRange.end ? '(Filtered Period)' : '(All Time)'}
                         </h4>
                         <div className="h-64">
@@ -903,7 +900,7 @@ const InfluencerGrowth = () => {
                               <Line
                                 type="monotone"
                                 dataKey="followers"
-                                stroke="#8b5cf6"
+                                stroke="#3b82f6"
                                 strokeWidth={2}
                                 name="Followers"
                               />
@@ -915,7 +912,7 @@ const InfluencerGrowth = () => {
                   })()}
 
                   <div className="border-t pt-6">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                    <h4 className="text-lg font-semibold text-secondary-900 mb-4">
                       Growth History {dateRange.start && dateRange.end ? '(Filtered Period)' : '(All Time)'}
                     </h4>
                     {(() => {
@@ -931,11 +928,11 @@ const InfluencerGrowth = () => {
                               const timeDiff = calculateTimeDifference(point.timestamp, nextPoint?.timestamp);
 
                               return (
-                                <div key={index} className="py-3 px-3 bg-gray-50 rounded-lg">
+                                <div key={index} className="py-3 px-3 bg-secondary-50 rounded-lg">
                                   <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-gray-900">{formatDate(point.timestamp)}</span>
+                                    <span className="text-sm font-medium text-secondary-900">{formatDate(point.timestamp)}</span>
                                     {timeDiff && (
-                                      <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">
+                                      <span className="text-xs text-secondary-500 bg-white px-2 py-1 rounded-full">
                                         +{timeDiff}
                                       </span>
                                     )}
@@ -943,13 +940,13 @@ const InfluencerGrowth = () => {
                                   <div className="flex items-center justify-between">
                                     <div className="flex">
                                       <span className="text-sm">
-                                        <span className="font-medium text-purple-600">{point.followersCount.toLocaleString()}</span>
+                                        <span className="font-medium text-primary-600">{point.followersCount.toLocaleString()}</span>
                                         {followersDiff !== null && (
-                                          <span className={`ml-1 text-xs ${followersDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                          <span className={`ml-1 text-xs ${followersDiff >= 0 ? 'text-success-600' : 'text-error-600'}`}>
                                             ({followersDiff >= 0 ? '+' : ''}{followersDiff})
                                           </span>
                                         )}
-                                        <span className="text-gray-500 ml-1">followers</span>
+                                        <span className="text-secondary-500 ml-1">followers</span>
                                       </span>
                                     </div>
                                   </div>
@@ -957,7 +954,7 @@ const InfluencerGrowth = () => {
                               );
                             })
                           ) : (
-                            <div className="text-center py-8 text-gray-500">
+                            <div className="text-center py-8 text-secondary-500">
                               <p>No data points found in the selected date range.</p>
                               <p className="text-sm mt-1">Try adjusting your date filter or clearing it to see all data.</p>
                             </div>
@@ -980,25 +977,25 @@ const InfluencerGrowth = () => {
                 className="bg-white rounded-lg max-w-md w-full p-6"
               >
                 <div className="text-center">
-                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                    <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-error-100 mb-4">
+                    <svg className="h-6 w-6 text-error-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Delete Influencers</h3>
-                  <p className="text-sm text-gray-500 mb-4">
+                  <h3 className="text-lg font-medium text-secondary-900 mb-2">Delete Influencers</h3>
+                  <p className="text-sm text-secondary-500 mb-4">
                     Are you sure you want to delete {selectedInfluencersForDelete.size} influencer(s)? This action cannot be undone and will permanently remove all growth data for these influencers.
                   </p>
                   <div className="flex space-x-3 justify-center">
                     <button
                       onClick={() => setShowDeleteModal(false)}
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                      className="btn-secondary"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleDeleteSelected}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      className="btn-error"
                     >
                       Delete
                     </button>

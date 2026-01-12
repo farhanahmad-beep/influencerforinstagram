@@ -1014,21 +1014,21 @@ const ModashSearch = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-secondary-50 flex overflow-hidden">
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
+        <div className="content-container section-spacing lg:pt-4 pt-16">
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-3xl font-bold text-gray-900">Influencer Search</h1>
+              <h1 className="text-3xl font-bold text-secondary-900">Influencer Search</h1>
               {/* User Search Toggle - Show when AI search is not active */}
               {!isAISearch && (
                 <div className="flex items-center space-x-3">
-                  <label className="text-sm font-medium text-gray-700">Search By Name</label>
+                  <label className="text-sm font-medium text-secondary-700">Search By Name</label>
                   <button
                     onClick={() => setIsUserSearch(!isUserSearch)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      isUserSearch ? 'bg-green-600' : 'bg-gray-200'
+                      isUserSearch ? 'bg-success-600' : 'bg-secondary-200'
                     }`}
                   >
                     <span
@@ -1040,7 +1040,7 @@ const ModashSearch = () => {
                 </div>
               )}
             </div>
-            <p className="text-gray-600">Search for influencers globally using advanced filters</p>
+            <p className="text-secondary-600">Search for influencers globally using advanced filters</p>
           </div>
 
           {/* Search Filters */}
@@ -1053,11 +1053,11 @@ const ModashSearch = () => {
             {!isUserSearch && (
               <div className="mb-4">
                 <div className="flex items-center space-x-3 mb-4">
-                  <label className="text-sm font-medium text-gray-700">AI Mode</label>
+                  <label className="text-sm font-medium text-secondary-700">AI Mode</label>
                   <button
                     onClick={() => setIsAISearch(!isAISearch)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      isAISearch ? 'bg-blue-600' : 'bg-gray-200'
+                      isAISearch ? 'bg-primary-600' : 'bg-secondary-200'
                     }`}
                   >
                     <span
@@ -1072,7 +1072,7 @@ const ModashSearch = () => {
                 {isAISearch && (
                   <>
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="form-label">
                         Enter your query to discover matching influencers
                       </label>
                       <textarea
@@ -1082,7 +1082,7 @@ const ModashSearch = () => {
                         placeholder="Describe the influencer you're looking for (e.g., 'woman with curly hair lifting weights', 'fitness model in Los Angeles', 'tech entrepreneur with blue hair')"
                         rows="3"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-secondary-500 mt-1">
                         Use natural language to describe the influencer. Max 1024 characters.
                       </p>
                     </div>
@@ -1096,7 +1096,7 @@ const ModashSearch = () => {
             {!isAISearch && !isUserSearch && (
               <div className="mb-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-gray-700">
+                  <h3 className="text-sm font-medium text-secondary-700">
                     Use Traditional Filters
                   </h3>
                 </div>
@@ -1106,7 +1106,7 @@ const ModashSearch = () => {
             {/* User Search input - Show when user search is enabled */}
             {isUserSearch && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="form-label">
                   Enter username or full name
                 </label>
                 <input
@@ -1116,7 +1116,7 @@ const ModashSearch = () => {
                   className="input-field w-full"
                   placeholder="therock, Cristiano Ronaldo"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-secondary-500 mt-1">
                   Search for influencers by their username or full name. Minimum 2 characters required.
                 </p>
               </div>
@@ -1128,7 +1128,7 @@ const ModashSearch = () => {
 
                 {/* Image Upload for AI Image Search */}
                 <div className="col-span-full mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="form-label">
                     Image Search (Optional)
                   </label>
                   <div className="flex items-center">
@@ -1141,7 +1141,7 @@ const ModashSearch = () => {
                     />
                     <label
                       htmlFor="image-upload"
-                      className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      className="cursor-pointer inline-flex items-center px-4 py-2 border border-secondary-300 rounded-md shadow-sm text-sm font-medium text-secondary-700 bg-white hover:bg-secondary-50 focus-ring"
                     >
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -1150,14 +1150,14 @@ const ModashSearch = () => {
                     </label>
                     {selectedImage && (
                       <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">{selectedImage.name}</span>
+                        <span className="text-sm text-secondary-600">{selectedImage.name}</span>
                         <button
                           onClick={() => {
                             setSelectedImage(null);
                             setImageType('');
                             setBase64Image('');
                           }}
-                          className="text-red-600 hover:text-red-800 text-sm"
+                          className="text-error-600 hover:text-error-800 text-sm"
                         >
                           Remove
                         </button>
@@ -1173,7 +1173,7 @@ const ModashSearch = () => {
                       />
                     </div>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-secondary-500 mt-1">
                     Upload an image to find influencers who post similar content. Max 5MB, JPEG/PNG/WebP only.
                   </p>
             </div>
@@ -1181,7 +1181,7 @@ const ModashSearch = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Basic Filters */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Min Followers</label>
+                <label className="form-label">Min Followers</label>
                 <input
                   type="number"
                   value={searchParams.filter.influencer.followers.min}
@@ -1192,7 +1192,7 @@ const ModashSearch = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Max Followers</label>
+                <label className="form-label">Max Followers</label>
                 <input
                   type="number"
                   value={searchParams.filter.influencer.followers.max}
@@ -1203,7 +1203,7 @@ const ModashSearch = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Keywords</label>
+                <label className="form-label">Keywords</label>
                 <input
                   type="text"
                   value={searchParams.filter.influencer.keywords}
@@ -1214,7 +1214,7 @@ const ModashSearch = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <label className="form-label">Gender</label>
                 <select
                   value={searchParams.filter.influencer.gender}
                   onChange={(e) => handleInputChange('gender', e.target.value, ['filter', 'influencer'])}
@@ -1229,7 +1229,7 @@ const ModashSearch = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Min Age</label>
+                <label className="form-label">Min Age</label>
                 <input
                   type="number"
                   value={searchParams.filter.influencer.age?.min || ''}
@@ -1245,7 +1245,7 @@ const ModashSearch = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Max Age</label>
+                <label className="form-label">Max Age</label>
                 <input
                   type="number"
                   value={searchParams.filter.influencer.age?.max || ''}
@@ -1261,7 +1261,7 @@ const ModashSearch = () => {
               </div>
 
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                <label className="form-label">Language</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -1287,7 +1287,7 @@ const ModashSearch = () => {
                   {selectedLanguage && (
                     <button
                       onClick={removeLanguage}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
                     >
                       ×
                     </button>
@@ -1296,11 +1296,11 @@ const ModashSearch = () => {
 
                 {/* Language Dropdown */}
                 {showLanguageDropdown && languageResults.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-secondary-300 rounded-md shadow-hard max-h-60 overflow-auto">
                     {languageResults.map((language) => (
                       <div
                         key={language.code}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        className="px-4 py-2 hover:bg-secondary-100 cursor-pointer"
                         onMouseDown={(e) => {
                           e.preventDefault();
                           addLanguage(language);
@@ -1330,7 +1330,7 @@ const ModashSearch = () => {
               </div>
 
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Interests</label>
+                <label className="form-label">Interests</label>
                 <input
                   type="text"
                   value={interestSearch}
@@ -1350,11 +1350,11 @@ const ModashSearch = () => {
 
                 {/* Interest Dropdown */}
                 {showInterestDropdown && interestResults.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-secondary-300 rounded-md shadow-hard max-h-60 overflow-auto">
                     {interestResults.map((interest) => (
                       <div
                         key={interest.id}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        className="px-4 py-2 hover:bg-secondary-100 cursor-pointer"
                         onMouseDown={(e) => {
                           e.preventDefault();
                           addInterest(interest);
@@ -1388,7 +1388,7 @@ const ModashSearch = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Min Engagement Rate (%)</label>
+                <label className="form-label">Min Engagement Rate (%)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -1400,7 +1400,7 @@ const ModashSearch = () => {
               </div>
 
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Locations</label>
+                <label className="form-label">Locations</label>
                 <input
                   type="text"
                   value={locationSearch}
@@ -1420,11 +1420,11 @@ const ModashSearch = () => {
 
                 {/* Location Dropdown */}
                 {showLocationDropdown && locationResults.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-secondary-300 rounded-md shadow-hard max-h-60 overflow-auto">
                     {locationResults.map((location) => (
                       <div
                         key={location.id}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        className="px-4 py-2 hover:bg-secondary-100 cursor-pointer"
                         onMouseDown={(e) => {
                           e.preventDefault();
                           addLocation(location);
@@ -1442,12 +1442,12 @@ const ModashSearch = () => {
                     {selectedLocations.map((location) => (
                       <span
                         key={location.id}
-                        className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800"
+                        className="badge-accent"
                       >
                         {location.name}
                         <button
                           onClick={() => removeLocation(location.id)}
-                          className="ml-1 text-purple-600 hover:text-purple-800"
+                          className="ml-1 text-accent-600 hover:text-accent-800"
                         >
                           ×
                         </button>
@@ -1497,7 +1497,7 @@ const ModashSearch = () => {
           <div ref={resultsRef}>
             {loading && searchResults.length === 0 ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
             </div>
           ) : searchResults.length === 0 && !loading ? (
             <motion.div
@@ -1505,17 +1505,17 @@ const ModashSearch = () => {
               animate={{ opacity: 1, y: 0 }}
               className="card text-center py-12"
             >
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Results</h3>
-              <p className="text-gray-500">Try adjusting your search filters.</p>
+              <h3 className="text-lg font-medium text-secondary-900 mb-2">No Results</h3>
+              <p className="text-secondary-500">Try adjusting your search filters.</p>
             </motion.div>
           ) : (
             <>
               <div className="mb-4 flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-secondary-600">
                     Showing <span className="font-semibold">{Array.isArray(searchResults) ? searchResults.length : 0}</span> of <span className="font-semibold">{totalResults || 'many'}</span> influencers
                     {searchResults.length > 0 && (
-                      <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
+                      <span className="ml-2 badge-accent">
                         {searchResults[0]?.isFromAISearch ? 'AI Search Results' :
                          searchResults[0]?.isFromImageSearch ? 'Image Search Results' :
                          searchResults[0]?.isFromUserSearch ? 'User Search Results' : 'Traditional Search Results'}
@@ -1525,7 +1525,7 @@ const ModashSearch = () => {
                 </div>
                 <div className="flex items-center space-x-3">
                 {hasMoreResults && (
-                  <p className="text-xs text-purple-600">
+                  <p className="text-xs text-primary-600">
                     {((totalResults || 0) - (searchResults?.length || 0))} more available
                   </p>
                 )}
@@ -1566,9 +1566,9 @@ const ModashSearch = () => {
                           />
                         ) : null}
                         <div
-                          className={`w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto ${(influencer.profilePicture || influencer.avatar) ? 'hidden' : 'flex'}`}
+                          className={`w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto ${(influencer.profilePicture || influencer.avatar) ? 'hidden' : 'flex'}`}
                         >
-                          <span className="text-purple-600 font-bold text-xl">
+                          <span className="text-primary-600 font-bold text-xl">
                             {(influencer.username || influencer.handle || 'U').charAt(0).toUpperCase()}
                           </span>
                         </div>
@@ -1577,7 +1577,7 @@ const ModashSearch = () => {
                         <div className="w-full">
                           {/* Name and Username */}
                           <div className="flex items-center justify-center space-x-2 mb-2">
-                            <h3 className="text-sm font-semibold text-gray-900 truncate">
+                            <h3 className="text-sm font-semibold text-secondary-900 truncate">
                               {influencer.name || 'Unknown'}
                             </h3>
                             {influencer.isVerified && (
@@ -1586,12 +1586,12 @@ const ModashSearch = () => {
                               </span>
                             )}
                             {influencer.isPrivate && (
-                              <span className="text-gray-400 flex-shrink-0" title="Private Account">
+                              <span className="text-secondary-400 flex-shrink-0" title="Private Account">
                                 🔒
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 mb-2">@{influencer.username}</p>
+                          <p className="text-xs text-secondary-500 mb-2">@{influencer.username}</p>
 
                           {/* Profile URL */}
                           {influencer.url && (
@@ -1608,17 +1608,17 @@ const ModashSearch = () => {
 
                           {/* Follower/Following Stats */}
                           {(influencer.followersCount !== undefined || influencer.followingCount !== undefined) && (
-                            <div className="flex items-center justify-center space-x-4 mb-3 text-xs text-gray-600">
+                            <div className="flex items-center justify-center space-x-4 mb-3 text-xs text-secondary-600">
                               {influencer.followersCount !== undefined && (
                                 <div className="flex flex-col items-center">
-                                  <span className="font-semibold text-gray-900">{formatNumber(influencer.followersCount)}</span>
-                                  <span className="text-gray-500">Followers</span>
+                                  <span className="font-semibold text-secondary-900">{formatNumber(influencer.followersCount)}</span>
+                                  <span className="text-secondary-500">Followers</span>
                                 </div>
                               )}
                               {influencer.followingCount !== undefined && (
                                 <div className="flex flex-col items-center">
-                                  <span className="font-semibold text-gray-900">{formatNumber(influencer.followingCount)}</span>
-                                  <span className="text-gray-500">Following</span>
+                                  <span className="font-semibold text-secondary-900">{formatNumber(influencer.followingCount)}</span>
+                                  <span className="text-secondary-500">Following</span>
                                 </div>
                               )}
                             </div>
@@ -1626,17 +1626,17 @@ const ModashSearch = () => {
 
                           {/* Engagement Stats */}
                           {(influencer.engagementRate !== undefined || influencer.engagements !== undefined) && (
-                            <div className="flex items-center justify-center space-x-4 mb-2 text-xs text-gray-600">
+                            <div className="flex items-center justify-center space-x-4 mb-2 text-xs text-secondary-600">
                               {influencer.engagementRate !== undefined && (
                                 <div className="flex flex-col items-center">
-                                  <span className="font-semibold text-gray-900">{(influencer.engagementRate * 100).toFixed(2)}%</span>
-                                  <span className="text-gray-500">Engagement</span>
+                                  <span className="font-semibold text-secondary-900">{(influencer.engagementRate * 100).toFixed(2)}%</span>
+                                  <span className="text-secondary-500">Engagement</span>
                                 </div>
                               )}
                               {influencer.engagements !== undefined && (
                                 <div className="flex flex-col items-center">
-                                  <span className="font-semibold text-gray-900">{formatNumber(influencer.engagements)}</span>
-                                  <span className="text-gray-500">Engagements</span>
+                                  <span className="font-semibold text-secondary-900">{formatNumber(influencer.engagements)}</span>
+                                  <span className="text-secondary-500">Engagements</span>
                                 </div>
                               )}
                             </div>
@@ -1651,7 +1651,7 @@ const ModashSearch = () => {
 
                           {/* Bio */}
                           {influencer.bio && (
-                            <p className="text-xs text-gray-500 mb-2 line-clamp-2" title={influencer.bio}>
+                            <p className="text-xs text-secondary-500 mb-2 line-clamp-2" title={influencer.bio}>
                               {influencer.bio}
                             </p>
                           )}
@@ -1662,7 +1662,7 @@ const ModashSearch = () => {
                               {/* Matched Posts */}
                               {influencer.matchedPosts && influencer.matchedPosts.length > 0 && (
                                 <div>
-                                  <div className="text-xs text-purple-600 font-medium mb-1 text-center">
+                                  <div className="text-xs text-primary-600 font-medium mb-1 text-center">
                                     {influencer.isFromImageSearch ? 'Image Matched Posts' : 'AI Matched Posts'} ({influencer.matchedPosts.length})
                                   </div>
                                   <div className="flex flex-wrap justify-center gap-1">
@@ -1722,14 +1722,14 @@ const ModashSearch = () => {
                           )}
 
                           {/* User ID */}
-                          <div className="text-xs text-gray-400 text-center mt-2">
+                          <div className="text-xs text-secondary-400 text-center mt-2">
                             ID: {influencer.id}
                           </div>
 
                           {/* Detail Button */}
                           <button
                             onClick={() => handleDetailClick(influencer)}
-                            className="mt-3 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                            className="mt-3 btn-primary"
                           >
                             Detail & Message
                           </button>

@@ -524,10 +524,10 @@ const ChatMessages = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-secondary-50 flex overflow-hidden">
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
+        <div className="content-container section-spacing lg:pt-4 pt-16">
         <div className="mb-2">
           <button
             onClick={() => navigate("/chat-list")}
@@ -536,21 +536,54 @@ const ChatMessages = () => {
             ← Back to Chat List
           </button>
           <div className="flex items-center justify-between mb-1">
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">{chatName}</h1>
-              {/* Offboarded User Indicator */}
-              {isOffboarded && (
-                <div className="flex items-center space-x-2 mt-2">
-                  <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <span className="text-sm text-red-700 font-medium">This user was previously offboarded</span>
-                </div>
-              )}
+            <div className="flex items-center space-x-3">
+              {/* Profile Picture */}
+              <div className="relative w-12 h-12 flex-shrink-0">
+                {userStatusData?.profilePictureData ? (
+                  <img
+                    src={userStatusData.profilePictureData}
+                    alt={chatName}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                ) : userStatusData?.profilePicture ? (
+                  <img
+                    src={userStatusData.profilePicture}
+                    alt={chatName}
+                    className="w-12 h-12 rounded-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                    <span className="text-primary-600 font-bold text-lg">
+                      {chatName?.charAt(0)?.toUpperCase() || "U"}
+                    </span>
+                  </div>
+                )}
+                {userStatusData?.isVerified && (
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary-500 rounded-full flex items-center justify-center">
+                    <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-secondary-900 mb-1">{chatName}</h1>
+                {/* Offboarded User Indicator */}
+                {isOffboarded && (
+                  <div className="flex items-center space-x-2 mt-2">
+                    <svg className="w-4 h-4 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span className="text-sm text-error-700 font-medium">This user is currently offboarded</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           {!accountId && (
-            <p className="text-sm text-red-600 mt-2">
+            <p className="text-sm text-error-600 mt-2">
               Account ID is required to send messages
             </p>
           )}
@@ -564,12 +597,12 @@ const ChatMessages = () => {
               <div className="flex items-center space-x-3 mb-4">
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                   onboardingStatus === 'success'
-                    ? 'bg-green-100 text-green-800'
+                    ? 'bg-success-100 text-success-800'
                     : notInterestedStatus === 'success'
-                    ? 'bg-red-100 text-red-800'
+                    ? 'bg-error-100 text-error-800'
                     : isVerificationCompleted
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-gray-100 text-gray-800'
+                    ? 'bg-primary-100 text-primary-800'
+                    : 'bg-secondary-100 text-secondary-800'
                 }`}>
                   {onboardingStatus === 'success' ? (
                     <>
@@ -612,9 +645,9 @@ const ChatMessages = () => {
                         type="checkbox"
                         checked={isVerificationCompleted}
                         onChange={(e) => setIsVerificationCompleted(e.target.checked)}
-                        className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                        className="w-5 h-5 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
                       />
-                      <span className="text-sm text-gray-700 font-medium">Mark user as verified</span>
+                      <span className="text-sm text-secondary-700 font-medium">Mark user as verified</span>
                     </label>
 
                     {isVerificationCompleted && (
@@ -623,8 +656,8 @@ const ChatMessages = () => {
                         disabled={onboardingStatus === 'loading'}
                         className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                           onboardingStatus === 'loading'
-                            ? 'bg-gray-500 text-white cursor-not-allowed'
-                            : 'bg-purple-600 text-white hover:bg-purple-700'
+                            ? 'bg-secondary-500 text-white cursor-not-allowed'
+                            : 'bg-primary-600 text-white hover:bg-primary-700'
                         }`}
                       >
                         {onboardingStatus === 'loading' && (
@@ -649,8 +682,8 @@ const ChatMessages = () => {
                       disabled={offboardingStatus === 'loading'}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                         offboardingStatus === 'loading'
-                          ? 'bg-gray-500 text-white cursor-not-allowed'
-                          : 'bg-red-600 text-white hover:bg-red-700'
+                          ? 'bg-secondary-500 text-white cursor-not-allowed'
+                          : 'bg-error-600 text-white hover:bg-error-700'
                       }`}
                     >
                       {offboardingStatus === 'loading' && (
@@ -674,8 +707,8 @@ const ChatMessages = () => {
                       disabled={reconsiderStatus === 'loading'}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                         reconsiderStatus === 'loading'
-                          ? 'bg-gray-500 text-white cursor-not-allowed'
-                          : 'bg-orange-600 text-white hover:bg-orange-700'
+                          ? 'bg-secondary-500 text-white cursor-not-allowed'
+                          : 'bg-warning-600 text-white hover:bg-warning-700'
                       }`}
                     >
                       {reconsiderStatus === 'loading' && (
@@ -698,8 +731,8 @@ const ChatMessages = () => {
                       disabled={notInterestedStatus === 'loading'}
                       className={`px-3 py-1.5 rounded-lg font-medium text-xs transition-colors ${
                         notInterestedStatus === 'loading'
-                          ? 'bg-gray-500 text-white cursor-not-allowed'
-                          : 'bg-orange-600 text-white hover:bg-orange-700'
+                          ? 'bg-secondary-500 text-white cursor-not-allowed'
+                          : 'bg-warning-600 text-white hover:bg-warning-700'
                       }`}
                     >
                       {notInterestedStatus === 'loading' && (
@@ -716,12 +749,12 @@ const ChatMessages = () => {
 
               {/* Error Messages */}
               {(onboardingStatus === 'error' || offboardingStatus === 'error' || notInterestedStatus === 'error' || reconsiderStatus === 'error') && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="mt-4 p-3 bg-error-50 border border-error-200 rounded-lg">
                   <div className="flex items-center">
-                    <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-error-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
-                    <p className="text-sm text-red-600 font-medium">
+                    <p className="text-sm text-error-600 font-medium">
                       {onboardingStatus === 'error'
                         ? 'Failed to onboard user. Please try again.'
                         : offboardingStatus === 'error'
@@ -740,7 +773,7 @@ const ChatMessages = () => {
 
         {loading && messages.length === 0 ? (
           <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
         ) : messages.length === 0 ? (
           <motion.div
@@ -763,15 +796,15 @@ const ChatMessages = () => {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-secondary-900 mb-2">
               No Messages Found
             </h3>
-            <p className="text-gray-500">This chat has no messages yet.</p>
+            <p className="text-secondary-500">This chat has no messages yet.</p>
           </motion.div>
         ) : (
           <>
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-secondary-600">
                 Showing <span className="font-semibold">{messages.length}</span> message{messages.length !== 1 ? 's' : ''}
                 {pagination.hasMore && " (more available)"}
               </p>
@@ -793,8 +826,8 @@ const ChatMessages = () => {
                       <div
                         className={`px-4 py-2 rounded-2xl shadow-sm ${
                           message.isSender === 1
-                            ? 'bg-purple-600 text-white rounded-br-md'
-                            : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                            ? 'bg-primary-600 text-white rounded-br-md'
+                            : 'bg-secondary-100 text-secondary-900 rounded-bl-md'
                         }`}
                       >
                         <p className="text-sm whitespace-pre-wrap break-words">
@@ -803,7 +836,7 @@ const ChatMessages = () => {
                       </div>
 
                       {/* Message Metadata */}
-                      <div className={`flex items-center space-x-2 mt-1 text-xs text-gray-500 ${
+                      <div className={`flex items-center space-x-2 mt-1 text-xs text-secondary-500 ${
                         message.isSender === 1 ? 'justify-end' : 'justify-start'
                       }`}>
                         <span>{formatDate(message.timestamp)}</span>
@@ -828,7 +861,7 @@ const ChatMessages = () => {
 
                       {/* Attachments */}
                       {message.attachments && message.attachments.length > 0 && (
-                        <div className={`mt-1 text-xs text-gray-500 ${
+                        <div className={`mt-1 text-xs text-secondary-500 ${
                           message.isSender === 1 ? 'text-right' : 'text-left'
                         }`}>
                           {message.attachments.length} attachment{message.attachments.length !== 1 ? 's' : ''}
@@ -871,7 +904,7 @@ const ChatMessages = () => {
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     placeholder="Type a message..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
                     rows="1"
                     disabled={sendingMessage}
                     onKeyDown={(e) => {
@@ -884,7 +917,7 @@ const ChatMessages = () => {
                 </div>
                 <button
                   type="submit"
-                  className="px-4 py-2 h-10 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                  className="px-4 py-2 h-10 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                   disabled={sendingMessage || !messageText.trim() || !accountId}
                 >
                   {sendingMessage ? (
@@ -903,9 +936,9 @@ const ChatMessages = () => {
                 </button>
               </form>
               {!accountId && (
-                <p className="text-sm text-red-600 mt-2">
-                  Account ID is required to send messages
-                </p>
+              <p className="text-sm text-error-600 mt-2">
+                Account ID is required to send messages
+              </p>
               )}
             </div>
 

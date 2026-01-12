@@ -252,15 +252,15 @@ const StatusTracking = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-secondary-50 flex overflow-hidden">
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
+        <div className="content-container section-spacing lg:pt-4 pt-16">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Status Tracking</h1>
-              <p className="text-gray-600">Track user engagement and status across your outreach campaigns</p>
+              <h1 className="text-3xl font-bold text-secondary-900 mb-2">Status Tracking</h1>
+              <p className="text-secondary-600">Track user engagement and status across your outreach campaigns</p>
             </div>
             <div className="flex items-center space-x-3">
               {isDeleteMode ? (
@@ -277,13 +277,13 @@ const StatusTracking = () => {
                   >
                     Cancel
                   </button>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-secondary-600">
                     {selectedUsers.size} selected
                   </span>
                   <button
                     onClick={handleDeleteSelected}
                     disabled={selectedUsers.size === 0}
-                    className="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors disabled:opacity-50 text-sm"
+                    className="btn-error text-sm"
                   >
                     Delete Selected ({selectedUsers.size})
                   </button>
@@ -308,24 +308,24 @@ const StatusTracking = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="card animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-secondary-200 rounded w-3/4 mb-2"></div>
+                <div className="h-8 bg-secondary-200 rounded w-1/2"></div>
               </div>
             ))}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="card">
-              <p className="text-sm text-gray-500">Total Users</p>
-              <p className="text-3xl font-bold text-purple-700 mt-2">{stats.totalUsers}</p>
+              <p className="text-sm text-secondary-500">Total Users</p>
+              <p className="text-3xl font-bold text-primary-700 mt-2">{stats.totalUsers}</p>
             </div>
             <div className="card">
-              <p className="text-sm text-gray-500">Total Messages</p>
-              <p className="text-3xl font-bold text-purple-700 mt-2">{stats.totalMessages}</p>
+              <p className="text-sm text-secondary-500">Total Messages</p>
+              <p className="text-3xl font-bold text-primary-700 mt-2">{stats.totalMessages}</p>
             </div>
             <div className="card">
-              <p className="text-sm text-gray-500">Active Users</p>
-              <p className="text-3xl font-bold text-green-600 mt-2">
+              <p className="text-sm text-secondary-500">Active Users</p>
+              <p className="text-3xl font-bold text-success-600 mt-2">
                 {stats.statusBreakdown.find(s => s._id === 'active')?.count || 0}
               </p>
             </div>
@@ -335,15 +335,15 @@ const StatusTracking = () => {
         {/* Status Breakdown */}
         {!loadingStats && stats.statusBreakdown.length > 0 && (
           <div className="card mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Status Breakdown</h3>
+            <h3 className="text-lg font-semibold text-secondary-900 mb-4">Status Breakdown</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {stats.statusBreakdown.map((status) => (
-                <div key={status._id} className="flex items-center p-4 bg-gray-50 rounded-lg">
+                <div key={status._id} className="flex items-center p-4 bg-secondary-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl">{getStatusIcon(status._id)}</span>
                     <div>
-                      <p className="font-medium text-gray-900 capitalize">{status._id.replace(/_/g, ' ')}</p>
-                      <p className="text-sm text-gray-500">{status.count} users</p>
+                      <p className="font-medium text-secondary-900 capitalize">{status._id.replace(/_/g, ' ')}</p>
+                      <p className="text-sm text-secondary-500">{status.count} users</p>
                     </div>
                   </div>
                 </div>
@@ -356,7 +356,7 @@ const StatusTracking = () => {
         <div className="card mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="form-label">Status</label>
               <select
                 value={filters.status}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
@@ -371,7 +371,7 @@ const StatusTracking = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
+              <label className="form-label">Source</label>
               <select
                 value={filters.source}
                 onChange={(e) => handleFilterChange('source', e.target.value)}
@@ -385,7 +385,7 @@ const StatusTracking = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+              <label className="form-label">Search</label>
               <input
                 type="text"
                 value={filters.search}
@@ -400,7 +400,7 @@ const StatusTracking = () => {
         {/* Users List */}
         {loading && userStatuses.length === 0 ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
         ) : userStatuses.length === 0 ? (
           <motion.div
@@ -413,8 +413,8 @@ const StatusTracking = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Users Found</h3>
-            <p className="text-gray-500">Try adjusting your filters or start sending messages to users.</p>
+            <h3 className="text-lg font-medium text-secondary-900 mb-2">No Users Found</h3>
+            <p className="text-secondary-500">Try adjusting your filters or start sending messages to users.</p>
           </motion.div>
         ) : (
           <>
@@ -425,11 +425,11 @@ const StatusTracking = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: (index % 20) * 0.05 }}
-                  className={`card hover:shadow-lg transition-shadow ${
+                  className={`card hover-lift ${
                     isDeleteMode ? "cursor-default" : "cursor-pointer"
                   } ${
                     selectedUsers.has(user.userId)
-                      ? "border-2 border-red-500 bg-red-50"
+                      ? "border-2 border-error-500 bg-error-50"
                       : ""
                   }`}
                   onClick={() => {
@@ -446,7 +446,7 @@ const StatusTracking = () => {
                           checked={selectedUsers.has(user.userId)}
                           onChange={() => handleUserSelect(user.userId)}
                           onClick={(e) => e.stopPropagation()}
-                          className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer"
+                          className="w-5 h-5 text-error-600 border-secondary-300 rounded focus:ring-error-500 cursor-pointer"
                         />
                       </div>
                     )}
@@ -465,9 +465,9 @@ const StatusTracking = () => {
                         />
                       ) : null}
                       <div
-                        className={`w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto ${(user.profilePictureData || user.profilePicture) ? 'hidden' : 'flex'}`}
+                        className={`w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto ${(user.profilePictureData || user.profilePicture) ? 'hidden' : 'flex'}`}
                       >
-                        <span className="text-purple-600 font-bold text-lg">
+                        <span className="text-primary-600 font-bold text-lg">
                           {user.username?.charAt(0)?.toUpperCase() || user.name?.charAt(0)?.toUpperCase() || "U"}
                         </span>
                       </div>
@@ -479,10 +479,10 @@ const StatusTracking = () => {
                     </div>
 
                     <div className="w-full">
-                      <h3 className="text-sm font-semibold text-gray-900 truncate mb-1">
+                      <h3 className="text-sm font-semibold text-secondary-900 truncate mb-1">
                         {user.name || user.username || 'Unknown'}
                       </h3>
-                      <p className="text-xs text-gray-500 mb-2">@{user.username}</p>
+                      <p className="text-xs text-secondary-500 mb-2">@{user.username}</p>
                       <div className="flex justify-center mb-2">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}>
                           {user.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
@@ -490,23 +490,23 @@ const StatusTracking = () => {
                       </div>
 
                       {(user.followersCount > 0 || user.followingCount > 0) && (
-                        <div className="flex items-center justify-center space-x-4 mb-2 text-xs text-gray-600">
+                        <div className="flex items-center justify-center space-x-4 mb-2 text-xs text-secondary-600">
                           {user.followersCount !== undefined && user.followersCount > 0 && (
                             <div className="flex flex-col items-center">
-                              <span className="font-semibold text-gray-900">{formatNumber(user.followersCount)}</span>
-                              <span className="text-gray-500">Followers</span>
+                              <span className="font-semibold text-secondary-900">{formatNumber(user.followersCount)}</span>
+                              <span className="text-secondary-500">Followers</span>
                             </div>
                           )}
                           {user.followingCount !== undefined && user.followingCount > 0 && (
                             <div className="flex flex-col items-center">
-                              <span className="font-semibold text-gray-900">{formatNumber(user.followingCount)}</span>
-                              <span className="text-gray-500">Following</span>
+                              <span className="font-semibold text-secondary-900">{formatNumber(user.followingCount)}</span>
+                              <span className="text-secondary-500">Following</span>
                             </div>
                           )}
                         </div>
                       )}
 
-                      <div className="text-xs text-gray-500 space-y-1">
+                      <div className="text-xs text-secondary-500 space-y-1">
                         <p>Source: <span className="capitalize">{user.provider || user.source?.replace('_', ' ') || 'Unknown'}</span></p>
                         <p>Last contacted: {formatDate(user.lastContacted)}</p>
                         <p>Messages sent: {user.messageCount || 0}</p>
@@ -549,19 +549,19 @@ const StatusTracking = () => {
                   </svg>
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-lg font-medium text-gray-900">Delete User Statuses</h3>
+                  <h3 className="text-lg font-medium text-secondary-900">Delete User Statuses</h3>
                 </div>
               </div>
 
               <div className="mb-6">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-secondary-500">
                   Are you sure you want to delete the status records for{' '}
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-secondary-900">
                     {selectedUsers.size} user{selectedUsers.size !== 1 ? 's' : ''}
                   </span>
                   ?
                 </p>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-secondary-500 mt-2">
                   This action cannot be undone. The user statuses, message histories, and campaign associations will be permanently removed.
                 </p>
               </div>
@@ -569,7 +569,7 @@ const StatusTracking = () => {
               <div className="flex space-x-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+                  className="btn-secondary flex-1"
                   disabled={deletingUsers}
                 >
                   Cancel
@@ -577,7 +577,7 @@ const StatusTracking = () => {
                 <button
                   onClick={handleConfirmDeleteSelected}
                   disabled={deletingUsers}
-                  className="flex-1 px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-colors disabled:opacity-50"
+                  className="btn-error flex-1"
                 >
                   {deletingUsers ? 'Deleting...' : `Delete ${selectedUsers.size} User${selectedUsers.size !== 1 ? 's' : ''}`}
                 </button>

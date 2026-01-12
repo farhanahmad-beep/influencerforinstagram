@@ -103,10 +103,10 @@ const OnboardedUsersModal = ({ isOpen, onClose }) => {
       <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Users Who Show Interest</h2>
+            <h2 className="text-2xl font-bold text-secondary-900">Users Who Show Interest</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-secondary-400 hover:text-secondary-600 focus-ring"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -114,13 +114,13 @@ const OnboardedUsersModal = ({ isOpen, onClose }) => {
             </button>
           </div>
 
-          <p className="text-gray-600 mb-6">
+          <p className="text-secondary-600 mb-6">
             View all users who have shown interest and been onboarded
           </p>
 
           {loading ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
             </div>
           ) : onboardedUsers.length === 0 ? (
             <div className="text-center py-12">
@@ -139,17 +139,17 @@ const OnboardedUsersModal = ({ isOpen, onClose }) => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-secondary-900 mb-2">
                 No Onboarded Users
               </h3>
-              <p className="text-gray-500">
+              <p className="text-secondary-500">
                 No users have shown interest yet
               </p>
             </div>
           ) : (
             <>
               <div className="mb-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-secondary-600">
                   Showing <span className="font-semibold">{onboardedUsers.length}</span> onboarded user{onboardedUsers.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -158,7 +158,7 @@ const OnboardedUsersModal = ({ isOpen, onClose }) => {
                 {onboardedUsers.map((user, index) => (
                   <div
                     key={user._id || user.userId || index}
-                    className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200"
+                    className="bg-white rounded-xl shadow-soft border border-secondary-200 hover-lift"
                   >
                     <div className="p-6">
                       {/* Header with Avatar and Name */}
@@ -178,21 +178,21 @@ const OnboardedUsersModal = ({ isOpen, onClose }) => {
                             />
                           ) : null}
                           <div
-                            className={`w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            className={`w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 ${
                               (user.profilePictureData || user.profilePicture) ? 'hidden' : 'flex'
                             }`}
                           >
-                            <span className="text-purple-600 font-bold text-lg">
+                            <span className="text-primary-600 font-bold text-lg">
                               {user.name?.charAt(0)?.toUpperCase() || user.username?.charAt(0)?.toUpperCase() || "U"}
                             </span>
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-gray-900 truncate mb-1">
+                          <h3 className="text-lg font-semibold text-secondary-900 truncate mb-1">
                             {user.name || "Unknown"}
                           </h3>
                           {user.username && (
-                            <p className="text-sm text-gray-500 truncate">@{user.username}</p>
+                            <p className="text-sm text-secondary-500 truncate">@{user.username}</p>
                           )}
                           {usersInCampaigns.has(user.userId) && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
@@ -211,25 +211,25 @@ const OnboardedUsersModal = ({ isOpen, onClose }) => {
                           <div className="flex items-center justify-center space-x-4 py-2 border-t border-gray-100">
                             {user.followersCount !== undefined && user.followersCount > 0 && (
                               <div className="flex flex-col items-center">
-                                <span className="font-semibold text-gray-900 text-sm">{formatNumber(user.followersCount)}</span>
-                                <span className="text-xs text-gray-500">Followers</span>
+                                <span className="font-semibold text-secondary-900 text-sm">{formatNumber(user.followersCount)}</span>
+                                <span className="text-xs text-secondary-500">Followers</span>
                               </div>
                             )}
                             {user.followersCount > 0 && user.followingCount > 0 && (
-                              <div className="w-px h-8 bg-gray-300"></div>
+                              <div className="w-px h-8 bg-secondary-300"></div>
                             )}
                             {user.followingCount !== undefined && user.followingCount > 0 && (
                               <div className="flex flex-col items-center">
-                                <span className="font-semibold text-gray-900 text-sm">{formatNumber(user.followingCount)}</span>
-                                <span className="text-xs text-gray-500">Following</span>
+                                <span className="font-semibold text-secondary-900 text-sm">{formatNumber(user.followingCount)}</span>
+                                <span className="text-xs text-secondary-500">Following</span>
                               </div>
                             )}
                           </div>
                         )}
 
                         {/* Additional Info */}
-                        <div className="pt-3 border-t border-gray-100">
-                          <div className="text-xs text-gray-500 space-y-1">
+                        <div className="pt-3 border-t border-secondary-100">
+                          <div className="text-xs text-secondary-500 space-y-1">
                             <p><span className="font-medium">User ID:</span> {user.userId}</p>
                             {user.providerId && (
                               <p><span className="font-medium">Provider ID:</span> {user.providerId}</p>
@@ -237,7 +237,7 @@ const OnboardedUsersModal = ({ isOpen, onClose }) => {
                             {user.createdAt && (
                               <p><span className="font-medium">Onboarded:</span> {formatDate(user.createdAt)}</p>
                             )}
-                            <p className="text-purple-600 font-medium">Instagram</p>
+                            <p className="text-primary-600 font-medium">Instagram</p>
                           </div>
                         </div>
                       </div>
@@ -248,11 +248,11 @@ const OnboardedUsersModal = ({ isOpen, onClose }) => {
             </>
           )}
 
-          <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className="mt-6 pt-4 border-t border-secondary-200">
             <div className="flex justify-end">
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="btn-secondary"
               >
                 Close
               </button>

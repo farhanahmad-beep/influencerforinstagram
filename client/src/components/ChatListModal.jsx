@@ -146,10 +146,10 @@ const ChatListModal = ({ isOpen, onClose }) => {
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Chat List</h2>
+            <h2 className="text-2xl font-bold text-secondary-900">Chat List</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-secondary-400 hover:text-secondary-600 focus-ring"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -157,19 +157,19 @@ const ChatListModal = ({ isOpen, onClose }) => {
             </button>
           </div>
 
-          <p className="text-gray-600 mb-6">
+          <p className="text-secondary-600 mb-6">
             View your Instagram chats and start conversations
           </p>
 
           {/* Account Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="form-label">
               Select Account
             </label>
             {loadingAccounts ? (
               <div className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
-                <span className="text-sm text-gray-500">Loading accounts...</span>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+                <span className="text-sm text-secondary-500">Loading accounts...</span>
               </div>
             ) : linkedAccounts.length > 0 ? (
               <select
@@ -178,7 +178,7 @@ const ChatListModal = ({ isOpen, onClose }) => {
                   setSelectedAccountId(e.target.value);
                   setChats([]);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
                 {linkedAccounts.map((account) => (
                   <option key={account.id} value={account.id}>
@@ -187,7 +187,7 @@ const ChatListModal = ({ isOpen, onClose }) => {
                 ))}
               </select>
             ) : (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-secondary-500">
                 No linked accounts found. Please add a linked account first.
               </p>
             )}
@@ -196,11 +196,11 @@ const ChatListModal = ({ isOpen, onClose }) => {
           {/* Chat List */}
           {loading ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
             </div>
           ) : chats.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
+              <div className="text-secondary-400 mb-4">
                 <svg
                   className="mx-auto h-12 w-12"
                   fill="none"
@@ -215,10 +215,10 @@ const ChatListModal = ({ isOpen, onClose }) => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-secondary-900 mb-2">
                 No Chats Found
               </h3>
-              <p className="text-gray-500">
+              <p className="text-secondary-500">
                 {selectedAccountId
                   ? "No chats found for the selected account."
                   : "Please select an account to view chats."}
@@ -227,7 +227,7 @@ const ChatListModal = ({ isOpen, onClose }) => {
           ) : (
             <>
               <div className="mb-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-secondary-600">
                   Showing <span className="font-semibold">{chats.length}</span> chat{chats.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -236,7 +236,7 @@ const ChatListModal = ({ isOpen, onClose }) => {
                 {chats.map((chat, index) => (
                   <div
                     key={chat.id || index}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-purple-300 transition-all cursor-pointer"
+                    className="border border-secondary-200 rounded-lg p-4 hover-lift cursor-pointer"
                     onClick={() => handleChatClick(chat.id, chat.name)}
                   >
                     <div className="flex items-center space-x-4">
@@ -255,11 +255,11 @@ const ChatListModal = ({ isOpen, onClose }) => {
                           />
                         ) : null}
                         <div
-                          className={`w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center ${
-                            (chat.profilePictureData || chat.profilePicture) ? 'hidden' : 'flex'
-                          }`}
+                        className={`w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center ${
+                          (chat.profilePictureData || chat.profilePicture) ? 'hidden' : 'flex'
+                        }`}
                         >
-                          <span className="text-purple-600 font-bold text-lg">
+                          <span className="text-primary-600 font-bold text-lg">
                             {chat.name?.charAt(0)?.toUpperCase() || "C"}
                           </span>
                         </div>
@@ -267,7 +267,7 @@ const ChatListModal = ({ isOpen, onClose }) => {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="text-base font-semibold text-gray-900 truncate">
+                          <h3 className="text-base font-semibold text-secondary-900 truncate">
                             {chat.name || "Unknown"}
                           </h3>
                           {chat.pinned === 1 && (
@@ -283,12 +283,12 @@ const ChatListModal = ({ isOpen, onClose }) => {
                         </div>
 
                         {chat.username && (
-                          <p className="text-sm text-gray-500 truncate">
+                          <p className="text-sm text-secondary-500 truncate">
                             @{chat.username}
                           </p>
                         )}
                         {(chat.userFollowersCount || chat.userFollowingCount) && (
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-secondary-400">
                             {chat.userFollowersCount && `${chat.userFollowersCount.toLocaleString()} followers`}
                             {chat.userFollowersCount && chat.userFollowingCount && ' • '}
                             {chat.userFollowingCount && `${chat.userFollowingCount.toLocaleString()} following`}
@@ -297,10 +297,10 @@ const ChatListModal = ({ isOpen, onClose }) => {
 
                         <div className="flex items-center justify-between mt-1">
                           <div className="flex items-center space-x-2">
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-secondary-500">
                               {formatDate(chat.timestamp)}
                             </span>
-                            <span className="text-xs text-purple-600 font-medium">
+                            <span className="text-xs text-primary-600 font-medium">
                               Instagram
                             </span>
                           </div>
@@ -314,21 +314,21 @@ const ChatListModal = ({ isOpen, onClose }) => {
 
                       <div className="flex items-center space-x-2">
                         {chat.archived === 1 && (
-                          <span className="text-gray-400 text-sm" title="Archived">
+                          <span className="text-secondary-400 text-sm" title="Archived">
                             📦
                           </span>
                         )}
                         {chat.mutedUntil !== -1 && (
-                          <span className="text-gray-400 text-sm" title="Muted">
+                          <span className="text-secondary-400 text-sm" title="Muted">
                             🔇
                           </span>
                         )}
                         {chat.readOnly === 1 && (
-                          <span className="text-gray-400 text-sm" title="Read Only">
+                          <span className="text-secondary-400 text-sm" title="Read Only">
                             👁️
                           </span>
                         )}
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-secondary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </div>
@@ -339,11 +339,11 @@ const ChatListModal = ({ isOpen, onClose }) => {
             </>
           )}
 
-          <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className="mt-6 pt-4 border-t border-secondary-200">
             <div className="flex justify-end">
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="btn-secondary"
               >
                 Close
               </button>

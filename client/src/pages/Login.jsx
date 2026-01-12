@@ -26,17 +26,17 @@ const Login = () => {
   };
 
   return (
-    <div id="src_pages_Login_gbe7" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+    <div id="src_pages_Login_gbe7" className="min-h-screen flex items-center justify-center">
       <motion.div
         id="src_pages_Login_aq7j" initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="card max-w-md w-full mx-4"
+        className="card max-w-md w-full mx-4 hover-lift"
       >
-        <h1 id="src_pages_Login_sxf5" className="text-3xl font-bold text-center mb-2 text-purple-600">
+        <h1 id="src_pages_Login_sxf5" className="text-3xl font-bold text-center mb-2 text-primary-600">
           InfluencerHub
         </h1>
-        <p id="src_pages_Login_b2og" className="text-center text-gray-600 mb-6">
+        <p id="src_pages_Login_b2og" className="text-center text-secondary-600 mb-6">
           Sign in to discover influencers
         </p>
 
@@ -78,9 +78,9 @@ const Login = () => {
           </button>
         </form>
 
-        <p id="src_pages_Login_2zvw" className="text-center text-sm text-gray-600 mt-4">
+        <p id="src_pages_Login_2zvw" className="text-center text-sm text-secondary-600 mt-4">
           Don't have an account?{" "}
-          <Link to="/register" className="text-purple-600 hover:underline" id="client_src_pages_Login_link_reg">
+          <Link to="/register" className="text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200" id="client_src_pages_Login_link_reg">
             Register here
           </Link>
         </p>

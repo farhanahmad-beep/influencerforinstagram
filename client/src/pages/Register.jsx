@@ -35,23 +35,23 @@ const Register = () => {
   };
 
   return (
-    <div id="src_pages_Register_x9zj" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+    <div id="src_pages_Register_x9zj" className="min-h-screen flex items-center justify-center">
       <motion.div
         id="src_pages_Register_vrn8" initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="card max-w-md w-full mx-4"
+        className="card max-w-md w-full mx-4 hover-lift"
       >
-        <h1 id="src_pages_Register_hp4a" className="text-3xl font-bold text-center mb-2 text-purple-600">
+        <h1 id="src_pages_Register_hp4a" className="text-3xl font-bold text-center mb-2 text-primary-600">
           InfluencerHub
         </h1>
-        <p id="src_pages_Register_uk9w" className="text-center text-gray-600 mb-6">
+        <p id="src_pages_Register_uk9w" className="text-center text-secondary-600 mb-6">
           Create your account
         </p>
 
         <form id="src_pages_Register_eeo6" onSubmit={handleSubmit}>
           <div id="src_pages_Register_ho2q" className="mb-4">
-            <label id="src_pages_Register_o5tg" className="block text-sm font-medium text-gray-700 mb-1">
+            <label id="src_pages_Register_o5tg" className="form-label">
               Full Name
             </label>
             <input
@@ -66,7 +66,7 @@ const Register = () => {
           </div>
 
           <div id="src_pages_Register_ul8t" className="mb-4">
-            <label id="src_pages_Register_apv2" className="block text-sm font-medium text-gray-700 mb-1">
+            <label id="src_pages_Register_apv2" className="form-label">
               Email
             </label>
             <input
@@ -81,7 +81,7 @@ const Register = () => {
           </div>
 
           <div id="src_pages_Register_mh0b" className="mb-4">
-            <label id="src_pages_Register_ja3y" className="block text-sm font-medium text-gray-700 mb-1">
+            <label id="src_pages_Register_ja3y" className="form-label">
               Password
             </label>
             <input
@@ -97,7 +97,7 @@ const Register = () => {
           </div>
 
           <div id="src_pages_Register_ekl8" className="mb-6">
-            <label id="src_pages_Register_kv9f" className="block text-sm font-medium text-gray-700 mb-1">
+            <label id="src_pages_Register_kv9f" className="form-label">
               Company (Optional)
             </label>
             <input
@@ -119,9 +119,9 @@ const Register = () => {
           </button>
         </form>
 
-        <p id="src_pages_Register_kv1p" className="text-center text-sm text-gray-600 mt-4">
+        <p id="src_pages_Register_kv1p" className="text-center text-sm text-secondary-600 mt-4">
           Already have an account?{" "}
-          <Link to="/login" className="text-purple-600 hover:underline" id="client_src_pages_Register_link_login">
+          <Link to="/login" className="text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200" id="client_src_pages_Register_link_login">
             Sign in here
           </Link>
         </p>

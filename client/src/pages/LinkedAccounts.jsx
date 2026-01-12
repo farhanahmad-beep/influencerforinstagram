@@ -78,20 +78,20 @@ const LinkedAccounts = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-secondary-50 flex overflow-hidden">
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
+        <div className="content-container section-spacing lg:pt-4 pt-16">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Linked Accounts</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-secondary-900 mb-2">Linked Accounts</h1>
+          <p className="text-secondary-600">
             Manage your connected social media accounts
           </p>
         </div>
 
         {loading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
         ) : linkedAccounts.length === 0 ? (
           <motion.div
@@ -114,10 +114,10 @@ const LinkedAccounts = () => {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Linked Accounts</h3>
-            <p className="text-gray-500">
-              You don't have any accounts linked
-            </p>
+                <h3 className="text-lg font-medium text-secondary-900 mb-2">No Linked Accounts</h3>
+              <p className="text-secondary-500">
+                You don't have any accounts linked
+              </p>
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -127,7 +127,7 @@ const LinkedAccounts = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="card hover:shadow-lg transition-shadow"
+                className="card hover-lift"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
@@ -156,7 +156,7 @@ const LinkedAccounts = () => {
                         }}
                       />
                       <div 
-                        className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center"
+                        className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center"
                         style={{ 
                           display: (
                             accountProfiles[account.id]?.profilePictureData ||
@@ -172,7 +172,7 @@ const LinkedAccounts = () => {
                     </div>
                     <div>
                       <div className="flex items-center space-x-1">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-secondary-900">
                           {accountProfiles[account.id]?.fullName || account.name}
                         </h3>
                         {accountProfiles[account.id]?.isVerified && (
@@ -186,7 +186,7 @@ const LinkedAccounts = () => {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-secondary-500">
                         @{accountProfiles[account.id]?.publicIdentifier || account.username}
                       </p>
                     </div>
@@ -195,31 +195,31 @@ const LinkedAccounts = () => {
 
                 {loadingProfiles[account.id] ? (
                   <div className="flex justify-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
                   </div>
                 ) : accountProfiles[account.id] ? (
                   <>
                     {accountProfiles[account.id].biography && (
-                      <p className="text-sm text-gray-700 mb-4 line-clamp-2">
+                      <p className="text-sm text-secondary-700 mb-4 line-clamp-2">
                         {accountProfiles[account.id].biography}
                       </p>
                     )}
 
                     <div className="grid grid-cols-3 gap-2 mb-4">
                       <div className="text-center">
-                        <p className="text-lg font-semibold text-purple-600">
+                        <p className="text-lg font-semibold text-primary-600">
                           {formatNumber(accountProfiles[account.id].followersCount)}
                         </p>
                         <p className="text-xs text-gray-500">Followers</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-lg font-semibold text-purple-600">
+                        <p className="text-lg font-semibold text-primary-600">
                           {formatNumber(accountProfiles[account.id].followingCount)}
                         </p>
                         <p className="text-xs text-gray-500">Following</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-lg font-semibold text-purple-600">
+                        <p className="text-lg font-semibold text-primary-600">
                           {formatNumber(accountProfiles[account.id].postsCount)}
                         </p>
                         <p className="text-xs text-gray-500">Posts</p>
@@ -230,54 +230,54 @@ const LinkedAccounts = () => {
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Platform</span>
-                    <span className="px-3 py-1 bg-blue-100 text-blue-600 text-xs font-medium rounded-full">
-                      {account.type}
-                    </span>
+                        <span className="text-sm text-secondary-600">Platform</span>
+                        <span className="badge-info">
+                          {account.type}
+                        </span>
                   </div>
 
                   {accountProfiles[account.id]?.category && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Category</span>
-                      <span className="px-3 py-1 bg-purple-100 text-purple-600 text-xs font-medium rounded-full">
-                        {accountProfiles[account.id].category}
-                      </span>
+                      <span className="text-sm text-secondary-600">Category</span>
+                          <span className="badge-accent">
+                            {accountProfiles[account.id].category}
+                          </span>
                     </div>
                   )}
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Status</span>
-                    <span
-                      className={`px-3 py-1 text-xs font-medium rounded-full ${
-                        account.status === "ERROR"
-                          ? "bg-red-100 text-red-600"
-                          : account.status === "ACTIVE"
-                          ? "bg-green-100 text-green-600"
-                          : "bg-yellow-100 text-yellow-600"
-                      }`}
-                    >
-                      {account.status}
-                    </span>
+                    <span className="text-sm text-secondary-600">Status</span>
+                        <span
+                          className={`badge ${
+                            account.status === "ERROR"
+                              ? "badge-error"
+                              : account.status === "ACTIVE"
+                              ? "badge-success"
+                              : "badge-warning"
+                          }`}
+                        >
+                          {account.status}
+                        </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Connected</span>
-                    <span className="text-sm text-gray-900">
+                    <span className="text-sm text-secondary-600">Connected</span>
+                    <span className="text-sm text-secondary-900">
                       {formatDate(account.createdAt)}
                     </span>
                   </div>
 
                   {account.groups && account.groups.length > 0 && (
-                    <div className="pt-3 border-t border-gray-200">
-                      <span className="text-sm text-gray-600">Groups: </span>
-                      <span className="text-sm text-gray-900">
+                    <div className="pt-3 border-t border-secondary-200">
+                      <span className="text-sm text-secondary-600">Groups: </span>
+                      <span className="text-sm text-secondary-900">
                         {account.groups.length}
                       </span>
                     </div>
                   )}
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="mt-4 pt-4 border-t border-secondary-200">
                   <div className="text-xs text-gray-500">
                     Account ID: <span className="font-mono">{account.id}</span>
                   </div>
@@ -293,11 +293,11 @@ const LinkedAccounts = () => {
         )}
 
         {linkedAccounts.length > 0 && (
-          <div className="mt-8 card bg-purple-50 border border-purple-200">
+          <div className="mt-8 card gradient-bg-alt">
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
                 <svg
-                  className="h-5 w-5 text-purple-600"
+                  className="h-5 w-5 text-primary-600"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -309,11 +309,11 @@ const LinkedAccounts = () => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-purple-900">
+                <h3 className="text-sm font-medium text-primary-900">
                   About Linked Accounts
                 </h3>
-                <p className="mt-1 text-sm text-purple-700">
-                  These are your social media accounts connected. 
+                <p className="mt-1 text-sm text-primary-700">
+                  These are your social media accounts connected.
                   You can manage and monitor these accounts from your dashboard.
                 </p>
               </div>

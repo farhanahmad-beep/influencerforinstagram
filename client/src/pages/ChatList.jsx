@@ -412,22 +412,22 @@ const ChatList = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-secondary-50 flex overflow-hidden">
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
+        <div className="content-container section-spacing lg:pt-4 pt-16">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <div>
               <div className="flex items-center space-x-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">Chat List</h1>
+                <h1 className="text-3xl font-bold text-secondary-900">Chat List</h1>
                 {totalUnreadMessages > 0 && (
                   <span className="bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full animate-pulse shadow-lg">
                     {totalUnreadMessages} unread
                   </span>
                 )}
               </div>
-              <p className="text-gray-600">
+              <p className="text-secondary-600">
                 View all your Instagram chats from your linked accounts
               </p>
             </div>
@@ -448,7 +448,7 @@ const ChatList = () => {
                       >
                         Cancel
                       </button>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-secondary-600">
                         {selectedChats.size} selected
                       </span>
                     </>
@@ -474,13 +474,13 @@ const ChatList = () => {
             <div className="card">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="form-label">
                 Select Account
               </label>
               {loadingAccounts ? (
                 <div className="input-field flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
-                  <span className="text-sm text-gray-500">Loading accounts...</span>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600 mr-2"></div>
+                  <span className="text-sm text-secondary-500">Loading accounts...</span>
                 </div>
               ) : linkedAccounts.length > 0 ? (
                 <select
@@ -504,7 +504,7 @@ const ChatList = () => {
                   ))}
                 </select>
               ) : (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-secondary-500">
                   No linked accounts found. Please add a linked account first.
                 </p>
               )}
@@ -514,15 +514,15 @@ const ChatList = () => {
 
             {/* Search Filter */}
             {
-              <div className="card">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Search Chats
-                    </label>
+                <div className="card">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="form-label">
+                        Search Chats
+                      </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-5 w-5 text-secondary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
               </div>
@@ -537,7 +537,7 @@ const ChatList = () => {
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                           <button
                             onClick={() => setSearchQuery('')}
-                            className="text-gray-400 hover:text-gray-600"
+                            className="text-secondary-400 hover:text-secondary-600"
                           >
                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -547,7 +547,7 @@ const ChatList = () => {
                           )}
                         </div>
                     {searchQuery && (
-                      <div className="mt-2 text-sm text-gray-600">
+                      <div className="mt-2 text-sm text-secondary-600">
                         Found <span className="font-semibold">{filteredChats.length}</span> of <span className="font-semibold">{chats.length}</span> chats
                           </div>
                         )}
@@ -561,7 +561,7 @@ const ChatList = () => {
         {/* Results */}
         {loading && chats.length === 0 ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
         ) : chats.length === 0 ? (
           <motion.div
@@ -584,10 +584,10 @@ const ChatList = () => {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-secondary-900 mb-2">
               No Chats Found
             </h3>
-            <p className="text-gray-500">
+            <p className="text-secondary-500">
               {selectedAccountId
                 ? "No chats found for the selected account."
                 : "Please select an account to view chats."}
@@ -596,7 +596,7 @@ const ChatList = () => {
         ) : (
           <>
             <div className="mb-4 flex items-center justify-between">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-secondary-600">
                 Showing <span className="font-semibold">{filteredChats.length}</span> of <span className="font-semibold">{chats.length}</span> chat{chats.length !== 1 ? 's' : ''}
                 {pagination.hasMore && " (more available)"}
               </p>
@@ -609,13 +609,13 @@ const ChatList = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className={`card hover:shadow-lg transition-shadow ${
+                  className={`card hover-lift ${
                     isSelectionMode ? "cursor-default" : "cursor-pointer"
                   } ${
                     selectedChats.has(chat.id)
-                      ? "border-2 border-purple-500 bg-purple-50"
+                      ? "border-2 border-primary-500 bg-primary-50"
                       : chat.unreadCount > 0
-                      ? "border-l-4 border-l-red-500 bg-red-50/30"
+                      ? "border-l-4 border-l-error-500 bg-error-50/30"
                       : ""
                   }`}
                   onClick={(e) => handleChatClick(chat.id, chat.name, e)}
@@ -628,7 +628,7 @@ const ChatList = () => {
                           checked={selectedChats.has(chat.id)}
                           onChange={() => handleChatSelect(chat.id)}
                           onClick={(e) => e.stopPropagation()}
-                          className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                          className="w-5 h-5 text-primary-600 border-secondary-300 rounded focus:ring-primary-500 cursor-pointer"
                         />
                       )}
                       <div className="relative">
@@ -646,18 +646,18 @@ const ChatList = () => {
                           />
                         ) : null}
                         <div
-                          className={`w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          className={`w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 ${
                             (chat.profilePictureData || chat.profilePicture) ? 'hidden' : 'flex'
                           }`}
                         >
-                          <span className="text-purple-600 font-bold text-lg">
+                          <span className="text-primary-600 font-bold text-lg">
                             {chat.name?.charAt(0)?.toUpperCase() || "C"}
                           </span>
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="text-base font-semibold text-gray-900 truncate">
+                          <h3 className="text-base font-semibold text-secondary-900 truncate">
                             {chat.name || "Unknown"}
                           </h3>
                           {chat.pinned === 1 && (
@@ -672,11 +672,11 @@ const ChatList = () => {
                           )}
                         </div>
                         {chat.username && (
-                          <p className="text-sm text-gray-500 truncate">
+                          <p className="text-sm text-secondary-500 truncate">
                             @{chat.username}
                           </p>
                         )}
-                        <div className="flex items-center space-x-4 text-xs text-gray-500">
+                        <div className="flex items-center space-x-4 text-xs text-secondary-500">
                           <span>ID: {chat.id}</span>
                           {chat.providerId && (
                             <span>Provider ID: {chat.providerId}</span>
@@ -686,22 +686,22 @@ const ChatList = () => {
                           <div className="flex-1 min-w-0">
                             {loadingPreviews.has(chat.id) ? (
                               <div className="flex items-center space-x-2">
-                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-purple-600"></div>
-                                <span className="text-xs text-gray-400">Loading preview...</span>
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary-600"></div>
+                                <span className="text-xs text-secondary-400">Loading preview...</span>
                               </div>
                             ) : chatPreviews.has(chat.id) && chatPreviews.get(chat.id) ? (
-                              <p className="text-sm text-gray-600 truncate">
+                              <p className="text-sm text-secondary-600 truncate">
                                 {chatPreviews.get(chat.id).isFromMe ? 'You: ' : ''}
                                 {chatPreviews.get(chat.id).text || 'No message content'}
                               </p>
                             ) : (
-                              <p className="text-sm text-gray-400 italic">
+                              <p className="text-sm text-secondary-400 italic">
                                 Click to start conversation
                               </p>
                             )}
                           </div>
                           {chat.unreadCount > 0 && (
-                            <span className="text-red-600 font-semibold text-xs ml-2 flex-shrink-0">
+                            <span className="text-error-600 font-semibold text-xs ml-2 flex-shrink-0">
                               {chat.unreadCount} new
                             </span>
                           )}
@@ -710,14 +710,14 @@ const ChatList = () => {
                     </div>
                     <div className="flex flex-col items-end space-y-1 flex-shrink-0 ml-4">
                       {/* Status indicator - colored badges */}
-                      <div className={`text-xs px-2 py-1 mb-2 rounded-full font-medium ${
+                      <div className={`badge mb-2 ${
                         chat.userStatus === 'onboarded'
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-success-100 text-success-800 border border-success-200 rounded-full px-2 py-1 text-xs font-medium'
                           : chat.userStatus === 'offboarded'
-                          ? 'bg-red-100 text-red-800'
+                          ? 'badge-error'
                           : chat.userStatus === 'not_interested'
-                          ? 'bg-orange-100 text-orange-800'
-                          : 'bg-blue-100 text-blue-800'
+                          ? 'badge-warning'
+                          : 'badge-info'
                       }`}>
                         {chat.userStatus === 'onboarded'
                           ? 'Onboarded'
@@ -727,22 +727,22 @@ const ChatList = () => {
                           ? 'Not Interested'
                           : 'Contacted'}
                         </div>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-secondary-500">
                         {formatDate(chat.timestamp)}
                       </span>
                       <div className="flex items-center space-x-2">
                         {chat.archived === 1 && (
-                          <span className="text-xs text-gray-400" title="Archived">
+                          <span className="text-xs text-secondary-400" title="Archived">
                             📦
                           </span>
                         )}
                         {chat.mutedUntil !== -1 && (
-                          <span className="text-xs text-gray-400" title="Muted">
+                          <span className="text-xs text-secondary-400" title="Muted">
                             🔇
                           </span>
                         )}
                         {chat.readOnly === 1 && (
-                          <span className="text-xs text-gray-400" title="Read Only">
+                          <span className="text-xs text-secondary-400" title="Read Only">
                             👁️
                           </span>
                         )}

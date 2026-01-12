@@ -127,11 +127,11 @@ const Profile = () => {
   };
 
   return (
-    <div id="src_pages_Profile_5nll" className="h-screen bg-gray-50 flex overflow-hidden">
+    <div id="src_pages_Profile_5nll" className="h-screen bg-secondary-50 flex overflow-hidden">
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
-        <div id="src_pages_Profile_0nta" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
-        <h1 id="src_pages_Profile_ggo7" className="text-3xl font-bold text-gray-900 mb-8">Profile Settings</h1>
+        <div id="src_pages_Profile_0nta" className="content-container section-spacing lg:pt-4 pt-16">
+        <h1 id="src_pages_Profile_ggo7" className="text-3xl font-bold text-secondary-900 mb-8">Profile Settings</h1>
 
         <motion.div
           id="src_pages_Profile_xkw8" initial={{ opacity: 0, y: 20 }}
@@ -141,13 +141,13 @@ const Profile = () => {
         >
           <div className="card">
             <h2 className="text-xl font-semibold mb-4">Linked Accounts</h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-secondary-600 mb-4">
               Manage your connected social media accounts
             </p>
 
             {loadingAccounts ? (
               <div className="flex justify-center items-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
               </div>
             ) : linkedAccounts.length === 0 ? (
               <motion.div
@@ -170,8 +170,8 @@ const Profile = () => {
                     />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Linked Accounts</h3>
-                <p className="text-gray-500">
+                <h3 className="text-lg font-medium text-secondary-900 mb-2">No Linked Accounts</h3>
+                <p className="text-secondary-500">
                   You don't have any accounts linked
                 </p>
               </motion.div>
@@ -183,7 +183,7 @@ const Profile = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    className="border border-secondary-200 rounded-lg p-4 hover-lift"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center space-x-3">
@@ -212,7 +212,7 @@ const Profile = () => {
                             }}
                           />
                           <div
-                            className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center"
+                            className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center"
                             style={{
                               display: (
                                 accountProfiles[account.id]?.profilePictureData ||
@@ -221,14 +221,14 @@ const Profile = () => {
                               ) ? 'none' : 'flex'
                             }}
                           >
-                            <span className="text-purple-600 font-bold text-sm">
+                            <span className="text-primary-600 font-bold text-sm">
                               {accountProfiles[account.id]?.fullName?.charAt(0)?.toUpperCase() || account.name?.charAt(0)?.toUpperCase() || "A"}
                             </span>
                           </div>
                         </div>
                         <div>
                           <div className="flex items-center space-x-1">
-                            <h4 className="text-base font-semibold text-gray-900">
+                            <h4 className="text-base font-semibold text-secondary-900">
                               {accountProfiles[account.id]?.fullName || account.name}
                             </h4>
                             {accountProfiles[account.id]?.isVerified && (
@@ -242,7 +242,7 @@ const Profile = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-secondary-500">
                             @{accountProfiles[account.id]?.publicIdentifier || account.username}
                           </p>
                         </div>
@@ -251,34 +251,34 @@ const Profile = () => {
 
                     {loadingProfiles[account.id] ? (
                       <div className="flex justify-center py-2">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
                       </div>
                     ) : accountProfiles[account.id] ? (
                       <>
                         {accountProfiles[account.id].biography && (
-                          <p className="text-sm text-gray-700 mb-3 line-clamp-2">
+                          <p className="text-sm text-secondary-700 mb-3 line-clamp-2">
                             {accountProfiles[account.id].biography}
                           </p>
                         )}
 
                         <div className="grid grid-cols-3 gap-2 mb-3">
                           <div className="text-center">
-                            <p className="text-sm font-semibold text-purple-600">
+                            <p className="text-sm font-semibold text-primary-600">
                               {formatNumber(accountProfiles[account.id].followersCount)}
                             </p>
-                            <p className="text-xs text-gray-500">Followers</p>
+                            <p className="text-xs text-secondary-500">Followers</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-sm font-semibold text-purple-600">
+                            <p className="text-sm font-semibold text-primary-600">
                               {formatNumber(accountProfiles[account.id].followingCount)}
                             </p>
-                            <p className="text-xs text-gray-500">Following</p>
+                            <p className="text-xs text-secondary-500">Following</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-sm font-semibold text-purple-600">
+                            <p className="text-sm font-semibold text-primary-600">
                               {formatNumber(accountProfiles[account.id].postsCount)}
                             </p>
-                            <p className="text-xs text-gray-500">Posts</p>
+                            <p className="text-xs text-secondary-500">Posts</p>
                           </div>
                         </div>
                       </>
@@ -286,30 +286,30 @@ const Profile = () => {
 
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Platform</span>
-                        <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs font-medium rounded-full">
+                        <span className="text-secondary-600">Platform</span>
+                        <span className="badge-info">
                           {account.type}
                         </span>
                       </div>
 
                       {accountProfiles[account.id]?.category && (
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-600">Category</span>
-                          <span className="px-2 py-1 bg-purple-100 text-purple-600 text-xs font-medium rounded-full">
+                          <span className="text-secondary-600">Category</span>
+                          <span className="badge-accent">
                             {accountProfiles[account.id].category}
                           </span>
                         </div>
                       )}
 
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Status</span>
+                        <span className="text-secondary-600">Status</span>
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          className={`badge ${
                             account.status === "ERROR"
-                              ? "bg-red-100 text-red-600"
+                              ? "badge-error"
                               : account.status === "ACTIVE"
-                              ? "bg-green-100 text-green-600"
-                              : "bg-yellow-100 text-yellow-600"
+                              ? "badge-success"
+                              : "badge-warning"
                           }`}
                         >
                           {account.status}
@@ -317,19 +317,19 @@ const Profile = () => {
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600">Connected</span>
-                        <span className="text-gray-900">
+                        <span className="text-secondary-600">Connected</span>
+                        <span className="text-secondary-900">
                           {formatDate(account.createdAt)}
                         </span>
                       </div>
                     </div>
 
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <div className="text-xs text-gray-500">
+                    <div className="mt-3 pt-3 border-t border-secondary-200">
+                      <div className="text-xs text-secondary-500">
                         Account ID: <span className="font-mono">{account.id}</span>
                       </div>
                       {accountProfiles[account.id]?.providerId && (
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-secondary-500 mt-1">
                           Provider ID: <span className="font-mono">{accountProfiles[account.id].providerId}</span>
                         </div>
                       )}
@@ -340,11 +340,11 @@ const Profile = () => {
             )}
 
             {linkedAccounts.length > 0 && (
-              <div className="mt-6 bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div className="mt-6 gradient-bg-alt rounded-lg p-4">
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
                     <svg
-                      className="h-5 w-5 text-purple-600"
+                      className="h-5 w-5 text-primary-600"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -356,10 +356,10 @@ const Profile = () => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-purple-900">
+                    <h3 className="text-sm font-medium text-primary-900">
                       About Linked Accounts
                     </h3>
-                    <p className="mt-1 text-sm text-purple-700">
+                    <p className="mt-1 text-sm text-primary-700">
                       These are your social media accounts connected.
                       You can manage and monitor these accounts from your dashboard.
                     </p>
@@ -373,7 +373,7 @@ const Profile = () => {
             <h2 id="src_pages_Profile_gns5" className="text-xl font-semibold mb-4">Profile Information</h2>
             <form id="src_pages_Profile_a9or" onSubmit={handleProfileSubmit}>
               <div id="src_pages_Profile_ob4e" className="mb-4">
-                <label id="src_pages_Profile_sl8t" className="block text-sm font-medium text-gray-700 mb-1">
+                <label id="src_pages_Profile_sl8t" className="form-label">
                   Full Name
                 </label>
                 <input
@@ -387,7 +387,7 @@ const Profile = () => {
               </div>
 
               <div id="src_pages_Profile_z6mm" className="mb-4">
-                <label id="src_pages_Profile_mwo9" className="block text-sm font-medium text-gray-700 mb-1">
+                <label id="src_pages_Profile_mwo9" className="form-label">
                   Email
                 </label>
                 <input
@@ -399,7 +399,7 @@ const Profile = () => {
               </div>
 
               <div id="src_pages_Profile_s1lz" className="mb-6">
-                <label id="src_pages_Profile_mp1k" className="block text-sm font-medium text-gray-700 mb-1">
+                <label id="src_pages_Profile_mp1k" className="form-label">
                   Company
                 </label>
                 <input

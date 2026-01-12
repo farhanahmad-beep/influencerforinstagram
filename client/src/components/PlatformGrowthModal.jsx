@@ -12,15 +12,15 @@ const PlatformGrowthModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
+    <div className="fixed inset-0 bg-secondary-900 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-hard rounded-md bg-white">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-semibold text-gray-900">
+          <h3 className="text-xl font-semibold text-secondary-900">
             Platform Growth Analytics
           </h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-secondary-400 hover:text-secondary-600 focus-ring"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -29,7 +29,7 @@ const PlatformGrowthModal = ({ isOpen, onClose }) => {
         </div>
 
         <div className="mb-6">
-          <h4 className="text-lg font-medium text-gray-900 mb-4">Platform Performance by Growth Rate</h4>
+          <h4 className="text-lg font-medium text-secondary-900 mb-4">Platform Performance by Growth Rate</h4>
           <div className="space-y-4">
             {platformGrowthData.map((platform, index) => (
               <div key={platform.platform} className="flex items-center justify-between">

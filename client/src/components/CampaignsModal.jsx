@@ -116,10 +116,10 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
       <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Campaigns</h2>
+            <h2 className="text-2xl font-bold text-secondary-900">Campaigns</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-secondary-400 hover:text-secondary-600 focus-ring"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -127,28 +127,28 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
             </button>
           </div>
 
-          <p className="text-gray-600 mb-6">
+          <p className="text-secondary-600 mb-6">
             Manage your marketing campaigns and track their performance
           </p>
 
           {/* Tab Navigation */}
-          <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+          <div className="flex space-x-1 mb-6 bg-secondary-100 p-1 rounded-lg">
             <button
               onClick={() => setActiveTab('active')}
-              className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+              className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors focus-ring ${
                 activeTab === 'active'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white text-secondary-900 shadow-soft'
+                  : 'text-secondary-500 hover:text-secondary-700'
               }`}
             >
               Active Campaigns ({campaigns.filter(c => c.status === 'running' || c.status === 'ready').length})
             </button>
             <button
               onClick={() => setActiveTab('completed')}
-              className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+              className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors focus-ring ${
                 activeTab === 'completed'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white text-secondary-900 shadow-soft'
+                  : 'text-secondary-500 hover:text-secondary-700'
               }`}
             >
               Completed Campaigns ({campaigns.filter(c => c.status === 'completed' || c.status === 'expired').length})
@@ -157,7 +157,7 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
 
           {loading ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
             </div>
           ) : filteredCampaigns.length === 0 ? (
             <div className="text-center py-12">
@@ -176,10 +176,10 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-secondary-900 mb-2">
                 No {activeTab === 'active' ? 'Active' : 'Completed'} Campaigns
               </h3>
-              <p className="text-gray-500">
+              <p className="text-secondary-500">
                 {activeTab === 'active'
                   ? "No campaigns are currently running or in ready status."
                   : "No campaigns have been completed yet."}
@@ -188,7 +188,7 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
           ) : (
             <>
               <div className="mb-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-secondary-600">
                   Showing <span className="font-semibold">{filteredCampaigns.length}</span> {activeTab === 'active' ? 'active' : 'completed'} campaign{filteredCampaigns.length !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -197,12 +197,12 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
                 {filteredCampaigns.map((campaign, index) => (
                   <div
                     key={campaign._id || index}
-                    className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200 hover:border-gray-300"
+                    className="bg-white rounded-xl shadow-soft border border-secondary-200 hover-lift"
                   >
                     <div className="p-6">
                       {/* Header with Title and Status */}
                       <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 pr-12">
+                        <h3 className="text-lg font-semibold text-secondary-900 pr-12">
                           {campaign.name}
                         </h3>
                         <div className="flex items-center justify-between mt-2">
@@ -211,13 +211,13 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
                             {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
                           </span>
                           <div className="relative group">
-                            <span className="text-sm text-gray-600 font-medium cursor-pointer">
+                            <span className="text-sm text-secondary-600 font-medium cursor-pointer hover:text-primary-600 transition-colors">
                               {campaign.userIds?.length || 0} users
                             </span>
 
                             {/* Tooltip */}
                             {campaign.userIds && campaign.userIds.length > 0 && (
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 whitespace-nowrap max-w-xs">
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-secondary-900 text-white text-sm rounded-lg shadow-hard opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 whitespace-nowrap max-w-xs">
                                 <div className="text-xs text-gray-300 mb-1">Campaign Users:</div>
                                 <div className="space-y-1 max-h-32 overflow-y-auto">
                                   {campaign.userIds.map((userId) => {
@@ -229,7 +229,7 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
                                     );
                                   })}
                                 </div>
-                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-secondary-900"></div>
                               </div>
                             )}
                           </div>
@@ -238,7 +238,7 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
 
                       {/* Description */}
                       {campaign.description && (
-                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        <p className="text-sm text-secondary-600 mb-4 line-clamp-2">
                           {campaign.description}
                         </p>
                       )}
@@ -246,17 +246,17 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
                       {/* Campaign Details */}
                       <div className="space-y-3 mb-4">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-500">Created</span>
-                          <span className="text-sm text-gray-900 font-medium">
+                          <span className="text-sm text-secondary-500">Created</span>
+                          <span className="text-sm text-secondary-900 font-medium">
                             {formatDate(campaign.createdAt)}
                           </span>
                         </div>
 
                         {campaign.expiresAt && (
                           <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-500">Expires</span>
+                            <span className="text-sm text-secondary-500">Expires</span>
                             <span className={`text-sm font-medium ${
-                              new Date(campaign.expiresAt) < new Date() ? 'text-red-600' : 'text-gray-900'
+                              new Date(campaign.expiresAt) < new Date() ? 'text-error-600' : 'text-secondary-900'
                             }`}>
                               {formatDate(campaign.expiresAt)}
                             </span>
@@ -265,17 +265,17 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
 
                         {campaign.notes && (
                           <div className="pt-2 border-t border-gray-100">
-                            <span className="text-sm text-gray-500">Notes</span>
-                            <p className="text-sm text-gray-900 mt-1 line-clamp-2">{campaign.notes}</p>
+                            <span className="text-sm text-secondary-500">Notes</span>
+                            <p className="text-sm text-secondary-900 mt-1 line-clamp-2">{campaign.notes}</p>
                           </div>
                         )}
                       </div>
 
                       {/* Campaign ID */}
                       <div className="pt-3 border-t border-gray-100">
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-secondary-500">
                           <p><span className="font-medium">Campaign ID:</span> {campaign._id}</p>
-                          <p className="text-purple-600 font-medium">Instagram</p>
+                          <p className="text-primary-600 font-medium">Instagram</p>
                         </div>
                       </div>
                     </div>
@@ -285,11 +285,11 @@ const CampaignsModal = ({ isOpen, onClose, initialTab = 'active' }) => {
             </>
           )}
 
-          <div className="mt-6 pt-4 border-t border-gray-200">
+          <div className="mt-6 pt-4 border-t border-secondary-200">
             <div className="flex justify-end">
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="btn-secondary"
               >
                 Close
               </button>
