@@ -778,13 +778,13 @@ const Onboard = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
+    <div className="h-screen bg-secondary-50 flex overflow-hidden">
       <Navbar />
       <div className="flex-1 lg:ml-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:pt-4 pt-16">
+        <div className="content-container section-spacing lg:pt-4 pt-16">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Onboard Management</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-secondary-900 mb-2">Onboard Management</h1>
+          <p className="text-secondary-600">
             Manage onboarded users and create campaigns
           </p>
         </div>
@@ -797,8 +797,8 @@ const Onboard = () => {
                 onClick={() => setActiveTab('users')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'users'
-                    ? 'border-purple-500 text-purple-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-secondary-500 hover:text-secondary-700 hover:border-secondary-300'
                 }`}
               >
                 Users ({onboardedUsers.length})
@@ -807,8 +807,8 @@ const Onboard = () => {
                 onClick={() => setActiveTab('campaigns')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'campaigns'
-                    ? 'border-purple-500 text-purple-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-secondary-500 hover:text-secondary-700 hover:border-secondary-300'
                 }`}
               >
                 Campaigns ({campaigns.length})
@@ -823,8 +823,8 @@ const Onboard = () => {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">Onboarded Users</h2>
-                  <p className="text-sm text-gray-600 mt-1">Manage users who have been onboarded</p>
+                  <h2 className="text-xl font-semibold text-secondary-900">Onboarded Users</h2>
+                  <p className="text-sm text-secondary-600 mt-1">Manage users who have been onboarded</p>
                 </div>
               </div>
 
@@ -832,13 +832,13 @@ const Onboard = () => {
               <div className="card mb-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="form-label">
                       Select Account for Messaging
                     </label>
                     {loadingAccounts ? (
                       <div className="input-field flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-2"></div>
-                        <span className="text-sm text-gray-500">Loading accounts...</span>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600 mr-2"></div>
+                        <span className="text-sm text-secondary-500">Loading accounts...</span>
                       </div>
                     ) : linkedAccounts.length > 0 ? (
                       <select
@@ -854,13 +854,13 @@ const Onboard = () => {
                         ))}
                       </select>
                     ) : (
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-secondary-500">
                         No linked accounts found. Please add a linked account first.
                       </p>
                     )}
                   </div>
                   {selectedAccountId && (
-                    <p className="text-sm text-green-600">
+                    <p className="text-sm text-success-600">
                       ✓ Account selected for campaign messaging
                     </p>
                   )}
@@ -880,7 +880,7 @@ const Onboard = () => {
                     </button>
                     <button
                       onClick={() => setShowCreateCampaignModal(true)}
-                      className="btn-primary text-sm"
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={selectedUsers.size === 0}
                     >
                       Create Campaign ({selectedUsers.size})
@@ -906,7 +906,7 @@ const Onboard = () => {
                     </button>
                     <button
                       onClick={handleDeleteMultipleClick}
-                      className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="btn-error text-sm"
                       disabled={selectedUsersForDelete.size === 0}
                     >
                       Delete Selected ({selectedUsersForDelete.size})
@@ -923,13 +923,13 @@ const Onboard = () => {
                   <>
                     <button
                       onClick={() => setIsSelectionMode(true)}
-                      className="btn-primary text-sm"
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors"
                     >
                       Create Campaign
                     </button>
                     <button
                       onClick={handleDeleteMultipleClick}
-                      className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors"
+                      className="btn-error text-sm"
                     >
                       Delete Multiple
                     </button>
@@ -940,7 +940,7 @@ const Onboard = () => {
 
             {loading ? (
               <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
               </div>
             ) : onboardedUsers.length === 0 ? (
               <motion.div
@@ -963,25 +963,25 @@ const Onboard = () => {
                     />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-secondary-900 mb-2">
                   No Onboarded Users
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-secondary-500">
                   No users have been onboarded yet. Use the "Onboard" button in Chat List to onboard users.
                 </p>
               </motion.div>
             ) : (
               <>
                 <div className="mb-4 flex items-center justify-between">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-secondary-600">
                     Showing <span className="font-semibold">{onboardedUsers.length}</span> onboarded user{onboardedUsers.length !== 1 ? 's' : ''}
                     {isSelectionMode && selectedUsers.size > 0 && (
-                      <span className="ml-2 text-purple-600 font-medium">
+                      <span className="ml-2 text-primary-600 font-medium">
                         ({selectedUsers.size} selected for campaign)
                       </span>
                     )}
                     {isDeleteMode && selectedUsersForDelete.size > 0 && (
-                      <span className="ml-2 text-red-600 font-medium">
+                      <span className="ml-2 text-error-600 font-medium">
                         ({selectedUsersForDelete.size} selected for deletion)
                       </span>
                     )}
@@ -995,10 +995,10 @@ const Onboard = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: (index % 20) * 0.05 }}
-                      className={`relative bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-200 ${
+                      className={`relative bg-white rounded-xl shadow-sm border border-secondary-200 hover-lift ${
                         selectedUsers.has(user.userId) || selectedUsersForDelete.has(user.userId)
-                          ? "border-2 border-purple-500 bg-purple-50/30 shadow-purple-100"
-                          : "hover:border-gray-300"
+                          ? "border-2 border-primary-500 bg-primary-50/30 shadow-primary-100"
+                          : "hover:border-secondary-300"
                       }`}
                     >
                       {/* Delete Icon - Top Right Corner */}
@@ -1006,7 +1006,7 @@ const Onboard = () => {
                         <button
                           onClick={() => handleDelete(user.userId, user.name)}
                           disabled={deletingUserId === user.userId}
-                          className="absolute top-3 right-3 p-1.5 bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                          className="absolute top-3 right-3 p-1.5 bg-error-50 hover:bg-error-100 text-error-500 hover:text-error-700 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed z-10"
                           title="Delete user"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1023,7 +1023,7 @@ const Onboard = () => {
                               type="checkbox"
                               checked={isSelectionMode ? selectedUsers.has(user.userId) : selectedUsersForDelete.has(user.userId)}
                               onChange={() => isSelectionMode ? handleUserSelect(user.userId) : handleUserSelectForDelete(user.userId)}
-                              className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                              className="w-5 h-5 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
                             />
                           )}
                           <div className="relative">
@@ -1045,24 +1045,24 @@ const Onboard = () => {
                                 (user.profilePictureData || user.profilePicture)
                                   ? 'hidden'
                                   : selectedUsers.has(user.userId) || selectedUsersForDelete.has(user.userId)
-                                    ? 'bg-purple-200'
-                                    : 'bg-purple-100'
+                                    ? 'bg-primary-200'
+                                    : 'bg-primary-100'
                               }`}
                             >
-                              <span className="text-purple-600 font-bold text-lg">
+                              <span className="text-primary-600 font-bold text-lg">
                                 {user.name?.charAt(0)?.toUpperCase() || user.username?.charAt(0)?.toUpperCase() || "U"}
                               </span>
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold text-gray-900 truncate mb-1">
+                            <h3 className="text-lg font-semibold text-secondary-900 truncate mb-1">
                               {user.name || "Unknown"}
                             </h3>
                             {user.username && (
-                              <p className="text-sm text-gray-500 truncate">@{user.username}</p>
+                              <p className="text-sm text-secondary-500 truncate">@{user.username}</p>
                             )}
                             {usersInCampaigns.has(user.userId) && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
+                              <span className="badge-success mt-1">
                                 <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
@@ -1078,34 +1078,34 @@ const Onboard = () => {
                             <div className="flex items-center justify-center space-x-4 py-2">
                               {user.followersCount !== undefined && user.followersCount > 0 && (
                                 <div className="flex flex-col items-center">
-                                  <span className="font-semibold text-gray-900 text-sm">{formatNumber(user.followersCount)}</span>
-                                  <span className="text-xs text-gray-500">Followers</span>
+                                  <span className="font-semibold text-secondary-900 text-sm">{formatNumber(user.followersCount)}</span>
+                                  <span className="text-xs text-secondary-500">Followers</span>
                                 </div>
                               )}
                               {user.followingCount !== undefined && user.followingCount > 0 && (
                                 <div className="flex flex-col items-center">
-                                  <span className="font-semibold text-gray-900 text-sm">{formatNumber(user.followingCount)}</span>
-                                  <span className="text-xs text-gray-500">Following</span>
+                                  <span className="font-semibold text-secondary-900 text-sm">{formatNumber(user.followingCount)}</span>
+                                  <span className="text-xs text-secondary-500">Following</span>
                                 </div>
                               )}
                             </div>
                           )}
 
                           <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-500">User ID</span>
-                            <span className="text-sm font-mono text-gray-900 bg-gray-50 px-2 py-1 rounded">
+                            <span className="text-sm text-secondary-500">User ID</span>
+                            <span className="text-sm font-mono text-secondary-900 bg-secondary-50 px-2 py-1 rounded">
                               {user.userId}
                             </span>
                           </div>
 
                           {user.status && (
                             <div className="flex items-center justify-between">
-                              <span className="text-sm text-gray-500">Status</span>
+                              <span className="text-sm text-secondary-500">Status</span>
                               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                user.status === 'onboarded' ? 'bg-green-100 text-green-800' :
-                                user.status === 'contacted' ? 'bg-blue-100 text-blue-800' :
-                                user.status === 'active' ? 'bg-purple-100 text-purple-800' :
-                                'bg-gray-100 text-gray-800'
+                                user.status === 'onboarded' ? 'bg-success-100 text-success-800' :
+                                user.status === 'contacted' ? 'bg-info-100 text-info-800' :
+                                user.status === 'active' ? 'bg-primary-100 text-primary-800' :
+                                'bg-secondary-100 text-secondary-800'
                               }`}>
                                 {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                               </span>
@@ -1114,8 +1114,8 @@ const Onboard = () => {
 
                           {user.chatId && user.chatId !== user.userId && (
                             <div className="flex items-center justify-between">
-                              <span className="text-sm text-gray-500">Chat ID</span>
-                              <span className="text-sm font-mono text-gray-900 bg-gray-50 px-2 py-1 rounded">
+                              <span className="text-sm text-secondary-500">Chat ID</span>
+                              <span className="text-sm font-mono text-secondary-900 bg-secondary-50 px-2 py-1 rounded">
                                 {user.chatId}
                               </span>
                             </div>
@@ -1123,8 +1123,8 @@ const Onboard = () => {
 
                           {user.providerMessagingId && (
                             <div className="flex items-center justify-between">
-                              <span className="text-sm text-gray-500">Messaging ID</span>
-                              <span className="text-sm font-mono text-gray-900 bg-gray-50 px-2 py-1 rounded truncate max-w-[120px]">
+                              <span className="text-sm text-secondary-500">Messaging ID</span>
+                              <span className="text-sm font-mono text-secondary-900 bg-secondary-50 px-2 py-1 rounded truncate max-w-[120px]">
                                 {user.providerMessagingId}
                               </span>
                             </div>
@@ -1132,8 +1132,8 @@ const Onboard = () => {
 
                           {user.createdAt && (
                             <div className="flex items-center justify-between">
-                              <span className="text-sm text-gray-500">Onboarded</span>
-                              <span className="text-sm text-gray-900">
+                              <span className="text-sm text-secondary-500">Onboarded</span>
+                              <span className="text-sm text-secondary-900">
                                 {formatDate(user.createdAt)}
                               </span>
                             </div>
@@ -1142,10 +1142,10 @@ const Onboard = () => {
 
                         {/* Campaigns Tags */}
                         {usersInCampaigns.has(user.userId) && (
-                          <div className="mt-4 pt-3 border-t border-gray-100">
+                          <div className="mt-4 pt-3 border-t border-secondary-100">
                             <div className="flex flex-wrap gap-1">
                               {usersInCampaigns.get(user.userId).map((campaignName, idx) => (
-                                <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                <span key={idx} className="badge-info">
                                   {campaignName}
                                 </span>
                               ))}
@@ -1155,28 +1155,28 @@ const Onboard = () => {
 
                         {/* Delete Progress */}
                         {isDeleteMode && deleteProgress[user.userId] && (
-                          <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
+                          <div className="mt-4 p-3 bg-secondary-50 rounded-lg border border-secondary-200">
                             <div className="flex items-center space-x-2">
                               {deleteProgress[user.userId].status === "pending" && (
                                 <>
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                                  <span className="text-sm text-gray-600">Deleting...</span>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-secondary-600"></div>
+                                  <span className="text-sm text-secondary-600">Deleting...</span>
                                 </>
                               )}
                               {deleteProgress[user.userId].status === "success" && (
                                 <>
-                                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-4 h-4 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                   </svg>
-                                  <span className="text-sm text-green-600">Deleted successfully</span>
+                                  <span className="text-sm text-success-600">Deleted successfully</span>
                                 </>
                               )}
                               {deleteProgress[user.userId].status === "error" && (
                                 <>
-                                  <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-4 h-4 text-error-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                   </svg>
-                                  <span className="text-sm text-red-600">{deleteProgress[user.userId].message}</span>
+                                  <span className="text-sm text-error-600">{deleteProgress[user.userId].message}</span>
                                 </>
                               )}
                             </div>
@@ -1196,10 +1196,10 @@ const Onboard = () => {
           <>
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Campaigns</h2>
-                <p className="text-sm text-gray-600 mt-1">Manage your marketing campaigns</p>
+                <h2 className="text-xl font-semibold text-secondary-900">Campaigns</h2>
+                <p className="text-sm text-secondary-600 mt-1">Manage your marketing campaigns</p>
                 {!selectedAccountId && (
-                  <p className="text-xs text-orange-600 mt-1">
+                  <p className="text-xs text-warning-600 mt-1">
                     ⚠️ Select an account in the Users tab to send campaign messages
                   </p>
                 )}
@@ -1207,7 +1207,7 @@ const Onboard = () => {
               <button
                 onClick={fetchCampaigns}
                 disabled={loadingCampaigns}
-                className="flex items-center px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                className="flex items-center px-3 py-2 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-100 rounded-lg transition-colors disabled:opacity-50"
                 title="Refresh campaigns"
               >
                 <svg className={`w-4 h-4 mr-2 ${loadingCampaigns ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1219,7 +1219,7 @@ const Onboard = () => {
 
             {loadingCampaigns ? (
               <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
               </div>
             ) : campaigns.length === 0 ? (
               <motion.div
@@ -1772,7 +1772,7 @@ const Onboard = () => {
                   </button>
                   <button
                     type="submit"
-                    className="btn-primary flex-1"
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!campaignForm.name.trim() || selectedUsers.size === 0}
                   >
                     Create Campaign
