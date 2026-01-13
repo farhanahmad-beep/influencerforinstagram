@@ -158,7 +158,7 @@ const Dashboard = () => {
             >
               <div className="flex-1">
                 <p className="text-sm text-secondary-500">Total Linked Accounts</p>
-                <p className="text-3xl font-bold text-primary-700 mt-2">{stats.linkedAccounts}</p>
+                <p className="text-3xl font-bold text-secondary-600 mt-2">{stats.linkedAccounts}</p>
                 <p className="text-xs text-secondary-400 mt-1">Updated every 30 minutes</p>
               </div>
               <div className="w-20 h-12 ml-4">
@@ -182,7 +182,7 @@ const Dashboard = () => {
             >
               <div className="flex-1">
                 <p className="text-sm text-secondary-500">Messages Sent</p>
-                <p className="text-3xl font-bold text-primary-700 mt-2">{stats.messagesSent}</p>
+                <p className="text-3xl font-bold text-secondary-600 mt-2">{stats.messagesSent}</p>
                 <p className="text-xs text-secondary-400 mt-1">Total messages sent</p>
               </div>
               <div className="w-20 h-12 ml-4">
@@ -221,7 +221,7 @@ const Dashboard = () => {
               <div className="flex-1">
                 {/* onboarded user details */}
                 <p className="text-sm text-secondary-500">User who show interest</p>
-                <p className="text-3xl font-bold text-primary-700 mt-2">{stats.onboardedUsers}</p>
+                <p className="text-3xl font-bold text-secondary-600 mt-2">{stats.onboardedUsers}</p>
                 <p className="text-xs text-secondary-400 mt-1">Total users who show interest</p>
               </div>
               <div className="w-20 h-12 ml-4">
@@ -248,7 +248,7 @@ const Dashboard = () => {
             >
               <div className="flex-1">
                 <p className="text-sm text-secondary-500">Active Campaigns</p>
-                <p className="text-3xl font-bold text-primary-700 mt-2">{stats.activeCampaigns}</p>
+                <p className="text-3xl font-bold text-secondary-600 mt-2">{stats.activeCampaigns}</p>
                 <p className="text-xs text-secondary-400 mt-1">Currently running</p>
               </div>
               <div className="w-20 h-12 ml-4">
@@ -275,7 +275,7 @@ const Dashboard = () => {
             >
               <div className="flex-1">
                 <p className="text-sm text-secondary-500">Completed Campaigns</p>
-                <p className="text-3xl font-bold text-success-600 mt-2">{stats.completedCampaigns}</p>
+                <p className="text-3xl font-bold text-secondary-600 mt-2">{stats.completedCampaigns}</p>
                 <p className="text-xs text-secondary-400 mt-1">Successfully completed</p>
               </div>
               <div className="w-20 h-12 ml-4">
@@ -299,7 +299,7 @@ const Dashboard = () => {
             >
               <div className="flex-1">
                 <p className="text-sm text-secondary-500">Total Registrations on Dynamite</p>
-                <p className="text-3xl font-bold text-primary-700 mt-2">{stats.trackingRegistrations || 0}</p>
+                <p className="text-3xl font-bold text-secondary-600 mt-2">{stats.trackingRegistrations || 0}</p>
                 <p className="text-xs text-secondary-400 mt-1">Users who Register Through Campaign</p>
               </div>
               <div className="w-20 h-12 ml-4">
