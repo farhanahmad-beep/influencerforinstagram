@@ -455,7 +455,7 @@ const InfluencerGrowth = () => {
                       </span>
                     )}
                     {topFilter !== "all" && (
-                      <span className="badge-success">
+                      <span className="badge-success hover:bg-success-200">
                         Top {topFilter}
                         <button
                           onClick={() => setTopFilter("all")}
@@ -544,8 +544,8 @@ const InfluencerGrowth = () => {
                       <div className="absolute top-4 right-16 z-10">
                         <div className={`px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center space-x-1 ${
                           index === 0 ? 'bg-gradient-to-r from-warning-400 to-warning-600 text-white' :
-                          index === 1 ? 'bg-gradient-to-r from-secondary-300 to-secondary-500 text-white' :
-                          index === 2 ? 'bg-gradient-to-r from-warning-400 to-warning-600 text-white' :
+                          index === 1 ? 'bg-gradient-to-r from-slate-400 to-slate-600 text-white' :
+                          index === 2 ? 'bg-gradient-to-r from-orange-500 to-orange-700 text-white' :
                           'bg-secondary-200 text-secondary-700'
                         }`}>
                           <span>#{index + 1}</span>
