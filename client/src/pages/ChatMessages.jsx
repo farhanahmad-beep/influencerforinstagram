@@ -568,17 +568,17 @@ const ChatMessages = () => {
                 )}
               </div>
 
-              <div className="flex-1">
+            <div className="flex-1">
                 <h1 className="text-2xl font-bold text-secondary-900 mb-1">{chatName}</h1>
-                {/* Offboarded User Indicator */}
-                {isOffboarded && (
-                  <div className="flex items-center space-x-2 mt-2">
+              {/* Offboarded User Indicator */}
+              {isOffboarded && (
+                <div className="flex items-center space-x-2 mt-2">
                     <svg className="w-4 h-4 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                     <span className="text-sm text-error-700 font-medium">This user is currently offboarded</span>
-                  </div>
-                )}
+                </div>
+              )}
               </div>
             </div>
           </div>
@@ -937,8 +937,8 @@ const ChatMessages = () => {
               </form>
               {!accountId && (
               <p className="text-sm text-error-600 mt-2">
-                Account ID is required to send messages
-              </p>
+                  Account ID is required to send messages
+                </p>
               )}
             </div>
 

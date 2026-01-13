@@ -11,7 +11,7 @@ const Followers = () => {
   const navigate = useNavigate();
 
   // Predefined message template
-  const getPredefinedMessage = (username) => `Hey! Check this out: https://poc_influencerstore.icod.ai/register?${username}`;
+  const getPredefinedMessage = (username) => `Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register?${username}`;
   const [allData, setAllData] = useState([]); // Store all fetched data
   const [filteredData, setFilteredData] = useState([]); // Store filtered data for display
   const [loading, setLoading] = useState(false);

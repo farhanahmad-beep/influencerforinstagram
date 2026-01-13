@@ -1164,9 +1164,23 @@ export const getStats = async (req, res) => {
     // Fetch registrations with trackingId (campaign signups)
     let trackingRegistrations = 0;
     try {
-      trackingRegistrations = await User.countDocuments({
-        trackingId: { $exists: true, $ne: '' },
-      });
+      // Use the same aggregation logic as getTrackingRegistrations for consistency
+      const result = await User.aggregate([
+        {
+          $match: {
+            $and: [
+              { trackingId: { $exists: true } },
+              { trackingId: { $ne: null } },
+              { trackingId: { $ne: '' } },
+              { trackingId: { $not: { $regex: /^\s*$/ } } } // Exclude trackingIds that are only whitespace
+            ]
+          }
+        },
+        {
+          $count: "total"
+        }
+      ]);
+      trackingRegistrations = result.length > 0 ? result[0].total : 0;
     } catch (dbError) {
       console.error('Failed to fetch tracking registrations count:', dbError.message);
     }
@@ -1196,10 +1210,15 @@ export const getStats = async (req, res) => {
 export const getTrackingRegistrations = async (req, res) => {
   try {
     const registrations = await User.aggregate([
-      // Match users with trackingId
+      // Match users with valid trackingId (exists, not null, not empty, not just whitespace)
       {
         $match: {
-          trackingId: { $exists: true, $ne: null, $ne: '' }
+          trackingId: {
+            $exists: true,
+            $ne: null,
+            $ne: '',
+            $not: { $regex: /^\s*$/ } // Exclude trackingIds that are only whitespace
+          }
         }
       },
       // Sort by creation date (newest first)
@@ -1328,7 +1347,7 @@ export const getTrackingRegistrations = async (req, res) => {
           as: 'storeInfo.orders'
         }
       },
-      // Lookup user statuses for additional context
+      // Lookup user statuses for additional context (get only one status per user)
       {
         $lookup: {
           from: 'userstatuses',
@@ -1337,11 +1356,10 @@ export const getTrackingRegistrations = async (req, res) => {
           as: 'statusInfo'
         }
       },
-      // Unwind status array
+      // Get the first status record for each user (to avoid duplication)
       {
-        $unwind: {
-          path: '$statusInfo',
-          preserveNullAndEmptyArrays: true
+        $addFields: {
+          statusInfo: { $arrayElemAt: ['$statusInfo', 0] }
         }
       },
       // Project final fields

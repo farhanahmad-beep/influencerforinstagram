@@ -17,7 +17,7 @@ const UserProfile = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   
   // Predefined message template
-  const getPredefinedMessage = (username) => `Hey! Check this out: https://poc_influencerstore.icod.ai/register?${username}`;
+  const getPredefinedMessage = (username) => `Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register?${username}`;
 
   const PREDEFINED_MESSAGE = getPredefinedMessage(profile?.publicIdentifier || profile?.username || profile?.handle || 'user');
 

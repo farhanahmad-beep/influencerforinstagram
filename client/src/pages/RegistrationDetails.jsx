@@ -23,7 +23,15 @@ const RegistrationDetails = () => {
         withCredentials: true,
       });
       if (response.data.success) {
-        setTrackingDetails(response.data.data?.registrations || []);
+        // Filter to only show users with valid tracking IDs
+        let filteredRegistrations = (response.data.data?.registrations || []).filter(
+          user => user.trackingId && user.trackingId.trim() !== ''
+        );
+
+        // Sort by creation date (newest first) to ensure proper ordering
+        filteredRegistrations.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        setTrackingDetails(filteredRegistrations);
       } else {
         toast.error(response.data.error || 'Failed to fetch tracking registrations');
       }
@@ -215,11 +223,15 @@ const RegistrationDetails = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div>
-                              <div className="text-sm font-semibold text-gray-900">
-                                @{item.trackingId || item.username || 'N/A'}
-                              </div>
-                              {item.trackingId && (
-                                <div className="text-xs text-gray-500">Tracking ID</div>
+                              {item.trackingId ? (
+                                <>
+                                  <div className="text-sm font-semibold text-gray-900">
+                                    @{item.trackingId}
+                                  </div>
+                                  <div className="text-xs text-gray-500">Tracking ID</div>
+                                </>
+                              ) : (
+                                <div className="text-sm text-gray-400">No Tracking ID</div>
                               )}
                             </div>
                           </div>

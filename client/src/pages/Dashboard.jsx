@@ -298,7 +298,7 @@ const Dashboard = () => {
               onClick={() => navigate('/registration-details')}
             >
               <div className="flex-1">
-                <p className="text-sm text-secondary-500">Total Registrations on Dynamite</p>
+                <p className="text-sm text-secondary-500">Total Registrations on Dynamite Influencer Store</p>
                 <p className="text-3xl font-bold text-secondary-600 mt-2">{stats.trackingRegistrations || 0}</p>
                 <p className="text-xs text-secondary-400 mt-1">Users who Register Through Campaign</p>
               </div>

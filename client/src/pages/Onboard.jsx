@@ -594,7 +594,7 @@ const Onboard = () => {
       totalUsers: campaign.userIds.length
     }));
 
-    const getCampaignMessage = (username) => `Hey! Check this out: https://poc_influencerstore.icod.ai/register?${username}`;
+    const getCampaignMessage = (username) => `Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register?${username}`;
 
     try {
       // First, fetch all existing chats for this account

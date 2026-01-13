@@ -84,7 +84,7 @@ const CampaignMessageModal = ({ isOpen, onClose, campaign, users, selectedAccoun
 
             <div className="bg-white p-4 rounded-lg border border-purple-100">
               <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
-                Hey! Check this out: https://poc_influencerstore.icod.ai/register
+                Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register
               </p>
             </div>
 

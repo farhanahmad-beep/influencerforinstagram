@@ -9,7 +9,7 @@ const GlobalSearch = () => {
   const navigate = useNavigate();
 
   // Predefined message template
-  const getPredefinedMessage = (username) => `Hey! Check this out: https://poc_influencerstore.icod.ai/register?${username}`;
+  const getPredefinedMessage = (username) => `Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register?${username}`;
 
   const [keyword, setKeyword] = useState("");
   const [minFollowers, setMinFollowers] = useState("");
