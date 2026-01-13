@@ -783,7 +783,7 @@ const Onboard = () => {
       <div className="flex-1 lg:ml-0 overflow-y-auto">
         <div className="content-container section-spacing lg:pt-4 pt-16">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-secondary-900 mb-2">Onboard Management</h1>
+          <h1 className="text-3xl font-bold text-secondary-900 mb-2">Campaigns Management</h1>
           <p className="text-secondary-600">
             Manage onboarded users and create campaigns
           </p>
@@ -1062,7 +1062,7 @@ const Onboard = () => {
                               <p className="text-sm text-secondary-500 truncate">@{user.username}</p>
                             )}
                             {usersInCampaigns.has(user.userId) && (
-                              <span className="badge-success mt-1">
+                              <span className="badge-success hover:bg-green-200 mt-1">
                                 <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
