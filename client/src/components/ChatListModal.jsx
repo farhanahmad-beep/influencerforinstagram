@@ -182,7 +182,7 @@ const ChatListModal = ({ isOpen, onClose }) => {
               >
                 {linkedAccounts.map((account) => (
                   <option key={account.id} value={account.id}>
-                    @{account.username} - {account.id}
+                    @{account.username}
                   </option>
                 ))}
               </select>
