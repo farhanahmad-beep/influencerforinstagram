@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const CampaignMessageModal = ({ isOpen, onClose, campaign, users, selectedAccountId }) => {
+const CampaignMessageModal = ({ isOpen, onClose, campaign, users, selectedAccountId, customMessage }) => {
   const navigate = useNavigate();
 
   if (!isOpen || !campaign) return null;
@@ -85,7 +85,7 @@ const CampaignMessageModal = ({ isOpen, onClose, campaign, users, selectedAccoun
 
             <div className="bg-white p-4 rounded-lg border border-gray-100">
               <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
-                Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register
+                {customMessage || "Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register"}
               </p>
             </div>
 

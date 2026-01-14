@@ -41,6 +41,9 @@ const Onboard = () => {
   const [newExpirationDate, setNewExpirationDate] = useState('');
   const [showCampaignMessageModal, setShowCampaignMessageModal] = useState(false);
   const [selectedCampaignForMessage, setSelectedCampaignForMessage] = useState(null);
+  const [showStartCampaignModal, setShowStartCampaignModal] = useState(false);
+  const [startingCampaign, setStartingCampaign] = useState(null);
+  const [campaignMessage, setCampaignMessage] = useState("");
 
   useEffect(() => {
     fetchOnboardedUsers();
@@ -583,7 +586,7 @@ const Onboard = () => {
     }
   };
 
-  const sendCampaignMessages = async (campaignId, campaign) => {
+  const sendCampaignMessages = async (campaignId, campaign, customMessage = null) => {
     // Add campaign to sending state
     setSendingCampaigns(prev => new Set([...prev, campaignId]));
 
@@ -651,7 +654,22 @@ const Onboard = () => {
         try {
           // Get personalized message for this user
           const username = user.username || 'user';
-          const personalizedMessage = getCampaignMessage(username);
+          let personalizedMessage;
+
+          if (customMessage) {
+            // Check if custom message contains a URL
+            const hasUrl = customMessage.includes('http') || customMessage.includes('dynamiteinfluencerstore');
+            if (hasUrl) {
+              // If it contains a URL, append username if no query params exist
+              personalizedMessage = customMessage.includes('?') ? customMessage : `${customMessage}?${username}`;
+            } else {
+              // If it's just a plain message, use it as-is
+              personalizedMessage = customMessage;
+            }
+          } else {
+            // Use default message with username
+            personalizedMessage = getCampaignMessage(username);
+          }
 
           // Send message to existing chat
           const messageResponse = await axios.post(
@@ -1418,10 +1436,12 @@ const Onboard = () => {
                                   toast.error("Please select an account in the Users tab first to send messages");
                                   setActiveTab('users');
                                 } else {
-                                  handleUpdateCampaignStatus(campaign._id, 'running');
+                                  setStartingCampaign(campaign);
+                                  setCampaignMessage("Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register");
+                                  setShowStartCampaignModal(true);
                                 }
                               }}
-                              className="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                              className="w-full px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
                               disabled={sendingCampaigns.has(campaign._id)}
                             >
                               {sendingCampaigns.has(campaign._id) ? (
@@ -1441,13 +1461,13 @@ const Onboard = () => {
                                 <>
                                   <button
                                     onClick={() => handleUpdateCampaignStatus(campaign._id, 'paused')}
-                                    className="flex-1 px-3 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 transition-colors"
+                                    className="flex-1 px-3 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
                                   >
                                     Pause
                                   </button>
                                   <button
                                     onClick={() => handleUpdateCampaignStatus(campaign._id, 'completed')}
-                                    className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                    className="flex-1 px-3 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
                                   >
                                     Complete
                                   </button>
@@ -1459,10 +1479,12 @@ const Onboard = () => {
                                       toast.error("Please select an account in the Users tab first to send messages");
                                       setActiveTab('users');
                                     } else {
-                                      sendCampaignMessages(campaign._id, campaign);
+                                      setStartingCampaign(campaign);
+                                      setCampaignMessage("Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register");
+                                      setShowStartCampaignModal(true);
                                     }
                                   }}
-                                  className="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                                  className="w-full px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
                                 >
                                   Restart Campaign
                                 </button>
@@ -1485,7 +1507,7 @@ const Onboard = () => {
                           {campaign.status === 'paused' && (
                             <button
                               onClick={() => handleUpdateCampaignStatus(campaign._id, 'running')}
-                              className="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                              className="w-full px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
                               disabled={sendingCampaigns.has(campaign._id)}
                             >
                               {sendingCampaigns.has(campaign._id) ? (
@@ -1506,10 +1528,12 @@ const Onboard = () => {
                                   toast.error("Please select an account in the Users tab first to send messages");
                                   setActiveTab('users');
                                 } else {
-                                  handleUpdateCampaignStatus(campaign._id, 'running');
+                                  setStartingCampaign(campaign);
+                                  setCampaignMessage("Hey! Check this out: https://dynamiteinfluencerstore.icod.ai/register");
+                                  setShowStartCampaignModal(true);
                                 }
                               }}
-                              className="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                              className="w-full px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
                               disabled={sendingCampaigns.has(campaign._id)}
                             >
                               {sendingCampaigns.has(campaign._id) ? (
@@ -1526,7 +1550,7 @@ const Onboard = () => {
                           {campaign.status === 'expired' && (
                             <button
                               onClick={() => handleRenewClick(campaign)}
-                              className="w-full px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                              className="w-full px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
                             >
                               Renew Campaign
                             </button>
@@ -1553,6 +1577,7 @@ const Onboard = () => {
             selectedCampaignForMessage.userIds?.includes(user.userId)
           ) : []}
           selectedAccountId={selectedAccountId}
+          customMessage={null}
         />
 
         {/* Create Campaign Modal */}
@@ -1835,6 +1860,83 @@ const Onboard = () => {
                     disabled={!newExpirationDate}
                   >
                     Renew Campaign
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Start Campaign Message Modal */}
+        {showStartCampaignModal && startingCampaign && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-lg max-w-md w-full"
+            >
+              <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900">Start Campaign</h2>
+                <button
+                  onClick={() => {
+                    setShowStartCampaignModal(false);
+                    setStartingCampaign(null);
+                    setCampaignMessage("");
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                if (!campaignMessage.trim()) {
+                  toast.error("Please enter a message");
+                  return;
+                }
+                setShowStartCampaignModal(false);
+                sendCampaignMessages(startingCampaign._id, startingCampaign, campaignMessage.trim());
+                setStartingCampaign(null);
+                setCampaignMessage("");
+              }} className="p-6">
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Campaign Message for "{startingCampaign.name}"
+                  </label>
+                  <textarea
+                    value={campaignMessage}
+                    onChange={(e) => setCampaignMessage(e.target.value)}
+                    placeholder="Enter your campaign message..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                    rows="4"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    This message will be sent to all users in the campaign.
+                  </p>
+                </div>
+
+                <div className="flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowStartCampaignModal(false);
+                      setStartingCampaign(null);
+                      setCampaignMessage("");
+                    }}
+                    className="flex-1 btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    disabled={!campaignMessage.trim()}
+                  >
+                    Start Campaign
                   </button>
                 </div>
               </form>

@@ -726,7 +726,7 @@ const ChatList = () => {
                     <div className="flex flex-col items-end space-y-1 flex-shrink-0 ml-4">
                       {/* Status indicator - colored badges */}
                       <div className={`badge mb-2 ${
-                        chat.userStatus === 'onboarded'
+                        (chat.userStatus === 'onboarded' || chat.userStatus === 'active')
                           ? 'bg-success-100 text-success-800 border border-success-200 rounded-full px-2 py-1 text-xs font-medium'
                           : chat.userStatus === 'offboarded'
                           ? 'badge-error'
@@ -734,7 +734,7 @@ const ChatList = () => {
                           ? 'badge-warning'
                           : 'badge-info'
                       }`}>
-                        {chat.userStatus === 'onboarded'
+                        {(chat.userStatus === 'onboarded' || chat.userStatus === 'active')
                           ? 'Onboarded'
                           : chat.userStatus === 'offboarded'
                           ? 'Offboarded'

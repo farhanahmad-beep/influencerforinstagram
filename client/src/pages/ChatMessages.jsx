@@ -213,7 +213,7 @@ const ChatMessages = () => {
           const userStatus = response.data.data[0];
           setUserStatusData(userStatus); // Store the found user data
 
-          if (userStatus.status === 'onboarded') {
+          if (userStatus.status === 'onboarded' || userStatus.status === 'active') {
             setIsVerificationCompleted(true);
             setOnboardingStatus('success');
             setOffboardingStatus('idle');
