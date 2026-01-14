@@ -14,6 +14,7 @@ const ChatMessages = () => {
   const accountId = location.state?.accountId || "";
   const attendeeProviderId = location.state?.attendeeProviderId;
   const providerId = location.state?.providerId;
+  const userId = location.state?.userId; // Add userId from navigation state
   const chatData = location.state?.chatData;
 
   const [messages, setMessages] = useState([]);
@@ -189,8 +190,9 @@ const ChatMessages = () => {
   const checkUserStatus = async () => {
     // Try multiple possible IDs to find user status
     const searchIds = [
-      attendeeProviderId, // First priority - attendee provider ID
-      providerId,         // Second priority - provider ID
+      userId,             // First priority - direct user ID if available
+      attendeeProviderId, // Second priority - attendee provider ID
+      providerId,         // Third priority - provider ID
       chatId              // Fallback - chat ID
     ].filter(Boolean); // Remove undefined/null values
 
