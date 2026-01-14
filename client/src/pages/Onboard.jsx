@@ -1402,7 +1402,7 @@ const Onboard = () => {
                             })()
                           ) : (
                             <div className="w-full text-sm text-orange-700">
-                              Campaign progress will appear here when sending starts.
+                              Campaign progress will appear here.
                             </div>
                           )}
                         </div>
