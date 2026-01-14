@@ -1051,7 +1051,7 @@ const ModashSearch = () => {
                   <button
                     onClick={() => setIsUserSearch(!isUserSearch)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      isUserSearch ? 'bg-success-600' : 'bg-secondary-200'
+                      isUserSearch ? 'bg-black' : 'bg-secondary-200'
                     }`}
                   >
                     <span
