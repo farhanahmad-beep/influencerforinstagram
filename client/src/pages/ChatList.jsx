@@ -45,6 +45,24 @@ const ChatList = () => {
     return name.includes(query) || id.includes(query) || username.includes(query);
   });
 
+  // Helper function to get message text from message object, checking attachments if main text is empty
+  const getMessageText = (message) => {
+    // Get text content - first check main text, then check attachments
+    let text = message.text;
+
+    // If no main text, check attachments for text content
+    if (!text && message.attachments && message.attachments.length > 0) {
+      for (const attachment of message.attachments) {
+        if (attachment.link && attachment.link.text) {
+          text = attachment.link.text;
+          break; // Use the first attachment with text
+        }
+      }
+    }
+
+    return text || 'No message content';
+  };
+
   const handleChatClick = (chatId, chatName, e) => {
     // Prevent navigation if clicking on checkbox or in selection mode
     if (e?.target?.type === 'checkbox' || isSelectionMode) {
@@ -448,9 +466,6 @@ const ChatList = () => {
                       >
                         Cancel
                       </button>
-                      <span className="text-sm text-secondary-600">
-                        {selectedChats.size} selected
-                      </span>
                     </>
                   )}
                   <button
@@ -692,7 +707,7 @@ const ChatList = () => {
                             ) : chatPreviews.has(chat.id) && chatPreviews.get(chat.id) ? (
                               <p className="text-sm text-secondary-600 truncate">
                                 {chatPreviews.get(chat.id).isFromMe ? 'You: ' : ''}
-                                {chatPreviews.get(chat.id).text || 'No message content'}
+                                {getMessageText(chatPreviews.get(chat.id))}
                               </p>
                             ) : (
                               <p className="text-sm text-secondary-400 italic">

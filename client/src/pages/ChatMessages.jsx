@@ -464,7 +464,20 @@ const ChatMessages = () => {
     }
   };
 
-  const renderMessageWithLinks = (text) => {
+  const renderMessageWithLinks = (message) => {
+    // Get text content - first check main text, then check attachments
+    let text = message.text;
+
+    // If no main text, check attachments for text content
+    if (!text && message.attachments && message.attachments.length > 0) {
+      for (const attachment of message.attachments) {
+        if (attachment.link && attachment.link.text) {
+          text = attachment.link.text;
+          break; // Use the first attachment with text
+        }
+      }
+    }
+
     if (!text) return "(No text content)";
     
     // URL regex pattern - matches http, https, and www URLs
@@ -831,7 +844,7 @@ const ChatMessages = () => {
                         }`}
                       >
                         <p className="text-sm whitespace-pre-wrap break-words">
-                          {renderMessageWithLinks(message.text)}
+                          {renderMessageWithLinks(message)}
                         </p>
                       </div>
 
