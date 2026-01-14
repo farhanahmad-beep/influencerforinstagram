@@ -1352,18 +1352,18 @@ const Onboard = () => {
                           </p>
                         )}
 
-                        {/* Sending Progress */}
-                        {sendingCampaigns.has(campaign._id) && (
-                          (() => {
-                            const progress = campaignProgress.get(campaign._id);
-                            if (progress && progress.currentUser) {
-                              const currentUser = onboardedUsers.find(u => u.name === progress.currentUser || u.username === progress.currentUser);
-                              const completedCount = progress.completedUsers.length;
-                              const totalCount = progress.totalUsers;
+                        {/* Sending Progress / Placeholder to prevent layout shift */}
+                        <div className="mb-4 p-3 rounded-lg border min-h-[88px] flex items-center justify-between bg-orange-50 border-orange-200">
+                          {sendingCampaigns.has(campaign._id) ? (
+                            (() => {
+                              const progress = campaignProgress.get(campaign._id);
+                              if (progress && progress.currentUser) {
+                                const currentUser = onboardedUsers.find(u => u.name === progress.currentUser || u.username === progress.currentUser);
+                                const completedCount = progress.completedUsers.length;
+                                const totalCount = progress.totalUsers;
 
-                              return (
-                                <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                                  <div className="flex items-center justify-between">
+                                return (
+                                  <>
                                     <div className="flex items-center space-x-3">
                                       {currentUser?.profilePictureData || currentUser?.profilePicture ? (
                                         <img
@@ -1391,13 +1391,21 @@ const Onboard = () => {
                                     <div className="flex items-center space-x-2">
                                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
                                     </div>
-                                  </div>
+                                  </>
+                                );
+                              }
+                              return (
+                                <div className="w-full text-sm text-orange-700">
+                                  Preparing to send campaign messages...
                                 </div>
                               );
-                            }
-                            return null;
-                          })()
-                        )}
+                            })()
+                          ) : (
+                            <div className="w-full text-sm text-orange-700">
+                              Campaign progress will appear here when sending starts.
+                            </div>
+                          )}
+                        </div>
 
                         {/* Campaign Details */}
                         <div className="space-y-3 mb-4">
