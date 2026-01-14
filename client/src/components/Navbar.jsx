@@ -154,7 +154,7 @@ const Navbar = () => {
               <div className="flex flex-col">
                 <span className="text-3xl font-bold text-secondary-900 mt-6">InfluencerHub</span>
                 <div className="flex justify-end">
-                  <span className="text-sm text-primary-600 font-medium">Dynamite</span>
+                  <span className="text-sm text-secondary-600 font-medium">Dynamite</span>
                 </div>
               </div>
             </Link>
@@ -170,8 +170,8 @@ const Navbar = () => {
                 className={`
                   flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200
                   ${isActive(item.path)
-                    ? 'bg-primary-100 text-primary-700 border-r-4 border-primary-700 shadow-soft'
-                    : 'text-secondary-700 hover:bg-secondary-100 hover:text-primary-600'
+                    ? 'bg-secondary-200 text-secondary-700 border-r-4 border-secondary-700 shadow-soft'
+                    : 'text-secondary-900 hover:bg-secondary-100 hover:text-secondary-700'
                   }
                 `}
               >
@@ -184,7 +184,7 @@ const Navbar = () => {
           {/* User Info & Logout */}
           <div className="p-4 border-t border-secondary-200">
             <div className="flex items-center mb-4">
-              <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm hover-scale">
+              <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white font-semibold text-sm hover-scale">
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
               <span className="ml-3 text-sm font-medium text-secondary-700 truncate">

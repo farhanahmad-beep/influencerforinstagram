@@ -147,7 +147,7 @@ const Profile = () => {
 
             {loadingAccounts ? (
               <div className="flex justify-center items-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
               </div>
             ) : linkedAccounts.length === 0 ? (
               <motion.div
@@ -212,7 +212,7 @@ const Profile = () => {
                             }}
                           />
                           <div
-                            className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center"
+                            className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center"
                             style={{
                               display: (
                                 accountProfiles[account.id]?.profilePictureData ||
@@ -221,7 +221,7 @@ const Profile = () => {
                               ) ? 'none' : 'flex'
                             }}
                           >
-                            <span className="text-primary-600 font-bold text-sm">
+                            <span className="text-white font-bold text-sm">
                               {accountProfiles[account.id]?.fullName?.charAt(0)?.toUpperCase() || account.name?.charAt(0)?.toUpperCase() || "A"}
                             </span>
                           </div>
@@ -251,7 +251,7 @@ const Profile = () => {
 
                     {loadingProfiles[account.id] ? (
                       <div className="flex justify-center py-2">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
                       </div>
                     ) : accountProfiles[account.id] ? (
                       <>
@@ -263,19 +263,19 @@ const Profile = () => {
 
                         <div className="grid grid-cols-3 gap-2 mb-3">
                           <div className="text-center">
-                            <p className="text-sm font-semibold text-primary-600">
+                            <p className="text-sm font-semibold text-black">
                               {formatNumber(accountProfiles[account.id].followersCount)}
                             </p>
                             <p className="text-xs text-secondary-500">Followers</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-sm font-semibold text-primary-600">
+                            <p className="text-sm font-semibold text-black">
                               {formatNumber(accountProfiles[account.id].followingCount)}
                             </p>
                             <p className="text-xs text-secondary-500">Following</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-sm font-semibold text-primary-600">
+                            <p className="text-sm font-semibold text-black">
                               {formatNumber(accountProfiles[account.id].postsCount)}
                             </p>
                             <p className="text-xs text-secondary-500">Posts</p>
@@ -340,11 +340,11 @@ const Profile = () => {
             )}
 
             {linkedAccounts.length > 0 && (
-              <div className="mt-6 gradient-bg-alt rounded-lg p-4">
+              <div className="mt-6 bg-gray-200 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
                     <svg
-                      className="h-5 w-5 text-primary-600"
+                      className="h-5 w-5 text-black"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -356,10 +356,10 @@ const Profile = () => {
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-sm font-medium text-primary-900">
+                    <h3 className="text-sm font-medium text-black">
                       About Linked Accounts
                     </h3>
-                    <p className="mt-1 text-sm text-primary-700">
+                    <p className="mt-1 text-sm text-black">
                       These are your social media accounts connected.
                       You can manage and monitor these accounts from your dashboard.
                     </p>

@@ -427,18 +427,18 @@ const StatusTracking = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="card">
               <p className="text-sm text-secondary-500">Total Users</p>
-              <p className="text-3xl font-bold text-primary-700 mt-2">{stats.totalUsers}</p>
+              <p className="text-3xl font-bold text-black mt-2">{stats.totalUsers}</p>
             </div>
             <div className="card">
               <p className="text-sm text-secondary-500">Total Messages</p>
-              <p className="text-3xl font-bold text-primary-700 mt-2">{stats.totalMessages}</p>
+              <p className="text-3xl font-bold text-black mt-2">{stats.totalMessages}</p>
             </div>
             <div
               className="card cursor-pointer hover-lift"
               onClick={() => navigate('/registration-details')}
             >
               <p className="text-sm text-secondary-500">Total Registrations on Influencer Store</p>
-              <p className="text-3xl font-bold text-primary-700 mt-2">{stats.trackingRegistrations || 0}</p>
+              <p className="text-3xl font-bold text-black mt-2">{stats.trackingRegistrations || 0}</p>
             </div>
           </div>
         )}
@@ -511,7 +511,7 @@ const StatusTracking = () => {
         {/* Users List */}
         {loading && userStatuses.length === 0 ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
           </div>
         ) : filteredUsers.length === 0 ? (
           <motion.div
@@ -576,9 +576,9 @@ const StatusTracking = () => {
                         />
                       ) : null}
                       <div
-                        className={`w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto ${(user.profilePictureData || user.profilePicture) ? 'hidden' : 'flex'}`}
+                        className={`w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto ${(user.profilePictureData || user.profilePicture) ? 'hidden' : 'flex'}`}
                       >
-                        <span className="text-primary-600 font-bold text-lg">
+                        <span className="text-white font-bold text-lg">
                           {user.username?.charAt(0)?.toUpperCase() || user.name?.charAt(0)?.toUpperCase() || "U"}
                         </span>
                       </div>

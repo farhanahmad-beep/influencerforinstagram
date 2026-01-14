@@ -1057,7 +1057,7 @@ const ModashSearch = () => {
                   <button
                     onClick={() => setIsAISearch(!isAISearch)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      isAISearch ? 'bg-primary-600' : 'bg-secondary-200'
+                      isAISearch ? 'bg-black' : 'bg-gray-200'
                     }`}
                   >
                     <span
@@ -1497,7 +1497,7 @@ const ModashSearch = () => {
           <div ref={resultsRef}>
             {loading && searchResults.length === 0 ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
             </div>
           ) : searchResults.length === 0 && !loading ? (
             <motion.div
@@ -1525,7 +1525,7 @@ const ModashSearch = () => {
                 </div>
                 <div className="flex items-center space-x-3">
                 {hasMoreResults && (
-                  <p className="text-xs text-primary-600">
+                  <p className="text-xs text-black">
                     {((totalResults || 0) - (searchResults?.length || 0))} more available
                   </p>
                 )}
@@ -1566,9 +1566,9 @@ const ModashSearch = () => {
                           />
                         ) : null}
                         <div
-                          className={`w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto ${(influencer.profilePicture || influencer.avatar) ? 'hidden' : 'flex'}`}
+                          className={`w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto ${(influencer.profilePicture || influencer.avatar) ? 'hidden' : 'flex'}`}
                         >
-                          <span className="text-primary-600 font-bold text-xl">
+                          <span className="text-black font-bold text-xl">
                             {(influencer.username || influencer.handle || 'U').charAt(0).toUpperCase()}
                           </span>
                         </div>
@@ -1662,7 +1662,7 @@ const ModashSearch = () => {
                               {/* Matched Posts */}
                               {influencer.matchedPosts && influencer.matchedPosts.length > 0 && (
                                 <div>
-                                  <div className="text-xs text-primary-600 font-medium mb-1 text-center">
+                                  <div className="text-xs text-black font-medium mb-1 text-center">
                                     {influencer.isFromImageSearch ? 'Image Matched Posts' : 'AI Matched Posts'} ({influencer.matchedPosts.length})
                                   </div>
                                   <div className="flex flex-wrap justify-center gap-1">

@@ -168,7 +168,7 @@ const ChatListModal = ({ isOpen, onClose }) => {
             </label>
             {loadingAccounts ? (
               <div className="flex items-center space-x-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
                 <span className="text-sm text-secondary-500">Loading accounts...</span>
               </div>
             ) : linkedAccounts.length > 0 ? (
@@ -178,7 +178,7 @@ const ChatListModal = ({ isOpen, onClose }) => {
                   setSelectedAccountId(e.target.value);
                   setChats([]);
                 }}
-                className="w-full px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
               >
                 {linkedAccounts.map((account) => (
                   <option key={account.id} value={account.id}>
@@ -196,7 +196,7 @@ const ChatListModal = ({ isOpen, onClose }) => {
           {/* Chat List */}
           {loading ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
             </div>
           ) : chats.length === 0 ? (
             <div className="text-center py-12">
@@ -255,11 +255,11 @@ const ChatListModal = ({ isOpen, onClose }) => {
                           />
                         ) : null}
                         <div
-                        className={`w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center ${
+                        className={`w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center ${
                           (chat.profilePictureData || chat.profilePicture) ? 'hidden' : 'flex'
                         }`}
                         >
-                          <span className="text-primary-600 font-bold text-lg">
+                          <span className="text-white font-bold text-lg">
                             {chat.name?.charAt(0)?.toUpperCase() || "C"}
                           </span>
                         </div>
@@ -300,7 +300,7 @@ const ChatListModal = ({ isOpen, onClose }) => {
                             <span className="text-xs text-secondary-500">
                               {formatDate(chat.timestamp)}
                             </span>
-                            <span className="text-xs text-primary-600 font-medium">
+                            <span className="text-xs text-black font-medium">
                               Instagram
                             </span>
                           </div>

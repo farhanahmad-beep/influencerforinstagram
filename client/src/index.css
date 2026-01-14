@@ -54,40 +54,40 @@
 @layer components {
   /* Button Components */
   .badge-success {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 shadow-lg hover:shadow-xl;
   }
 
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply bg-black hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 shadow-lg hover:shadow-xl;
   }
-  
+
   .btn-secondary {
-    @apply bg-secondary-200 hover:bg-secondary-300 text-secondary-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2;
+    @apply bg-gray-200 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 shadow-md hover:shadow-lg;
   }
 
   .btn-gradient {
-    @apply bg-gradient-to-r from-accent-600 to-accent-500 hover:from-accent-700 hover:to-accent-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 transform hover:scale-105;
+    @apply bg-gradient-to-r from-gray-900 to-black hover:from-gray-800 hover:to-gray-900 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transform hover:scale-105 shadow-lg hover:shadow-xl;
   }
 
   .btn-error {
-    @apply bg-error-500 hover:bg-error-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-error-500 focus:ring-offset-2;
+    @apply bg-red-600 hover:bg-red-500 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 shadow-lg hover:shadow-xl;
   }
 
   .btn-success {
-    @apply bg-success-500 hover:bg-success-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-success-500 focus:ring-offset-2;
+    @apply bg-green-600 hover:bg-green-500 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 shadow-lg hover:shadow-xl;
   }
   
   /* Form Elements */
   .input-field {
-    @apply w-full px-3 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200;
+    @apply w-full px-3 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors duration-200;
   }
-  
+
   .input-error {
-    @apply border-error-300 focus:ring-error-500;
+    @apply border-red-300 focus:ring-red-500;
   }
 
   .input-success {
-    @apply border-success-300 focus:ring-success-500;
+    @apply border-green-300 focus:ring-green-500;
   }
 
   .form-label {
@@ -112,7 +112,7 @@
   }
 
   .card-gradient {
-    @apply bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl shadow-medium p-6 border border-primary-200;
+    @apply bg-gradient-to-br from-gray-900 to-black rounded-xl shadow-medium p-6 border border-gray-700;
   }
 
   /* Status Badges */
@@ -129,7 +129,7 @@
   }
 
   .badge-info {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 border border-primary-200;
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-800 text-white border border-gray-600;
   }
 
   .badge-neutral {
@@ -137,16 +137,16 @@
   }
 
   .badge-accent {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-accent-100 text-accent-700 border border-accent-200;
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-gray-200 border border-gray-500;
   }
 
   /* Special Effects */
   .gradient-bg {
-    @apply bg-gradient-to-br from-primary-50 to-primary-100;
+    @apply bg-gradient-to-br from-gray-900 to-black;
   }
 
   .gradient-bg-alt {
-    @apply bg-gradient-to-br from-accent-50 to-accent-100;
+    @apply bg-gradient-to-br from-gray-800 to-gray-600;
   }
 
   .hover-lift {
@@ -198,7 +198,7 @@
 
   /* Focus States */
   .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2;
   }
 
   /* Loading States */

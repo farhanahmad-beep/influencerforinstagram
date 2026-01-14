@@ -428,7 +428,7 @@ const InfluencerGrowth = () => {
                           onClick={() => setTopFilter(option.value)}
                           className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                             topFilter === option.value
-                              ? 'bg-primary-600 text-white'
+                              ? 'bg-black text-white'
                               : 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
                           }`}
                         >
@@ -448,7 +448,7 @@ const InfluencerGrowth = () => {
                         Name: "{searchTerm}"
                         <button
                           onClick={() => setSearchTerm("")}
-                          className="ml-1 text-primary-600 hover:text-primary-800"
+                          className="ml-1 text-black hover:text-gray-700"
                         >
                           ×
                         </button>
@@ -473,7 +473,7 @@ const InfluencerGrowth = () => {
 
           {loading ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
             </div>
           ) : influencers.length === 0 ? (
             <motion.div
@@ -536,7 +536,7 @@ const InfluencerGrowth = () => {
                     transition={{ delay: index * 0.1 }}
                     className={`card hover-lift relative ${
                       isDeleteMode ? 'cursor-default' : 'cursor-pointer'
-                    } ${index === 0 ? 'border-2 border-warning-400' : ''}`}
+                    } ${index === 0 ? 'border-2 border-black' : ''}`}
                     onClick={() => !isDeleteMode && setSelectedInfluencer(influencer)}
                   >
                     {/* Ranking Badge - Only show for top 10 */}
@@ -562,7 +562,7 @@ const InfluencerGrowth = () => {
                           type="checkbox"
                           checked={selectedInfluencersForDelete.has(influencer.id)}
                           onChange={() => toggleInfluencerSelection(influencer.id)}
-                          className="w-4 h-4 text-primary-600 bg-secondary-100 border-secondary-300 rounded focus:ring-primary-500"
+                          className="w-4 h-4 text-black bg-secondary-100 border-secondary-300 rounded focus:ring-black"
                         />
                       </div>
                     )}
@@ -602,8 +602,8 @@ const InfluencerGrowth = () => {
                             referrerPolicy="no-referrer"
                           />
                         ) : (
-                          <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                            <span className="text-primary-600 font-bold text-xl">
+                          <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center">
+                            <span className="text-white font-bold text-xl">
                               {influencer.name?.charAt(0)?.toUpperCase() || "I"}
                             </span>
                           </div>
@@ -639,7 +639,7 @@ const InfluencerGrowth = () => {
                         <div className="mb-3">
                           <div>
                             <p className="text-sm text-secondary-500">Followers</p>
-                            <p className="text-lg font-semibold text-primary-600">
+                            <p className="text-lg font-semibold text-black">
                               {influencer.followersCount.toLocaleString()}
                             </p>
                           </div>
@@ -702,7 +702,7 @@ const InfluencerGrowth = () => {
                     <div className="flex items-center space-x-3">
                       <button
                         onClick={() => setShowDatePicker(!showDatePicker)}
-                        className="px-3 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 transition-colors text-sm font-medium"
+                        className="px-3 py-2 bg-gray-50 text-black rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium"
                       >
                         Filter by Date
                       </button>
@@ -762,7 +762,7 @@ const InfluencerGrowth = () => {
                           </button>
                           <button
                             onClick={() => setShowDatePicker(false)}
-                            className="px-3 py-1 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+                            className="px-3 py-1 text-sm bg-black text-white rounded hover:bg-gray-800 transition-colors"
                           >
                             Done
                           </button>
@@ -787,8 +787,8 @@ const InfluencerGrowth = () => {
                           referrerPolicy="no-referrer"
                         />
                       ) : (
-                        <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center">
-                          <span className="text-primary-600 font-bold text-2xl">
+                        <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-2xl">
                             {selectedInfluencer.name?.charAt(0)?.toUpperCase() || "I"}
                           </span>
                         </div>
@@ -832,7 +832,7 @@ const InfluencerGrowth = () => {
                       <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-primary-600">
+                      <p className="text-2xl font-bold text-black">
                               {isFiltered && filteredHistory.length > 0 ?
                                 filteredHistory[filteredHistory.length - 1].followersCount.toLocaleString() :
                                 selectedInfluencer.followersCount.toLocaleString()}
@@ -843,7 +843,7 @@ const InfluencerGrowth = () => {
                       </div>
                           <div className="text-center">
                             <p className="text-sm text-gray-500">Data Points</p>
-                            <p className="text-2xl font-bold text-primary-600">{filteredHistory.length || selectedInfluencer.growthHistory?.length || 0}</p>
+                            <p className="text-2xl font-bold text-black">{filteredHistory.length || selectedInfluencer.growthHistory?.length || 0}</p>
                           </div>
                         </div>
 
@@ -940,7 +940,7 @@ const InfluencerGrowth = () => {
                                   <div className="flex items-center justify-between">
                                     <div className="flex">
                                       <span className="text-sm">
-                                        <span className="font-medium text-primary-600">{point.followersCount.toLocaleString()}</span>
+                                        <span className="font-medium text-black">{point.followersCount.toLocaleString()}</span>
                                         {followersDiff !== null && (
                                           <span className={`ml-1 text-xs ${followersDiff >= 0 ? 'text-success-600' : 'text-error-600'}`}>
                                             ({followersDiff >= 0 ? '+' : ''}{followersDiff})

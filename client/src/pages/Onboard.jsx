@@ -797,7 +797,7 @@ const Onboard = () => {
                 onClick={() => setActiveTab('users')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'users'
-                    ? 'border-primary-500 text-primary-600'
+                    ? 'border-black text-black'
                     : 'border-transparent text-secondary-500 hover:text-secondary-700 hover:border-secondary-300'
                 }`}
               >
@@ -807,7 +807,7 @@ const Onboard = () => {
                 onClick={() => setActiveTab('campaigns')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'campaigns'
-                    ? 'border-primary-500 text-primary-600'
+                    ? 'border-black text-black'
                     : 'border-transparent text-secondary-500 hover:text-secondary-700 hover:border-secondary-300'
                 }`}
               >
@@ -837,7 +837,7 @@ const Onboard = () => {
                     </label>
                     {loadingAccounts ? (
                       <div className="input-field flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600 mr-2"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                         <span className="text-sm text-secondary-500">Loading accounts...</span>
                       </div>
                     ) : linkedAccounts.length > 0 ? (
@@ -880,7 +880,7 @@ const Onboard = () => {
                     </button>
                     <button
                       onClick={() => setShowCreateCampaignModal(true)}
-                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 bg-black hover:bg-gray-800 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={selectedUsers.size === 0}
                     >
                       Create Campaign ({selectedUsers.size})
@@ -923,7 +923,7 @@ const Onboard = () => {
                   <>
                     <button
                       onClick={() => setIsSelectionMode(true)}
-                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors"
+                      className="px-4 py-2 bg-black hover:bg-gray-800 text-white text-sm font-medium rounded-lg transition-colors"
                     >
                       Create Campaign
                     </button>
@@ -940,7 +940,7 @@ const Onboard = () => {
 
             {loading ? (
               <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
               </div>
             ) : onboardedUsers.length === 0 ? (
               <motion.div
@@ -976,7 +976,7 @@ const Onboard = () => {
                   <p className="text-sm text-secondary-600">
                     Showing <span className="font-semibold">{onboardedUsers.length}</span> onboarded user{onboardedUsers.length !== 1 ? 's' : ''}
                     {isSelectionMode && selectedUsers.size > 0 && (
-                      <span className="ml-2 text-primary-600 font-medium">
+                      <span className="ml-2 text-black font-medium">
                         ({selectedUsers.size} selected for campaign)
                       </span>
                     )}
@@ -1023,7 +1023,7 @@ const Onboard = () => {
                               type="checkbox"
                               checked={isSelectionMode ? selectedUsers.has(user.userId) : selectedUsersForDelete.has(user.userId)}
                               onChange={() => isSelectionMode ? handleUserSelect(user.userId) : handleUserSelectForDelete(user.userId)}
-                              className="w-5 h-5 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+                              className="w-5 h-5 text-black border-secondary-300 rounded focus:ring-black"
                             />
                           )}
                           <div className="relative">
@@ -1049,7 +1049,7 @@ const Onboard = () => {
                                     : 'bg-primary-100'
                               }`}
                             >
-                              <span className="text-primary-600 font-bold text-lg">
+                              <span className="text-white font-bold text-lg">
                                 {user.name?.charAt(0)?.toUpperCase() || user.username?.charAt(0)?.toUpperCase() || "U"}
                               </span>
                             </div>
@@ -1219,7 +1219,7 @@ const Onboard = () => {
 
             {loadingCampaigns ? (
               <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
               </div>
             ) : campaigns.length === 0 ? (
               <motion.div
@@ -1772,7 +1772,7 @@ const Onboard = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!campaignForm.name.trim() || selectedUsers.size === 0}
                   >
                     Create Campaign

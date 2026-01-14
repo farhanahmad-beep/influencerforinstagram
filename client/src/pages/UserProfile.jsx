@@ -167,7 +167,7 @@ const UserProfile = () => {
         <Navbar />
         <div className="flex-1 lg:ml-0 overflow-y-auto">
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
           </div>
         </div>
       </div>
@@ -181,8 +181,8 @@ const UserProfile = () => {
         <div className="flex flex-col justify-center items-center py-12">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Profile not found</h2>
           <p className="text-gray-600 mb-4">The user profile you're looking for doesn't exist or has been removed.</p>
-          <button onClick={() => navigate("/followers")} className="btn-primary">
-            Back to Followers
+          <button onClick={() => navigate("/modash-search")} className="btn-primary">
+            Back to Modash Search
           </button>
         </div>
       </div>
@@ -243,10 +243,10 @@ const UserProfile = () => {
                     }}
                   />
                 ) : null}
-                <div 
-                  className={`w-32 h-32 bg-purple-100 rounded-full flex items-center justify-center ${(profile.profilePictureData || profile.profilePictureUrlLarge || profile.profilePictureUrl) ? 'hidden' : 'flex'}`}
+                <div
+                  className={`w-32 h-32 bg-gray-800 rounded-full flex items-center justify-center ${(profile.profilePictureData || profile.profilePictureUrlLarge || profile.profilePictureUrl) ? 'hidden' : 'flex'}`}
                 >
-                  <span className="text-purple-600 font-bold text-4xl">
+                  <span className="text-white font-bold text-4xl">
                     {profile.fullName?.charAt(0)?.toUpperCase() || profile.publicIdentifier?.charAt(0)?.toUpperCase() || "U"}
                   </span>
                 </div>
@@ -257,7 +257,7 @@ const UserProfile = () => {
                     {profile.fullName || 'Unknown'}
                   </h1>
                   {profile.isVerified && (
-                    <span className="text-blue-500" title="Verified">
+                    <span className="text-green-600" title="Verified">
                       ✓
                     </span>
                   )}
@@ -271,7 +271,7 @@ const UserProfile = () => {
                   <p className="text-lg text-gray-600 mb-2">@{profile.publicIdentifier}</p>
                 )}
                 {profile.profileType && (
-                  <span className="inline-block px-3 py-1 text-sm font-medium text-purple-600 bg-purple-100 rounded-full">
+                  <span className="inline-block px-3 py-1 text-sm font-medium text-black bg-gray-100 rounded-full">
                     {profile.profileType}
                   </span>
                 )}
@@ -281,25 +281,25 @@ const UserProfile = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
             <div className="card text-center">
-              <p className="text-3xl font-bold text-purple-600">
+              <p className="text-3xl font-bold text-black">
                 {formatNumber(profile.followersCount || 0)}
               </p>
               <p className="text-gray-600 mt-1">Followers</p>
             </div>
             <div className="card text-center">
-              <p className="text-3xl font-bold text-purple-600">
+              <p className="text-3xl font-bold text-black">
                 {formatNumber(profile.followingCount || 0)}
               </p>
               <p className="text-gray-600 mt-1">Following</p>
             </div>
             <div className="card text-center">
-              <p className="text-3xl font-bold text-purple-600">
+              <p className="text-3xl font-bold text-black">
                 {formatNumber(profile.postsCount || 0)}
               </p>
               <p className="text-gray-600 mt-1">Posts</p>
             </div>
             <div className="card text-center">
-              <p className="text-3xl font-bold text-purple-600">
+              <p className="text-3xl font-bold text-black">
                 {formatNumber(profile.mutualFollowersCount || 0)}
               </p>
               <p className="text-gray-600 mt-1">Mutual Followers</p>
@@ -448,7 +448,7 @@ const UserProfile = () => {
                         href={link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-purple-600 hover:text-purple-700 underline block"
+                        className="text-black hover:text-gray-700 underline block"
                       >
                         {link}
                       </a>
@@ -493,7 +493,7 @@ const UserProfile = () => {
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     placeholder="Enter your message here..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent resize-none"
                     rows="4"
                     disabled={sendingMessage}
                     required

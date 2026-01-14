@@ -33,7 +33,7 @@ const Login = () => {
         transition={{ duration: 0.5 }}
         className="card max-w-md w-full mx-4 hover-lift"
       >
-        <h1 id="src_pages_Login_sxf5" className="text-3xl font-bold text-center mb-2 text-primary-600">
+        <h1 id="src_pages_Login_sxf5" className="text-3xl font-bold text-center mb-2 text-black">
           InfluencerHub
         </h1>
         <p id="src_pages_Login_b2og" className="text-center text-secondary-600 mb-6">
@@ -80,7 +80,7 @@ const Login = () => {
 
         <p id="src_pages_Login_2zvw" className="text-center text-sm text-secondary-600 mt-4">
           Don't have an account?{" "}
-          <Link to="/register" className="text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200" id="client_src_pages_Login_link_reg">
+          <Link to="/register" className="text-black hover:text-gray-700 hover:underline transition-colors duration-200" id="client_src_pages_Login_link_reg">
             Register here
           </Link>
         </p>

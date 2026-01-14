@@ -568,14 +568,14 @@ const ChatMessages = () => {
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                    <span className="text-primary-600 font-bold text-lg">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                    <span className="text-black font-bold text-lg">
                       {chatName?.charAt(0)?.toUpperCase() || "U"}
                     </span>
                   </div>
                 )}
                 {userStatusData?.isVerified && (
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary-500 rounded-full flex items-center justify-center">
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-black rounded-full flex items-center justify-center">
                     <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -616,7 +616,7 @@ const ChatMessages = () => {
                     : notInterestedStatus === 'success'
                     ? 'bg-error-100 text-error-800'
                     : isVerificationCompleted
-                    ? 'bg-primary-100 text-primary-800'
+                    ? 'bg-gray-100 text-black'
                     : 'bg-secondary-100 text-secondary-800'
                 }`}>
                   {onboardingStatus === 'success' ? (
@@ -660,7 +660,7 @@ const ChatMessages = () => {
                         type="checkbox"
                         checked={isVerificationCompleted}
                         onChange={(e) => setIsVerificationCompleted(e.target.checked)}
-                        className="w-5 h-5 text-primary-600 border-secondary-300 rounded focus:ring-primary-500"
+                        className="w-5 h-5 text-black border-gray-300 rounded focus:ring-black"
                       />
                       <span className="text-sm text-secondary-700 font-medium">Mark user as verified</span>
                     </label>
@@ -671,8 +671,8 @@ const ChatMessages = () => {
                         disabled={onboardingStatus === 'loading'}
                         className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                           onboardingStatus === 'loading'
-                            ? 'bg-secondary-500 text-white cursor-not-allowed'
-                            : 'bg-primary-600 text-white hover:bg-primary-700'
+                            ? 'bg-gray-500 text-white cursor-not-allowed'
+                            : 'bg-black text-white hover:bg-gray-800'
                         }`}
                       >
                         {onboardingStatus === 'loading' && (
@@ -788,7 +788,7 @@ const ChatMessages = () => {
 
         {loading && messages.length === 0 ? (
           <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
           </div>
         ) : messages.length === 0 ? (
           <motion.div
@@ -841,7 +841,7 @@ const ChatMessages = () => {
                       <div
                         className={`px-4 py-2 rounded-2xl shadow-sm ${
                           message.isSender === 1
-                            ? 'bg-primary-600 text-white rounded-br-md'
+                            ? 'bg-black text-white rounded-br-md'
                             : 'bg-secondary-100 text-secondary-900 rounded-bl-md'
                         }`}
                       >
@@ -919,7 +919,7 @@ const ChatMessages = () => {
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     placeholder="Type a message..."
-                    className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent resize-none"
                     rows="1"
                     disabled={sendingMessage}
                     onKeyDown={(e) => {
@@ -932,7 +932,7 @@ const ChatMessages = () => {
                 </div>
                 <button
                   type="submit"
-                  className="px-4 py-2 h-10 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                  className="px-4 py-2 h-10 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                   disabled={sendingMessage || !messageText.trim() || !accountId}
                 >
                   {sendingMessage ? (

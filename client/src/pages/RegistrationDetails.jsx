@@ -114,7 +114,7 @@ const RegistrationDetails = () => {
           {/* Table */}
           {loading ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
             </div>
           ) : trackingDetails.length === 0 ? (
             <motion.div
@@ -199,8 +199,8 @@ const RegistrationDetails = () => {
                                 referrerPolicy="no-referrer"
                               />
                             ) : (
-                              <div className="w-5.5 h-5.5 bg-purple-100 rounded-full flex items-center justify-center">
-                                <span className="text-purple-600 font-bold text-xs">
+                              <div className="w-5.5 h-5.5 bg-gray-800 rounded-full flex items-center justify-center">
+                                <span className="text-white font-bold text-xs">
                                   {(item.statusInfo?.name || item.name || 'U').charAt(0).toUpperCase()}
                                 </span>
                               </div>
@@ -243,7 +243,7 @@ const RegistrationDetails = () => {
                                 href={`https://dynamiteinfluencerstore.icod.ai/?store=${encodeURIComponent(item.influencerData?.storeUrl || item.storeData?.storeUrl || '')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-purple-600 hover:text-purple-800 hover:underline font-medium"
+                                className="text-sm text-black hover:text-gray-700 hover:underline font-medium"
                               >
                                 {item.influencerData?.storeName || item.storeData?.storeName}
                               </a>
@@ -360,7 +360,7 @@ const RegistrationDetails = () => {
                           href={`https://dynamiteinfluencerstore.icod.ai/?store=${encodeURIComponent(selectedUser.influencerData.storeUrl || '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-purple-600 hover:text-purple-800 hover:underline"
+                          className="text-sm text-black hover:text-gray-700 hover:underline"
                         >
                           {selectedUser.influencerData.storeName}
                         </a>
@@ -375,7 +375,7 @@ const RegistrationDetails = () => {
                           href={`https://dynamiteinfluencerstore.icod.ai/?store=${encodeURIComponent(selectedUser.influencerData.storeUrl)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-purple-600 hover:text-purple-800 hover:underline"
+                          className="text-sm text-black hover:text-gray-700 hover:underline"
                         >
                           {selectedUser.influencerData.storeUrl}
                         </a>
@@ -447,7 +447,7 @@ const RegistrationDetails = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm font-medium text-gray-600">Avg Order Value:</span>
-                        <span className="text-sm text-purple-600">
+                        <span className="text-sm text-black">
                           ${selectedUser.storeData.orders?.length > 0
                             ? (selectedUser.storeData.orders.reduce((sum, order) => sum + (order.total || 0), 0) / selectedUser.storeData.orders.length).toFixed(2)
                             : '0.00'
@@ -573,7 +573,7 @@ const RegistrationDetails = () => {
                                 href={`https://dynamiteinfluencerstore.icod.ai/product/${product.productId}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-purple-600 hover:text-purple-800 hover:underline"
+                                className="text-black"
                               >
                                 • {product.productDetails?.name || `Product ${product.productId?.slice(-6) || idx + 1}`}
                               </a>

@@ -494,7 +494,7 @@ const ChatList = () => {
               </label>
               {loadingAccounts ? (
                 <div className="input-field flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600 mr-2"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                   <span className="text-sm text-secondary-500">Loading accounts...</span>
                 </div>
               ) : linkedAccounts.length > 0 ? (
@@ -576,7 +576,7 @@ const ChatList = () => {
         {/* Results */}
         {loading && chats.length === 0 ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
           </div>
         ) : chats.length === 0 ? (
           <motion.div
@@ -628,7 +628,7 @@ const ChatList = () => {
                     isSelectionMode ? "cursor-default" : "cursor-pointer"
                   } ${
                     selectedChats.has(chat.id)
-                      ? "border-2 border-primary-500 bg-primary-50"
+                      ? "border-2 border-black bg-gray-50"
                       : chat.unreadCount > 0
                       ? "border-l-4 border-l-error-500 bg-error-50/30"
                       : ""
@@ -643,7 +643,7 @@ const ChatList = () => {
                           checked={selectedChats.has(chat.id)}
                           onChange={() => handleChatSelect(chat.id)}
                           onClick={(e) => e.stopPropagation()}
-                          className="w-5 h-5 text-primary-600 border-secondary-300 rounded focus:ring-primary-500 cursor-pointer"
+                          className="w-5 h-5 text-black border-gray-300 rounded focus:ring-black cursor-pointer"
                         />
                       )}
                       <div className="relative">
@@ -661,11 +661,11 @@ const ChatList = () => {
                           />
                         ) : null}
                         <div
-                          className={`w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          className={`w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 ${
                             (chat.profilePictureData || chat.profilePicture) ? 'hidden' : 'flex'
                           }`}
                         >
-                          <span className="text-primary-600 font-bold text-lg">
+                          <span className="text-black font-bold text-lg">
                             {chat.name?.charAt(0)?.toUpperCase() || "C"}
                           </span>
                         </div>
@@ -701,7 +701,7 @@ const ChatList = () => {
                           <div className="flex-1 min-w-0">
                             {loadingPreviews.has(chat.id) ? (
                               <div className="flex items-center space-x-2">
-                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary-600"></div>
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-black"></div>
                                 <span className="text-xs text-secondary-400">Loading preview...</span>
                               </div>
                             ) : chatPreviews.has(chat.id) && chatPreviews.get(chat.id) ? (

@@ -42,7 +42,7 @@ const Register = () => {
         transition={{ duration: 0.5 }}
         className="card max-w-md w-full mx-4 hover-lift"
       >
-        <h1 id="src_pages_Register_hp4a" className="text-3xl font-bold text-center mb-2 text-primary-600">
+        <h1 id="src_pages_Register_hp4a" className="text-3xl font-bold text-center mb-2 text-black">
           InfluencerHub
         </h1>
         <p id="src_pages_Register_uk9w" className="text-center text-secondary-600 mb-6">
@@ -121,7 +121,7 @@ const Register = () => {
 
         <p id="src_pages_Register_kv1p" className="text-center text-sm text-secondary-600 mt-4">
           Already have an account?{" "}
-          <Link to="/login" className="text-primary-600 hover:text-primary-700 hover:underline transition-colors duration-200" id="client_src_pages_Register_link_login">
+          <Link to="/login" className="text-black hover:text-gray-700 hover:underline transition-colors duration-200" id="client_src_pages_Register_link_login">
             Sign in here
           </Link>
         </p>

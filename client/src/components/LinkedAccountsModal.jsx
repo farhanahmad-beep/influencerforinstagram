@@ -105,7 +105,7 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
 
           {loadingAccounts ? (
             <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
             </div>
           ) : linkedAccounts.length === 0 ? (
             <div className="text-center py-8">
@@ -202,7 +202,7 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
 
                   {loadingProfiles[account.id] ? (
                     <div className="flex justify-center py-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
                     </div>
                   ) : accountProfiles[account.id] ? (
                     <>
@@ -214,19 +214,19 @@ const LinkedAccountsModal = ({ isOpen, onClose }) => {
 
                       <div className="grid grid-cols-3 gap-2 mb-3">
                         <div className="text-center">
-                          <p className="text-sm font-semibold text-primary-600">
+                          <p className="text-sm font-semibold text-black">
                             {formatNumber(accountProfiles[account.id].followersCount)}
                           </p>
                           <p className="text-xs text-gray-500">Followers</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-sm font-semibold text-primary-600">
+                          <p className="text-sm font-semibold text-black">
                             {formatNumber(accountProfiles[account.id].followingCount)}
                           </p>
                           <p className="text-xs text-gray-500">Following</p>
                         </div>
                         <div className="text-center">
-                          <p className="text-sm font-semibold text-primary-600">
+                          <p className="text-sm font-semibold text-black">
                             {formatNumber(accountProfiles[account.id].postsCount)}
                           </p>
                           <p className="text-xs text-gray-500">Posts</p>
