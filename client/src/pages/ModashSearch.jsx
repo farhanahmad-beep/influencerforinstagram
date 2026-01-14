@@ -1021,7 +1021,30 @@ const ModashSearch = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-3xl font-bold text-secondary-900">Influencer Search</h1>
-              {/* User Search Toggle - Show when AI search is not active */}
+            </div>
+            <p className="text-secondary-600">Search for influencers globally using advanced filters</p>
+          </div>
+
+          {/* Search Filters */}
+          <div className="card mb-6">
+            <div className="flex items-center flex-wrap gap-4 mb-4">
+              {!isUserSearch && (
+                <div className="flex items-center space-x-3">
+                  <label className="text-sm font-medium text-secondary-700">AI Mode</label>
+                  <button
+                    onClick={() => setIsAISearch(!isAISearch)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      isAISearch ? 'bg-black' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        isAISearch ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
               {!isAISearch && (
                 <div className="flex items-center space-x-3">
                   <label className="text-sm font-medium text-secondary-700">Search By Name</label>
@@ -1040,55 +1063,28 @@ const ModashSearch = () => {
                 </div>
               )}
             </div>
-            <p className="text-secondary-600">Search for influencers globally using advanced filters</p>
-          </div>
-
-          {/* Search Filters */}
-          <div className="card mb-6">
 
             {/* HR line - Show when both AI and user search are not active */}
             {/* {!isAISearch && !isUserSearch && <hr className="mb-4 border-gray-300" />} */}
 
             {/* AI Search Toggle and Input - Show when user search is not active */}
-            {!isUserSearch && (
+            {!isUserSearch && isAISearch && (
               <div className="mb-4">
-                <div className="flex items-center space-x-3 mb-4">
-                  <label className="text-sm font-medium text-secondary-700">AI Mode</label>
-                  <button
-                    onClick={() => setIsAISearch(!isAISearch)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      isAISearch ? 'bg-black' : 'bg-gray-200'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        isAISearch ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
+                  <div className="mb-4">
+                  <label className="form-label">
+                    Enter your query to discover matching influencers
+                  </label>
+                  <textarea
+                    value={aiQuery}
+                    onChange={(e) => setAiQuery(e.target.value)}
+                    className="input-field w-full"
+                    placeholder="Describe the influencer you're looking for (e.g., 'woman with curly hair lifting weights', 'fitness model in Los Angeles', 'tech entrepreneur with blue hair')"
+                    rows="3"
+                  />
+                  <p className="text-xs text-secondary-500 mt-1">
+                    Use natural language to describe the influencer. Max 1024 characters.
+                  </p>
                 </div>
-
-                {/* AI input */}
-                {isAISearch && (
-                  <>
-                    <div className="mb-4">
-                      <label className="form-label">
-                        Enter your query to discover matching influencers
-                      </label>
-                      <textarea
-                        value={aiQuery}
-                        onChange={(e) => setAiQuery(e.target.value)}
-                        className="input-field w-full"
-                        placeholder="Describe the influencer you're looking for (e.g., 'woman with curly hair lifting weights', 'fitness model in Los Angeles', 'tech entrepreneur with blue hair')"
-                        rows="3"
-                      />
-                      <p className="text-xs text-secondary-500 mt-1">
-                        Use natural language to describe the influencer. Max 1024 characters.
-                      </p>
-                    </div>
-                  </>
-                )}
-
               </div>
             )}
 
