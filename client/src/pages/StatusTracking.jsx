@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar.jsx";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 
 const StatusTracking = () => {
+  const navigate = useNavigate();
   const [userStatuses, setUserStatuses] = useState([]);
   const [stats, setStats] = useState({
     statusBreakdown: [],
     sourceBreakdown: [],
     totalUsers: 0,
     totalMessages: 0,
+    trackingRegistrations: 0,
   });
   const [loading, setLoading] = useState(true);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -25,25 +28,132 @@ const StatusTracking = () => {
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingUsers, setDeletingUsers] = useState(false);
+  const [trackingRegistrations, setTrackingRegistrations] = useState([]);
+  const [loadingRegistrations, setLoadingRegistrations] = useState(false);
+
+  // Combine user statuses and tracking registrations for display
+  const allUsers = React.useMemo(() => {
+    const formattedRegistrations = trackingRegistrations.map(registration => ({
+      userId: registration._id || registration.trackingId,
+      name: registration.statusInfo?.name || registration.name,
+      username: registration.trackingId,
+      status: 'registered',
+      profilePicture: registration.statusInfo?.profilePicture,
+      profilePictureData: registration.statusInfo?.profilePictureData,
+      followersCount: registration.statusInfo?.followersCount || 0,
+      followingCount: registration.statusInfo?.followingCount || 0,
+      provider: registration.statusInfo?.provider || 'dynamite',
+      source: registration.statusInfo?.source || 'registration',
+      lastContacted: registration.createdAt,
+      messageCount: 0,
+      campaignIds: [],
+      email: registration.email,
+      storeName: registration.influencerData?.storeName || registration.storeData?.storeName,
+      totalEarnings: registration.influencerData?.totalEarnings || 0,
+      orderCount: registration.storeData?.orders?.length || 0,
+      registrationDate: registration.createdAt,
+      isRegistration: true, // Flag to identify registration users
+    }));
+
+    const combinedUsers = [...userStatuses, ...formattedRegistrations];
+
+    // Sort by date (most recent first)
+    return combinedUsers.sort((a, b) => {
+      const dateA = new Date(a.lastContacted || a.registrationDate || 0);
+      const dateB = new Date(b.lastContacted || b.registrationDate || 0);
+      return dateB - dateA; // Descending order (most recent first)
+    });
+  }, [userStatuses, trackingRegistrations]);
 
   useEffect(() => {
     fetchStats();
     fetchUserStatuses();
+    fetchTrackingRegistrations();
   }, [filters]);
+
+  // Filter users based on search query and status
+  const filteredUsers = React.useMemo(() => {
+    return allUsers.filter((user) => {
+      // Exclude active status users completely
+      if (user.status === 'active') {
+        return false;
+      }
+
+      // Status filter
+      if (filters.status && user.status !== filters.status) {
+        return false;
+      }
+
+      // Source filter
+      if (filters.source && user.provider !== filters.source && user.source !== filters.source) {
+        return false;
+      }
+
+      // Search filter
+      if (filters.search.trim()) {
+        const query = filters.search.toLowerCase();
+        const name = (user.name || '').toLowerCase();
+        const username = (user.username || '').toLowerCase();
+        const userId = (user.userId || '').toLowerCase();
+        const email = (user.email || '').toLowerCase();
+
+        return name.includes(query) ||
+               username.includes(query) ||
+               userId.includes(query) ||
+               email.includes(query);
+      }
+
+      return true;
+    });
+  }, [allUsers, filters]);
 
   const fetchStats = async () => {
     setLoadingStats(true);
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/influencers/user-statuses/stats`, {
+      // Fetch user status stats
+      const userStatusResponse = await axios.get(`${import.meta.env.VITE_API_URL}/influencers/user-statuses/stats`, {
         withCredentials: true,
       });
-      if (response.data.success) {
-        setStats(response.data.data);
+
+      // Fetch main stats for tracking registrations
+      const mainStatsResponse = await axios.get(`${import.meta.env.VITE_API_URL}/influencers/stats`, {
+        withCredentials: true,
+      });
+
+      if (userStatusResponse.data.success && mainStatsResponse.data.success) {
+        setStats({
+          ...userStatusResponse.data.data,
+          trackingRegistrations: mainStatsResponse.data.data.trackingRegistrations || 0,
+        });
       }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     } finally {
       setLoadingStats(false);
+    }
+  };
+
+  const fetchTrackingRegistrations = async () => {
+    setLoadingRegistrations(true);
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/influencers/tracking/registrations`, {
+        withCredentials: true,
+      });
+      if (response.data.success) {
+        // Filter to only show users with valid tracking IDs
+        let filteredRegistrations = (response.data.data?.registrations || []).filter(
+          user => user.trackingId && user.trackingId.trim() !== ''
+        );
+
+        // Sort by creation date (newest first)
+        filteredRegistrations.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        setTrackingRegistrations(filteredRegistrations);
+      }
+    } catch (error) {
+      console.error('Failed to fetch tracking registrations:', error);
+    } finally {
+      setLoadingRegistrations(false);
     }
   };
 
@@ -186,13 +296,6 @@ const StatusTracking = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" opacity="0.6" />
           </svg>
         );
-      case 'active':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="#8b5cf6" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" fill="#8b5cf6" fillOpacity="0.1" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M13 10V3L4 14h7v7l9-11h-7z" opacity="0.6" />
-          </svg>
-        );
       case 'offboarded':
         return (
           <svg className="w-5 h-5" fill="none" stroke="#ef4444" viewBox="0 0 24 24">
@@ -205,6 +308,13 @@ const StatusTracking = () => {
           <svg className="w-5 h-5" fill="none" stroke="#f97316" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" fill="#f97316" fillOpacity="0.1" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" opacity="0.6" />
+          </svg>
+        );
+      case 'registered':
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="#7c3aed" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" fill="#7c3aed" fillOpacity="0.1" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" opacity="0.6" />
           </svg>
         );
       default:
@@ -223,12 +333,12 @@ const StatusTracking = () => {
         return 'bg-blue-100 text-blue-800';
       case 'onboarded':
         return 'bg-green-100 text-green-800';
-      case 'active':
-        return 'bg-purple-100 text-purple-800';
       case 'offboarded':
         return 'bg-red-100 text-red-800';
       case 'not_interested':
         return 'bg-orange-100 text-orange-800';
+      case 'registered':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -323,11 +433,12 @@ const StatusTracking = () => {
               <p className="text-sm text-secondary-500">Total Messages</p>
               <p className="text-3xl font-bold text-primary-700 mt-2">{stats.totalMessages}</p>
             </div>
-            <div className="card">
-              <p className="text-sm text-secondary-500">Active Users</p>
-              <p className="text-3xl font-bold text-success-600 mt-2">
-                {stats.statusBreakdown.find(s => s._id === 'active')?.count || 0}
-              </p>
+            <div
+              className="card cursor-pointer hover-lift"
+              onClick={() => navigate('/registration-details')}
+            >
+              <p className="text-sm text-secondary-500">Total Registrations on Influencer Store</p>
+              <p className="text-3xl font-bold text-primary-700 mt-2">{stats.trackingRegistrations || 0}</p>
             </div>
           </div>
         )}
@@ -337,7 +448,7 @@ const StatusTracking = () => {
           <div className="card mb-6">
             <h3 className="text-lg font-semibold text-secondary-900 mb-4">Status Breakdown</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {stats.statusBreakdown.map((status) => (
+              {stats.statusBreakdown.filter(status => status._id !== 'active').map((status) => (
                 <div key={status._id} className="flex items-center p-4 bg-secondary-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl">{getStatusIcon(status._id)}</span>
@@ -365,9 +476,9 @@ const StatusTracking = () => {
                 <option value="">All Statuses</option>
                 <option value="contacted">Contacted</option>
                 <option value="onboarded">Onboarded</option>
-                <option value="active">Active</option>
                 <option value="offboarded">Offboarded</option>
                 <option value="not_interested">Not Interested</option>
+                <option value="registered">Registered</option>
               </select>
             </div>
             <div>
@@ -402,7 +513,7 @@ const StatusTracking = () => {
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
           </div>
-        ) : userStatuses.length === 0 ? (
+        ) : filteredUsers.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -419,7 +530,7 @@ const StatusTracking = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {userStatuses.map((user, index) => (
+              {filteredUsers.map((user, index) => (
                 <motion.div
                   key={user.userId || index}
                   initial={{ opacity: 0, y: 20 }}
@@ -483,37 +594,60 @@ const StatusTracking = () => {
                         {user.name || user.username || 'Unknown'}
                       </h3>
                       <p className="text-xs text-secondary-500 mb-2">@{user.username}</p>
+                      {user.email && (
+                        <p className="text-xs text-secondary-500 mb-2">{user.email}</p>
+                      )}
                       <div className="flex justify-center mb-2">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}>
-                          {user.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          {user.status === 'registered' ? 'Registered' : user.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </span>
                       </div>
 
-                      {(user.followersCount > 0 || user.followingCount > 0) && (
-                        <div className="flex items-center justify-center space-x-4 mb-2 text-xs text-secondary-600">
-                          {user.followersCount !== undefined && user.followersCount > 0 && (
-                            <div className="flex flex-col items-center">
-                              <span className="font-semibold text-secondary-900">{formatNumber(user.followersCount)}</span>
-                              <span className="text-secondary-500">Followers</span>
+                      {user.isRegistration ? (
+                        // Display for registration users
+                        <>
+                          {user.storeName && (
+                            <div className="text-xs text-secondary-600 mb-2">
+                              <p className="font-medium">Store: {user.storeName}</p>
                             </div>
                           )}
-                          {user.followingCount !== undefined && user.followingCount > 0 && (
-                            <div className="flex flex-col items-center">
-                              <span className="font-semibold text-secondary-900">{formatNumber(user.followingCount)}</span>
-                              <span className="text-secondary-500">Following</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
 
-                      <div className="text-xs text-secondary-500 space-y-1">
-                        <p>Source: <span className="capitalize">{user.provider || user.source?.replace('_', ' ') || 'Unknown'}</span></p>
-                        <p>Last contacted: {formatDate(user.lastContacted)}</p>
-                        <p>Messages sent: {user.messageCount || 0}</p>
-                        {user.campaignIds && user.campaignIds.length > 0 && (
-                          <p>In campaigns: {user.campaignIds.length}</p>
-                        )}
-                      </div>
+                          <div className="text-xs text-secondary-500 space-y-1">
+                            <p>Earnings: ${user.totalEarnings * 100 || 0}</p>
+                            <p>Orders: {user.orderCount || 0}</p>
+                            <p>Registered: {formatDate(user.registrationDate)}</p>
+                          </div>
+                        </>
+                      ) : (
+                        // Display for regular user status users
+                        <>
+                          {(user.followersCount > 0 || user.followingCount > 0) && (
+                            <div className="flex items-center justify-center space-x-4 mb-2 text-xs text-secondary-600">
+                              {user.followersCount !== undefined && user.followersCount > 0 && (
+                                <div className="flex flex-col items-center">
+                                  <span className="font-semibold text-secondary-900">{formatNumber(user.followersCount)}</span>
+                                  <span className="text-secondary-500">Followers</span>
+                                </div>
+                              )}
+                              {user.followingCount !== undefined && user.followingCount > 0 && (
+                                <div className="flex flex-col items-center">
+                                  <span className="font-semibold text-secondary-900">{formatNumber(user.followingCount)}</span>
+                                  <span className="text-secondary-500">Following</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="text-xs text-secondary-500 space-y-1">
+                            <p>Source: <span className="capitalize">{user.provider || user.source?.replace('_', ' ') || 'Unknown'}</span></p>
+                            <p>Last contacted: {formatDate(user.lastContacted)}</p>
+                            <p>Messages sent: {user.messageCount || 0}</p>
+                            {user.campaignIds && user.campaignIds.length > 0 && (
+                              <p>In campaigns: {user.campaignIds.length}</p>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -533,6 +667,7 @@ const StatusTracking = () => {
             )}
           </>
         )}
+
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
