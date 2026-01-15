@@ -1646,11 +1646,9 @@ const ModashSearch = () => {
                           )}
 
                           {/* Bio */}
-                          {influencer.bio && (
-                            <p className="text-xs text-secondary-500 mb-2 line-clamp-2" title={influencer.bio}>
-                              {influencer.bio}
-                            </p>
-                          )}
+                          <p className="text-xs text-secondary-500 mb-2 line-clamp-2" title={influencer.bio || "No bio available"}>
+                            {influencer.bio || "Influencer"}
+                          </p>
 
                           {/* AI/Image Search Posts */}
                           {(influencer.isFromAISearch || influencer.isFromImageSearch) && (
