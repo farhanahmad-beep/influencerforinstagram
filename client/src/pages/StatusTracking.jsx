@@ -30,6 +30,19 @@ const StatusTracking = () => {
   const [deletingUsers, setDeletingUsers] = useState(false);
   const [trackingRegistrations, setTrackingRegistrations] = useState([]);
   const [loadingRegistrations, setLoadingRegistrations] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+
+  const handleUserCardClick = (user) => {
+    if (isDeleteMode) return;
+    setSelectedUser(user);
+    setShowUserModal(true);
+  };
+
+  const closeUserModal = () => {
+    setShowUserModal(false);
+    setSelectedUser(null);
+  };
 
   // Combine user statuses and tracking registrations for display
   const allUsers = React.useMemo(() => {
@@ -37,6 +50,7 @@ const StatusTracking = () => {
       userId: registration._id || registration.trackingId,
       name: registration.statusInfo?.name || registration.name,
       username: registration.trackingId,
+      trackingId: registration.trackingId,
       status: 'registered',
       profilePicture: registration.statusInfo?.profilePicture,
       profilePictureData: registration.statusInfo?.profilePictureData,
@@ -48,14 +62,59 @@ const StatusTracking = () => {
       messageCount: 0,
       campaignIds: [],
       email: registration.email,
+      role: registration.role,
       storeName: registration.influencerData?.storeName || registration.storeData?.storeName,
       totalEarnings: registration.influencerData?.totalEarnings || 0,
       orderCount: registration.storeData?.orders?.length || 0,
       registrationDate: registration.createdAt,
       isRegistration: true, // Flag to identify registration users
+
+      // Full details for modal (same shape used in RegistrationDetails.jsx)
+      influencerData: registration.influencerData,
+      storeData: registration.storeData,
+      statusInfo: registration.statusInfo,
     }));
 
-    const combinedUsers = [...userStatuses, ...formattedRegistrations];
+    // De-dupe: if a registration matches an existing userStatus (by username/trackingId),
+    // update the existing userStatus entry to "registered" instead of adding a duplicate row.
+    const userStatusByUsername = new Map(
+      (userStatuses || [])
+        .filter(u => u?.username)
+        .map(u => [u.username.toLowerCase(), u])
+    );
+
+    for (const reg of formattedRegistrations) {
+      const key = (reg.username || '').toLowerCase();
+      if (!key) continue;
+
+      const existing = userStatusByUsername.get(key);
+      if (existing) {
+        existing.status = 'registered';
+        existing.email = reg.email;
+        existing.storeName = reg.storeName;
+        existing.totalEarnings = reg.totalEarnings;
+        existing.orderCount = reg.orderCount;
+        existing.registrationDate = reg.registrationDate;
+        existing.trackingId = reg.trackingId;
+        existing.role = reg.role;
+        // Attach full modal detail objects when available
+        existing.influencerData = reg.influencerData || existing.influencerData;
+        existing.storeData = reg.storeData || existing.storeData;
+        existing.statusInfo = reg.statusInfo || existing.statusInfo;
+        existing.isRegistration = true;
+
+        // Ensure time-based sorting puts the most recent activity/registration on top
+        const existingDate = new Date(existing.lastContacted || 0);
+        const regDate = new Date(reg.registrationDate || 0);
+        if (regDate > existingDate) {
+          existing.lastContacted = reg.registrationDate;
+        }
+      } else {
+        userStatusByUsername.set(key, reg);
+      }
+    }
+
+    const combinedUsers = Array.from(userStatusByUsername.values());
 
     // Sort by date (most recent first)
     return combinedUsers.sort((a, b) => {
@@ -361,6 +420,13 @@ const StatusTracking = () => {
     });
   };
 
+  // Match RegistrationDetails.jsx modal date formatting (used only inside the modal)
+  const formatModalDate = (value) => {
+    if (!value) return 'N/A';
+    const d = new Date(value);
+    return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  };
+
   return (
     <div className="h-screen bg-secondary-50 flex overflow-hidden">
       <Navbar />
@@ -546,7 +612,9 @@ const StatusTracking = () => {
                   onClick={() => {
                     if (isDeleteMode) {
                       handleUserSelect(user.userId);
+                      return;
                     }
+                    handleUserCardClick(user);
                   }}
                 >
                   <div className="flex flex-col items-center text-center">
@@ -594,60 +662,37 @@ const StatusTracking = () => {
                         {user.name || user.username || 'Unknown'}
                       </h3>
                       <p className="text-xs text-secondary-500 mb-2">@{user.username}</p>
-                      {user.email && (
-                        <p className="text-xs text-secondary-500 mb-2">{user.email}</p>
-                      )}
                       <div className="flex justify-center mb-2">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}>
                           {user.status === 'registered' ? 'Registered' : user.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </span>
                       </div>
 
-                      {user.isRegistration ? (
-                        // Display for registration users
-                        <>
-                          {user.storeName && (
-                            <div className="text-xs text-secondary-600 mb-2">
-                              <p className="font-medium">Store: {user.storeName}</p>
+                      {(user.followersCount > 0 || user.followingCount > 0) && (
+                        <div className="flex items-center justify-center space-x-4 mb-2 text-xs text-secondary-600">
+                          {user.followersCount !== undefined && user.followersCount > 0 && (
+                            <div className="flex flex-col items-center">
+                              <span className="font-semibold text-secondary-900">{formatNumber(user.followersCount)}</span>
+                              <span className="text-secondary-500">Followers</span>
                             </div>
                           )}
-
-                          <div className="text-xs text-secondary-500 space-y-1">
-                            <p>Earnings: ${user.totalEarnings * 100 || 0}</p>
-                            <p>Orders: {user.orderCount || 0}</p>
-                            <p>Registered: {formatDate(user.registrationDate)}</p>
-                          </div>
-                        </>
-                      ) : (
-                        // Display for regular user status users
-                        <>
-                          {(user.followersCount > 0 || user.followingCount > 0) && (
-                            <div className="flex items-center justify-center space-x-4 mb-2 text-xs text-secondary-600">
-                              {user.followersCount !== undefined && user.followersCount > 0 && (
-                                <div className="flex flex-col items-center">
-                                  <span className="font-semibold text-secondary-900">{formatNumber(user.followersCount)}</span>
-                                  <span className="text-secondary-500">Followers</span>
-                                </div>
-                              )}
-                              {user.followingCount !== undefined && user.followingCount > 0 && (
-                                <div className="flex flex-col items-center">
-                                  <span className="font-semibold text-secondary-900">{formatNumber(user.followingCount)}</span>
-                                  <span className="text-secondary-500">Following</span>
-                                </div>
-                              )}
+                          {user.followingCount !== undefined && user.followingCount > 0 && (
+                            <div className="flex flex-col items-center">
+                              <span className="font-semibold text-secondary-900">{formatNumber(user.followingCount)}</span>
+                              <span className="text-secondary-500">Following</span>
                             </div>
                           )}
-
-                          <div className="text-xs text-secondary-500 space-y-1">
-                            <p>Source: <span className="capitalize">{user.provider || user.source?.replace('_', ' ') || 'Unknown'}</span></p>
-                            <p>Last contacted: {formatDate(user.lastContacted)}</p>
-                            <p>Messages sent: {user.messageCount || 0}</p>
-                            {user.campaignIds && user.campaignIds.length > 0 && (
-                              <p>In campaigns: {user.campaignIds.length}</p>
-                            )}
-                          </div>
-                        </>
+                        </div>
                       )}
+
+                      <div className="text-xs text-secondary-500 space-y-1">
+                        <p>Source: <span className="capitalize">{user.provider || user.source?.replace('_', ' ') || 'Unknown'}</span></p>
+                        <p>Last contacted: {formatDate(user.lastContacted)}</p>
+                        <p>Messages sent: {user.messageCount || 0}</p>
+                        {user.campaignIds && user.campaignIds.length > 0 && (
+                          <p>In campaigns: {user.campaignIds.length}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -718,6 +763,358 @@ const StatusTracking = () => {
                 </button>
               </div>
             </motion.div>
+          </div>
+        )}
+
+        {/* User Details Modal (match RegistrationDetails.jsx style) */}
+        {showUserModal && selectedUser && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  User Details - {selectedUser.name || selectedUser.username}
+                </h3>
+                <button
+                  onClick={closeUserModal}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* User Information (same structure as RegistrationDetails.jsx modal) */}
+                <div className="space-y-4">
+                  <h4 className="text-md font-medium text-gray-900 border-b pb-2">User Information</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium text-gray-600">Username:</span>
+                      <span className="text-sm text-gray-900">@{selectedUser.username || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium text-gray-600">Email:</span>
+                      <span className="text-sm text-gray-900 break-all">{selectedUser.email || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium text-gray-600">Tracking ID:</span>
+                      <span className="text-sm text-gray-900">{selectedUser.trackingId || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium text-gray-600">Role:</span>
+                      <span className="text-sm text-gray-900">{selectedUser.role || 'user'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium text-gray-600">Status:</span>
+                      <span className="text-sm text-gray-900">{selectedUser.isActive ? 'Active' : 'Inactive'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium text-gray-600">Registered:</span>
+                      <span className="text-sm text-gray-900">{formatModalDate(selectedUser.registrationDate || selectedUser.createdAt)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Influencer Information (same as RegistrationDetails.jsx modal) */}
+                <div className="space-y-4">
+                  <h4 className="text-md font-medium text-gray-900 border-b pb-2">Influencer Information</h4>
+                  {selectedUser.influencerData ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-600">Store Name:</span>
+                        {selectedUser.influencerData.storeName ? (
+                          <a
+                            href={`https://dynamiteinfluencerstore.icod.ai/?store=${encodeURIComponent(selectedUser.influencerData.storeUrl || '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-black hover:text-gray-700 hover:underline"
+                          >
+                            {selectedUser.influencerData.storeName}
+                          </a>
+                        ) : (
+                          <span className="text-sm text-gray-900">—</span>
+                        )}
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-600">Store URL:</span>
+                        {selectedUser.influencerData.storeUrl ? (
+                          <a
+                            href={`https://dynamiteinfluencerstore.icod.ai/?store=${encodeURIComponent(selectedUser.influencerData.storeUrl)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-black hover:text-gray-700 hover:underline"
+                          >
+                            {selectedUser.influencerData.storeUrl}
+                          </a>
+                        ) : (
+                          <span className="text-sm text-gray-900">—</span>
+                        )}
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Total Earnings:</span>
+                        <span className="text-sm text-green-600">${selectedUser.influencerData.totalEarnings * 100 || 0}</span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Pending Payouts:</span>
+                        <span className="text-sm text-orange-600">${selectedUser.influencerData.pendingPayouts * 100 || 0}</span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Store Active:</span>
+                        <span className="text-sm text-gray-900">{selectedUser.influencerData.isStoreActive ? 'Yes' : 'No'}</span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Onboarding:</span>
+                        <span className="text-sm text-gray-900">
+                          Step {selectedUser.influencerData.onboardingStep || 1} - {selectedUser.influencerData.onboardingCompleted ? 'Completed' : 'In Progress'}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No influencer data available</p>
+                  )}
+                </div>
+
+                {/* Store Information (same as RegistrationDetails.jsx modal) */}
+                <div className="space-y-4 md:col-span-2">
+                  <h4 className="text-md font-medium text-gray-900 border-b pb-2">Store Information</h4>
+                  {selectedUser.storeData ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-600">Total Products:</span>
+                          <span className="text-sm text-gray-900">{selectedUser.storeData.products?.length || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-600">Active Products:</span>
+                          <span className="text-sm text-green-600">{selectedUser.storeData.products?.filter(p => p?.isActive).length || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-600">Collections:</span>
+                          <span className="text-sm text-gray-900">{selectedUser.storeData.collections?.length || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-600">Campaigns:</span>
+                          <span className="text-sm text-gray-900">{selectedUser.storeData.campaigns?.length || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-600">Total Orders:</span>
+                          <span className="text-sm text-blue-600">{selectedUser.storeData.orders?.length || 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-600">Delivered Orders:</span>
+                          <span className="text-sm text-green-600">
+                            {selectedUser.storeData.orders?.filter(order => order?.status === 'delivered').length || 0}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-600">Total Revenue:</span>
+                          <span className="text-sm text-green-600">
+                            ${selectedUser.storeData.orders?.reduce((sum, order) => sum + (order?.total || 0), 0).toFixed(2) || '0.00'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-600">Avg Order Value:</span>
+                          <span className="text-sm text-black">
+                            ${selectedUser.storeData.orders?.length > 0
+                              ? (selectedUser.storeData.orders.reduce((sum, order) => sum + (order?.total || 0), 0) / selectedUser.storeData.orders.length).toFixed(2)
+                              : '0.00'
+                            }
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-600">Total Shipping Cost:</span>
+                          <span className="text-sm text-blue-600">
+                            ${selectedUser.storeData.orders?.reduce((sum, order) => sum + (order?.shippingCost || 0), 0).toFixed(2) || '0.00'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h5 className="text-sm font-medium text-gray-700">Recent Orders:</h5>
+                        {selectedUser.storeData.orders?.length > 0 ? (
+                          <div className="space-y-3">
+                            <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                              Total Orders: <span className="font-medium">{selectedUser.storeData.orders.length}</span> | Total Revenue:{' '}
+                              <span className="font-medium text-green-600">
+                                ${selectedUser.storeData.orders.reduce((sum, order) => sum + (order?.total || 0), 0).toFixed(2)}
+                              </span>{' '}
+                              | Total Shipping:{' '}
+                              <span className="font-medium text-blue-600">
+                                ${selectedUser.storeData.orders.reduce((sum, order) => sum + (order?.shippingCost || 0), 0).toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="max-h-64 overflow-y-auto space-y-3">
+                              {selectedUser.storeData.orders.slice(0, 5).map((order, idx) => (
+                                <div key={order?._id || idx} className="border border-gray-200 rounded-lg p-3 bg-white">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div className="flex-1">
+                                      <div className="text-sm font-medium text-gray-900">{order?.orderNumber || order?._id || `Order ${idx + 1}`}</div>
+                                      <div className="text-xs text-gray-600">{order?.product?.name || 'Unknown Product'}</div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-sm font-semibold text-green-600">${order?.total?.toFixed?.(2) || Number(order?.total || 0).toFixed(2)}</div>
+                                      <div className={`text-xs px-2 py-1 rounded-full ${
+                                        order?.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                        order?.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
+                                        order?.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-gray-100 text-gray-800'
+                                      }`}>
+                                        {order?.status || 'unknown'}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                                    <div>
+                                      <span className="text-gray-500">Price:</span>
+                                      <span className="ml-1">${order?.product?.price?.toFixed?.(2) || '0.00'}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Size:</span>
+                                      <span className="ml-1">{order?.product?.selectedSize || 'N/A'}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Color:</span>
+                                      <span className="ml-1">{order?.product?.selectedColor || 'N/A'}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Tax:</span>
+                                      <span className="ml-1">${order?.tax?.toFixed?.(2) || '0.00'}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Shipping:</span>
+                                      <span className="ml-1">${order?.shippingCost?.toFixed?.(2) || '0.00'}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-500">Subtotal:</span>
+                                      <span className="ml-1">${order?.subtotal?.toFixed?.(2) || '0.00'}</span>
+                                    </div>
+                                  </div>
+
+                                  {order?.product?.images?.[0]?.url && (
+                                    <div className="mb-2">
+                                      <img
+                                        src={order.product.images[0].url}
+                                        alt={order?.product?.name || 'Product'}
+                                        className="w-12 h-12 object-cover rounded border"
+                                        referrerPolicy="no-referrer"
+                                      />
+                                    </div>
+                                  )}
+
+                                  <div className="text-xs border-t pt-2">
+                                    <div className="flex justify-between">
+                                      <div>
+                                        <span className="text-gray-500">Customer:</span>
+                                        <span className="ml-1">{order?.customer?.firstName} {order?.customer?.lastName}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-500">Payment:</span>
+                                        <span className={`ml-1 px-2 py-1 rounded-full text-xs ${
+                                          order?.payment?.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                          order?.payment?.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                          'bg-red-100 text-red-800'
+                                        }`}>
+                                          {order?.payment?.status || 'unknown'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="mt-1">
+                                      <span className="text-gray-500">Email:</span>
+                                      <span className="ml-1">{order?.customer?.email || 'N/A'}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                              {selectedUser.storeData.orders.length > 5 && (
+                                <div className="text-center text-xs text-gray-500 py-2">
+                                  ... and {selectedUser.storeData.orders.length - 5} more orders
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-500">No orders yet</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <h5 className="text-sm font-medium text-gray-700">Active Products:</h5>
+                        {selectedUser.storeData.products?.filter(p => p?.isActive).length > 0 ? (
+                          <ul className="text-xs text-gray-600 space-y-1">
+                            {selectedUser.storeData.products.filter(p => p?.isActive).slice(0, 3).map((product, idx) => (
+                              <li key={product?._id || idx}>
+                                <a
+                                  href={`https://dynamiteinfluencerstore.icod.ai/product/${product?.productId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-black"
+                                >
+                                  • {product?.productDetails?.name || `Product ${product?.productId?.slice?.(-6) || idx + 1}`}
+                                </a>
+                                {product?.productDetails?.price && (
+                                  <span className="text-green-600 ml-1">(${product.productDetails.price})</span>
+                                )}
+                              </li>
+                            ))}
+                            {selectedUser.storeData.products.filter(p => p?.isActive).length > 3 && (
+                              <li className="text-gray-500">... and {selectedUser.storeData.products.filter(p => p?.isActive).length - 3} more</li>
+                            )}
+                          </ul>
+                        ) : (
+                          <p className="text-xs text-gray-500">No active products</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        <h5 className="text-sm font-medium text-gray-700">Store Created:</h5>
+                        <p className="text-sm text-gray-900">{formatModalDate(selectedUser.storeData.createdAt)}</p>
+                        <h5 className="text-sm font-medium text-gray-700">Last Updated:</h5>
+                        <p className="text-sm text-gray-900">{formatModalDate(selectedUser.storeData.updatedAt)}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No store data available</p>
+                  )}
+                </div>
+
+                {/* Social Media Status (same as RegistrationDetails.jsx modal) */}
+                {selectedUser.statusInfo && (
+                  <div className="space-y-4 md:col-span-2">
+                    <h4 className="text-md font-medium text-gray-900 border-b pb-2">Social Media Status</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Status:</span>
+                        <span className="text-sm text-gray-900">{selectedUser.statusInfo.status || '—'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Followers:</span>
+                        <span className="text-sm text-gray-900">{formatNumber(selectedUser.statusInfo.followersCount || 0)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium text-gray-600">Following:</span>
+                        <span className="text-sm text-gray-900">{formatNumber(selectedUser.statusInfo.followingCount || 0)}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={closeUserModal}
+                  className="btn-secondary"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -728,6 +728,8 @@ const ChatList = () => {
                       <div className={`badge mb-2 ${
                         (chat.userStatus === 'onboarded' || chat.userStatus === 'active')
                           ? 'bg-success-100 text-success-800 border border-success-200 rounded-full px-2 py-1 text-xs font-medium'
+                          : chat.userStatus === 'registered'
+                          ? 'bg-purple-100 text-purple-800 border border-purple-200 rounded-full px-2 py-1 text-xs font-medium'
                           : chat.userStatus === 'offboarded'
                           ? 'badge-error'
                           : chat.userStatus === 'not_interested'
@@ -736,6 +738,8 @@ const ChatList = () => {
                       }`}>
                         {(chat.userStatus === 'onboarded' || chat.userStatus === 'active')
                           ? 'Onboarded'
+                          : chat.userStatus === 'registered'
+                          ? 'Registered'
                           : chat.userStatus === 'offboarded'
                           ? 'Offboarded'
                           : chat.userStatus === 'not_interested'

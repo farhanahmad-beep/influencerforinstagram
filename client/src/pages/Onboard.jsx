@@ -696,15 +696,18 @@ const Onboard = () => {
               });
             });
 
-            // Update user status to active (in campaign)
-            try {
-              await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/active`, {
-                userId: userId,
-                campaignId: campaignId,
-              }, { withCredentials: true });
-            } catch (statusError) {
-              console.error('Failed to update user status to active:', statusError);
-            }
+            // NOTE: Intentionally NOT updating user status to "active" when starting/running a campaign.
+            // We only send messages here; status changes should be manual/explicit elsewhere.
+            //
+            // Previous behavior (disabled):
+            // try {
+            //   await axios.post(`${import.meta.env.VITE_API_URL}/influencers/user-status/active`, {
+            //     userId: userId,
+            //     campaignId: campaignId,
+            //   }, { withCredentials: true });
+            // } catch (statusError) {
+            //   console.error('Failed to update user status to active:', statusError);
+            // }
           } else {
             failCount++;
             console.error(`Failed to send to ${user.name || userId}:`, messageResponse.data.error);
@@ -1123,6 +1126,7 @@ const Onboard = () => {
                                 user.status === 'onboarded' ? 'bg-success-100 text-success-800' :
                                 user.status === 'contacted' ? 'bg-info-100 text-info-800' :
                                 user.status === 'active' ? 'bg-primary-100 text-primary-800' :
+                                user.status === 'registered' ? 'bg-purple-100 text-purple-800' :
                                 'bg-secondary-100 text-secondary-800'
                               }`}>
                                 {user.status.charAt(0).toUpperCase() + user.status.slice(1)}

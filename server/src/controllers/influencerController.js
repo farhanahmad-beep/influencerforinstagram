@@ -1383,6 +1383,31 @@ export const getTrackingRegistrations = async (req, res) => {
       }
     ]);
 
+    // Keep UserStatus in sync: if a user has registered via trackingId, mark their existing status as "registered".
+    // This prevents duplicate rows (registered vs onboarded/offboarded) and makes StatusTracking consistent.
+    try {
+      const regItems = registrations
+        .map(r => ({
+          trackingId: (r.trackingId || '').toString().trim(),
+          createdAt: r.createdAt,
+        }))
+        .filter(r => r.trackingId);
+
+      if (regItems.length) {
+        // Update/merge statuses for these usernames.
+        // Use the actual registration createdAt so sorting by time/date is correct.
+        for (const reg of regItems) {
+          const userStatus = await findOrCreateUserStatus({ username: reg.trackingId, source: 'direct' });
+          userStatus.username = reg.trackingId;
+          userStatus.status = 'registered';
+          userStatus.lastContacted = reg.createdAt || new Date();
+          await userStatus.save();
+        }
+      }
+    } catch (syncErr) {
+      console.error('Failed to sync user statuses to registered:', syncErr.message);
+    }
+
     return res.status(200).json({
       success: true,
       data: {
@@ -2686,12 +2711,11 @@ export const markNotInterested = async (req, res) => {
       });
     }
 
-    // Update user status to not_interested
-    await UserStatus.findOneAndUpdate(
-      { userId: userId },
-      { status: 'not_interested' },
-      { upsert: true, new: true }
-    );
+    // Update user status to not_interested (avoid creating duplicates by matching across identifiers)
+    const userStatus = await findOrCreateUserStatus({ userId, source: 'direct' });
+    userStatus.status = 'not_interested';
+    userStatus.lastContacted = new Date();
+    await userStatus.save();
 
     return res.status(200).json({
       success: true,
@@ -2721,12 +2745,11 @@ export const offboardUser = async (req, res) => {
       });
     }
 
-    // Update user status to offboarded
-    await UserStatus.findOneAndUpdate(
-      { userId: userId },
-      { status: 'offboarded' },
-      { upsert: true, new: true }
-    );
+    // Update user status to offboarded (avoid creating duplicates by matching across identifiers)
+    const userStatus = await findOrCreateUserStatus({ userId, source: 'direct' });
+    userStatus.status = 'offboarded';
+    userStatus.lastContacted = new Date();
+    await userStatus.save();
 
     // Delete from onboarded users collection
     await OnboardedUser.findOneAndDelete({ userId });
@@ -2771,11 +2794,13 @@ export const deleteOnboardedUser = async (req, res) => {
 
     // Update user status back to "contacted" when removed from onboarded users
     try {
-      await UserStatus.findOneAndUpdate(
-        { userId: userId },
-        { status: 'contacted' },
-        { upsert: true, new: true }
-      );
+      const userStatus = await findOrCreateUserStatus({ userId, source: 'direct' });
+      // Don't downgrade registered/offboarded/not_interested
+      if (!['offboarded', 'not_interested', 'registered'].includes(userStatus.status)) {
+        userStatus.status = 'contacted';
+      }
+      userStatus.lastContacted = new Date();
+      await userStatus.save();
     } catch (statusError) {
       console.error('Failed to update user status to contacted:', statusError);
       // Don't fail the entire operation if status update fails
@@ -3031,6 +3056,122 @@ export const getCampaignById = async (req, res) => {
 
 // User Status Tracking Endpoints
 
+const escapeRegex = (str = '') => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildUserStatusOrQuery = ({ userId, username, providerId, providerMessagingId, chatName }) => {
+  const or = [];
+  const pushIf = (cond) => cond && or.push(cond);
+
+  if (userId) pushIf({ userId: userId.toString().trim() });
+  if (providerId) pushIf({ providerId: providerId.toString().trim() });
+  if (providerMessagingId) pushIf({ providerMessagingId: providerMessagingId.toString().trim() });
+
+  if (username) {
+    const u = username.toString().trim();
+    if (u) pushIf({ username: { $regex: new RegExp(`^${escapeRegex(u)}$`, 'i') } });
+  }
+
+  // Fallback name matching (used in some Unipile chat flows)
+  if (chatName) {
+    const raw = chatName.toString().trim();
+    const clean = raw.replace(/[^\w\s]/g, '').trim();
+    if (raw) pushIf({ name: { $regex: new RegExp(escapeRegex(raw), 'i') } });
+    if (clean && clean !== raw) pushIf({ name: { $regex: new RegExp(escapeRegex(clean), 'i') } });
+  }
+
+  return or.length ? { $or: or } : null;
+};
+
+const pickCanonicalUserStatus = (docs = []) => {
+  if (!docs.length) return null;
+  // Prefer the document that has messaging/provider ids populated; otherwise newest.
+  return [...docs].sort((a, b) => {
+    const aScore = (a.providerMessagingId ? 4 : 0) + (a.providerId ? 2 : 0) + (a.username ? 1 : 0);
+    const bScore = (b.providerMessagingId ? 4 : 0) + (b.providerId ? 2 : 0) + (b.username ? 1 : 0);
+    if (bScore !== aScore) return bScore - aScore;
+    return new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0);
+  })[0];
+};
+
+const mergeUserStatusDocs = async (docs = []) => {
+  if (docs.length <= 1) return docs[0] || null;
+
+  const canonical = pickCanonicalUserStatus(docs);
+  const others = docs.filter(d => d._id.toString() !== canonical._id.toString());
+
+  // Merge simple fields (keep canonical unless empty)
+  for (const d of others) {
+    if (!canonical.username && d.username) canonical.username = d.username;
+    if (!canonical.name && d.name) canonical.name = d.name;
+    if (!canonical.profilePicture && d.profilePicture) canonical.profilePicture = d.profilePicture;
+    if (!canonical.profilePictureData && d.profilePictureData) canonical.profilePictureData = d.profilePictureData;
+
+    if (!canonical.providerId && d.providerId) canonical.providerId = d.providerId;
+    if (!canonical.providerMessagingId && d.providerMessagingId) canonical.providerMessagingId = d.providerMessagingId;
+
+    canonical.followersCount = Math.max(canonical.followersCount || 0, d.followersCount || 0);
+    canonical.followingCount = Math.max(canonical.followingCount || 0, d.followingCount || 0);
+    canonical.messageCount = Math.max(canonical.messageCount || 0, d.messageCount || 0);
+
+    // Dates: keep the most recent
+    const lc = new Date(canonical.lastContacted || 0);
+    const dlc = new Date(d.lastContacted || 0);
+    if (dlc > lc) canonical.lastContacted = d.lastContacted;
+
+    const lms = new Date(canonical.lastMessageSent || 0);
+    const dlms = new Date(d.lastMessageSent || 0);
+    if (dlms > lms) canonical.lastMessageSent = d.lastMessageSent;
+
+    // campaignIds union
+    const aIds = new Set((canonical.campaignIds || []).map(x => x.toString()));
+    for (const cid of (d.campaignIds || [])) aIds.add(cid.toString());
+    canonical.campaignIds = Array.from(aIds);
+
+    // statusHistory concat (best-effort)
+    if (Array.isArray(d.statusHistory) && d.statusHistory.length) {
+      canonical.statusHistory = canonical.statusHistory || [];
+      canonical.statusHistory.push(...d.statusHistory);
+    }
+  }
+
+  // De-duplicate statusHistory entries
+  if (Array.isArray(canonical.statusHistory)) {
+    const seen = new Set();
+    canonical.statusHistory = canonical.statusHistory.filter(h => {
+      const key = `${h.status}-${new Date(h.timestamp).toISOString()}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  }
+
+  await canonical.save();
+  await UserStatus.deleteMany({ _id: { $in: others.map(o => o._id) } });
+  return canonical;
+};
+
+const findOrCreateUserStatus = async ({ userId, username, name, providerId, providerMessagingId, chatName, source }) => {
+  const query = buildUserStatusOrQuery({ userId, username, providerId, providerMessagingId, chatName });
+  const matches = query ? await UserStatus.find(query) : [];
+  const merged = await mergeUserStatusDocs(matches);
+
+  if (merged) return merged;
+
+  // Create new with a stable primary key preference
+  const primaryId = (providerId || providerMessagingId || userId || '').toString().trim();
+  const doc = new UserStatus({
+    userId: primaryId,
+    username: username || '',
+    name: name || chatName || '',
+    providerId: providerId || '',
+    providerMessagingId: providerMessagingId || '',
+    source: source || 'direct',
+    lastContacted: new Date(),
+  });
+  await doc.save();
+  return doc;
+};
+
 // Update user status when sending message
 export const updateUserStatus = async (req, res) => {
   try {
@@ -3068,8 +3209,15 @@ export const updateUserStatus = async (req, res) => {
       }
     }
 
-    // Find or create user status
-    let userStatus = await UserStatus.findOne({ userId });
+    // Find (by any stable identifiers) or create user status
+    let userStatus = await findOrCreateUserStatus({
+      userId,
+      username,
+      name,
+      providerId,
+      providerMessagingId,
+      source,
+    });
 
     if (userStatus) {
       // Update existing user with available data
@@ -3084,33 +3232,15 @@ export const updateUserStatus = async (req, res) => {
       if (providerMessagingId !== undefined) userStatus.providerMessagingId = providerMessagingId;
       if (source !== undefined) userStatus.source = source;
 
-      // Always set status to contacted when this endpoint is called
-      userStatus.status = 'contacted';
+      // Set status to contacted when this endpoint is called, but don't downgrade certain statuses.
+      if (!['offboarded', 'not_interested', 'registered'].includes(userStatus.status)) {
+        userStatus.status = 'contacted';
+      }
 
       userStatus.lastContacted = new Date();
       userStatus.lastMessageSent = new Date();
       userStatus.messageCount = (userStatus.messageCount || 0) + 1;
 
-      await userStatus.save();
-    } else {
-      // Create new user status with available data
-      userStatus = new UserStatus({
-        userId,
-        username: username || '',
-        name: name || '',
-        profilePicture: profilePictureBase64 || '',
-        profilePictureData: profilePictureData || '',
-        followersCount: followersCount || 0,
-        followingCount: followingCount || 0,
-        provider: provider || 'INSTAGRAM',
-        providerId: providerId || '',
-        providerMessagingId: providerMessagingId || '',
-        status: 'contacted',
-        source: source || 'direct',
-        lastContacted: new Date(),
-        lastMessageSent: new Date(),
-        messageCount: 1,
-      });
       await userStatus.save();
     }
 
@@ -3143,31 +3273,7 @@ export const updateUserStatusOnboarded = async (req, res) => {
       });
     }
 
-    // First, try to find by userId
-    let userStatus = await UserStatus.findOne({ userId: userId.toString() });
-
-    // If not found by userId, try to find by providerMessagingId
-    if (!userStatus) {
-      userStatus = await UserStatus.findOne({ providerMessagingId: userId.toString() });
-    }
-
-    // If still not found by providerMessagingId, try to find by providerId
-    if (!userStatus) {
-      userStatus = await UserStatus.findOne({ providerId: userId.toString() });
-    }
-
-    // If still not found and we have a chat name, try to find by name (for same user matching)
-    if (!userStatus && chatName) {
-      // Remove emojis and special chars for better matching
-      const cleanChatName = chatName.replace(/[^\w\s]/g, '').trim();
-      userStatus = await UserStatus.findOne({
-        $or: [
-          { name: { $regex: new RegExp(chatName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') } },
-          { name: { $regex: new RegExp(cleanChatName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') } }
-        ],
-        provider: 'INSTAGRAM'
-      });
-    }
+    let userStatus = await findOrCreateUserStatus({ userId, chatName, source: 'direct' });
 
     if (userStatus) {
       // Update existing user status
@@ -3177,20 +3283,6 @@ export const updateUserStatusOnboarded = async (req, res) => {
       if (chatName && !userStatus.name) {
         userStatus.name = chatName;
       }
-      // If we found by name matching and the userId is different, update it to the canonical ID
-      if (userStatus.userId !== userId) {
-        userStatus.userId = userId;
-      }
-      await userStatus.save();
-    } else {
-      // Create new user status if not found
-      userStatus = new UserStatus({
-        userId,
-        name: chatName,
-        status: 'onboarded',
-        source: 'direct',
-        lastContacted: new Date(),
-      });
       await userStatus.save();
     }
 
@@ -3223,18 +3315,7 @@ export const updateUserStatusActive = async (req, res) => {
       });
     }
 
-    // First, try to find by userId
-    let userStatus = await UserStatus.findOne({ userId: userId.toString() });
-
-    // If not found by userId, try to find by providerMessagingId
-    if (!userStatus) {
-      userStatus = await UserStatus.findOne({ providerMessagingId: userId.toString() });
-    }
-
-    // If still not found by providerMessagingId, try to find by providerId
-    if (!userStatus) {
-      userStatus = await UserStatus.findOne({ providerId: userId.toString() });
-    }
+    let userStatus = await findOrCreateUserStatus({ userId, source: 'direct' });
 
     if (userStatus) {
       // Update existing user status
@@ -3251,16 +3332,6 @@ export const updateUserStatusActive = async (req, res) => {
         }
       }
 
-      await userStatus.save();
-    } else {
-      // Create new user status if not found
-      userStatus = new UserStatus({
-        userId,
-        status: 'active',
-        source: 'direct',
-        lastContacted: new Date(),
-        campaignIds: campaignId ? [campaignId] : [],
-      });
       await userStatus.save();
     }
 

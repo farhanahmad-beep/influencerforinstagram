@@ -34,6 +34,7 @@ const ChatMessages = () => {
   const [notInterestedStatus, setNotInterestedStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
   const [reconsiderStatus, setReconsiderStatus] = useState('idle'); // 'idle', 'loading', 'success', 'error'
   const [isOffboarded, setIsOffboarded] = useState(false); // Track if user is offboarded
+  const [isRegistered, setIsRegistered] = useState(false); // Track if user is registered (read-only status)
 
   useEffect(() => {
     if (chatId) {
@@ -219,6 +220,15 @@ const ChatMessages = () => {
             setOffboardingStatus('idle');
             setNotInterestedStatus('idle');
             setIsOffboarded(false);
+            setIsRegistered(false);
+          } else if (userStatus.status === 'registered') {
+            // Registered users: show Registered and disable actions
+            setIsVerificationCompleted(false);
+            setOnboardingStatus('idle');
+            setOffboardingStatus('idle');
+            setNotInterestedStatus('idle');
+            setIsOffboarded(false);
+            setIsRegistered(true);
           } else if (userStatus.status === 'offboarded') {
             // Offboarded users can be re-onboarded
             setIsVerificationCompleted(false);
@@ -226,6 +236,7 @@ const ChatMessages = () => {
             setOffboardingStatus('idle');
             setNotInterestedStatus('idle');
             setIsOffboarded(true);
+            setIsRegistered(false);
           } else if (userStatus.status === 'not_interested') {
             // Not interested users stay marked as such
             setIsVerificationCompleted(false);
@@ -233,6 +244,7 @@ const ChatMessages = () => {
             setOffboardingStatus('idle');
             setNotInterestedStatus('success');
             setIsOffboarded(false);
+            setIsRegistered(false);
           } else {
             // Default to contacted state for any other status
             setIsVerificationCompleted(false);
@@ -240,6 +252,7 @@ const ChatMessages = () => {
             setOffboardingStatus('idle');
             setNotInterestedStatus('idle');
             setIsOffboarded(false);
+            setIsRegistered(false);
           }
           return; // Found user status, exit the loop
         }
@@ -256,6 +269,7 @@ const ChatMessages = () => {
     setOnboardingStatus('idle');
     setOffboardingStatus('idle');
     setNotInterestedStatus('idle');
+    setIsRegistered(false);
   };
 
   const handleOnboard = async () => {
@@ -611,6 +625,9 @@ const ChatMessages = () => {
               {/* Status Indicator */}
               <div className="flex items-center space-x-3 mb-4">
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  isRegistered
+                    ? 'bg-purple-100 text-purple-800'
+                    :
                   onboardingStatus === 'success'
                     ? 'bg-success-100 text-success-800'
                     : notInterestedStatus === 'success'
@@ -619,7 +636,14 @@ const ChatMessages = () => {
                     ? 'bg-gray-100 text-black'
                     : 'bg-secondary-100 text-secondary-800'
                 }`}>
-                  {onboardingStatus === 'success' ? (
+                  {isRegistered ? (
+                    <>
+                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Registered
+                    </>
+                  ) : onboardingStatus === 'success' ? (
                     <>
                       <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -653,6 +677,14 @@ const ChatMessages = () => {
 
               {/* Action Section */}
               <div className="space-y-3">
+                {isRegistered && (
+                  <div className="text-sm text-secondary-600">
+                    {chatName || "User"} is registered on Influencer Store
+                  </div>
+                )}
+
+                {!isRegistered && (
+                  <>
                 {onboardingStatus !== 'success' && notInterestedStatus !== 'success' && (
                   <div className="flex items-center space-x-4">
                     <label className="flex items-center space-x-2 cursor-pointer">
@@ -759,6 +791,8 @@ const ChatMessages = () => {
                       {notInterestedStatus !== 'loading' && 'Not Interested'}
                     </button>
                   </div>
+                )}
+                  </>
                 )}
               </div>
 
