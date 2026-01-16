@@ -423,6 +423,48 @@ const ModashSearch = () => {
     return closest.toString();
   };
 
+  const resetTraditionalFilters = () => {
+    // Reset traditional filter inputs (used when enabling AI mode)
+    setSearchParams(prev => ({
+      ...prev,
+      filter: {
+        ...prev.filter,
+        influencer: {
+          ...prev.filter.influencer,
+          followers: { min: '', max: '' },
+          keywords: '',
+          gender: '',
+          age: { min: '', max: '' },
+          language: '',
+          interests: [],
+          engagementRate: 0,
+          location: [],
+        },
+      },
+    }));
+
+    // Reset UI-only state for dropdowns / chips
+    setLocationSearch('');
+    setLocationResults([]);
+    setShowLocationDropdown(false);
+    setSelectedLocations([]);
+
+    setLanguageSearch('');
+    setLanguageResults([]);
+    setShowLanguageDropdown(false);
+    setSelectedLanguage(null);
+
+    setInterestSearch('');
+    setInterestResults([]);
+    setShowInterestDropdown(false);
+    setSelectedInterests([]);
+
+    // Reset image search state
+    setSelectedImage(null);
+    setImageType('');
+    setBase64Image('');
+  };
+
   const performAISearch = async (page = 0, appendResults = false) => {
     if (appendResults) {
       setLoadingMore(true);
@@ -988,7 +1030,7 @@ const ModashSearch = () => {
         else if (searchResults[0]?.isFromImageSearch) searchType = 'image';
         else if (searchResults[0]?.isFromUserSearch) searchType = 'user';
 
-        link.setAttribute('download', `modash_${searchType}_search_results_${new Date().toISOString().split('T')[0]}.csv`);
+        link.setAttribute('download', `${searchType}_search_results_${new Date().toISOString().split('T')[0]}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -1032,7 +1074,11 @@ const ModashSearch = () => {
                 <div className="flex items-center space-x-3">
                   <label className="text-sm font-medium text-secondary-700">AI Mode</label>
                   <button
-                    onClick={() => setIsAISearch(!isAISearch)}
+                    onClick={() => {
+                      const nextValue = !isAISearch;
+                      if (nextValue) resetTraditionalFilters();
+                      setIsAISearch(nextValue);
+                    }}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                       isAISearch ? 'bg-black' : 'bg-gray-200'
                     }`}
